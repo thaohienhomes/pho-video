@@ -1,0 +1,471 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Vermilion Red Theme 2026 */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+
+    /* Electric Vermilion - Primary Accent (#F0421C = HSL: 9 89% 53%) */
+    --primary: 9 89% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --radius: 0.5rem;
+
+    /* Vermilion Glow Effect */
+    --glow-vermilion: 9 89% 53%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    /* Rich Black / Dark Charcoal Background */
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+
+    /* Card with subtle transparency for glassmorphism */
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Electric Vermilion - Primary Accent (#F0421C = HSL: 9 89% 53%) */
+    --primary: 9 89% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-inter), sans-serif;
+    background-color: #050505;
+    background-image: url("/noise.png");
+    /* Fallback or procedural */
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-outfit), sans-serif;
+  }
+}
+
+@layer utilities {
+  .bg-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Glassmorphism utilities */
+@layer components {
+  .glass {
+    @apply bg-card/40 backdrop-blur-xl border border-white/5;
+  }
+
+  .glass-panel {
+    @apply bg-card/30 backdrop-blur-2xl border border-white/10 shadow-2xl;
+  }
+
+  .glass-sidebar {
+    @apply bg-card/20 backdrop-blur-3xl border-r border-white/5;
+  }
+
+  /* Vermilion Glow Effect */
+  .glow-vermilion {
+    box-shadow: 0 0 20px rgba(240, 66, 28, 0.3),
+      0 0 40px rgba(240, 66, 28, 0.2),
+      0 0 60px rgba(240, 66, 28, 0.1);
+  }
+
+  .glow-vermilion-sm {
+    box-shadow: 0 0 10px rgba(240, 66, 28, 0.25),
+      0 0 20px rgba(240, 66, 28, 0.15);
+  }
+
+  /* Vermilion Button with glow */
+  .btn-vermilion {
+    @apply bg-primary text-primary-foreground font-semibold;
+    @apply hover:brightness-110 active:brightness-95;
+    @apply transition-all duration-200;
+  }
+
+  .btn-vermilion:hover {
+    box-shadow: 0 0 25px rgba(240, 66, 28, 0.4),
+      0 4px 20px rgba(240, 66, 28, 0.3);
+  }
+
+  /* Gradient Text */
+  .text-gradient-vermilion {
+    @apply bg-gradient-to-r from-[#F0421C] via-[#FF6B4A] to-[#F0421C];
+    @apply bg-clip-text text-transparent;
+  }
+
+  /* Cinematic overlay */
+  .cinematic-overlay {
+    background: linear-gradient(180deg,
+        rgba(10, 10, 10, 0.8) 0%,
+        rgba(10, 10, 10, 0.4) 30%,
+        rgba(10, 10, 10, 0.4) 70%,
+        rgba(10, 10, 10, 0.9) 100%);
+  }
+
+  /* Credit badge */
+  .credit-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full;
+    @apply bg-primary/10 border border-primary/20 text-primary;
+    @apply text-sm font-medium;
+  }
+
+  /* Popular tag for pricing */
+  .tag-popular {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full;
+    @apply bg-primary text-primary-foreground text-xs font-bold uppercase;
+    @apply animate-pulse;
+  }
+
+  /* Bento Grid Card */
+  .bento-card {
+    @apply bg-black/40 backdrop-blur-xl border border-white/10 rounded-3xl;
+    @apply hover:border-white/20 hover:bg-black/50 transition-all duration-300;
+    box-shadow:
+      0 4px 30px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .bento-card:hover {
+    box-shadow:
+      0 8px 40px rgba(0, 0, 0, 0.4),
+      0 0 20px rgba(240, 66, 28, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  /* Retro Grid - Perspective Floor */
+  .retro-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(240, 66, 28, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(240, 66, 28, 0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 60%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 60%, transparent 100%);
+    transform: perspective(500px) rotateX(60deg);
+    transform-origin: center top;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* Retro Grid with Horizon Fade */
+  .retro-grid-horizon {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60vh;
+    background-image:
+      linear-gradient(rgba(240, 66, 28, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(240, 66, 28, 0.05) 1px, transparent 1px);
+    background-size: 80px 80px;
+    mask-image: linear-gradient(to top, black 0%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to top, black 0%, transparent 100%);
+    transform: perspective(400px) rotateX(70deg);
+    transform-origin: center bottom;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.6;
+  }
+
+  /* Custom scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-white/20;
+  }
+
+  /* Smooth animations */
+  * {
+    transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+
+  /* Keyframes for animations */
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes pulse-glow {
+
+    0%,
+    100% {
+      box-shadow: 0 0 20px rgba(240, 66, 28, 0.3),
+        0 0 40px rgba(240, 66, 28, 0.2);
+    }
+
+    50% {
+      box-shadow: 0 0 30px rgba(240, 66, 28, 0.5),
+        0 0 60px rgba(240, 66, 28, 0.3);
+    }
+  }
+
+  @keyframes gradient-x {
+
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .animate-gradient-x {
+    background-size: 200% 200%;
+    animation: gradient-x 3s ease infinite;
+  }
+
+  /* Shimmer / Scanning Light Effect */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes developing-pulse {
+
+    0%,
+    100% {
+      opacity: 0.5;
+      transform: scale(1);
+    }
+
+    50% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+  }
+
+  @keyframes film-roll {
+    0% {
+      background-position: 0 0;
+    }
+
+    100% {
+      background-position: 0 -100px;
+    }
+  }
+
+  .animate-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .animate-shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(240, 66, 28, 0.1) 20%,
+        rgba(240, 66, 28, 0.3) 50%,
+        rgba(240, 66, 28, 0.1) 80%,
+        transparent 100%);
+    animation: shimmer 2s ease-in-out infinite;
+  }
+
+  .animate-developing {
+    animation: developing-pulse 2s ease-in-out infinite;
+  }
+
+  /* Cockpit Textarea Styling */
+  @layer components {
+    .cockpit-textarea {
+      @apply relative bg-black/40 border-2 border-white/10 rounded-2xl;
+      @apply focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20;
+      box-shadow:
+        inset 0 2px 10px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
+
+    .cockpit-textarea:focus-within {
+      box-shadow:
+        inset 0 2px 10px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba(240, 66, 28, 0.2),
+        0 0 0 1px rgba(240, 66, 28, 0.3);
+    }
+
+    /* Active Model Card with border glow */
+    .model-card-active {
+      @apply border-primary/60 bg-primary/10;
+      box-shadow:
+        0 0 15px rgba(240, 66, 28, 0.3),
+        inset 0 0 20px rgba(240, 66, 28, 0.05);
+    }
+
+    /* Generate Button with intense glow */
+    .btn-generate {
+      @apply btn-vermilion;
+      box-shadow: 0 0 20px rgba(240, 66, 28, 0.4);
+    }
+
+    .btn-generate:hover {
+      box-shadow:
+        0 0 30px rgba(240, 66, 28, 0.5),
+        0 0 60px rgba(240, 66, 28, 0.3),
+        0 4px 20px rgba(240, 66, 28, 0.4);
+    }
+
+    /* Film developing placeholder */
+    .developing-placeholder {
+      @apply relative bg-black/60 rounded-xl overflow-hidden;
+      background-image:
+        repeating-linear-gradient(0deg,
+          transparent,
+          transparent 10px,
+          rgba(240, 66, 28, 0.03) 10px,
+          rgba(240, 66, 28, 0.03) 20px);
+      animation: film-roll 3s linear infinite;
+    }
+  }
+
+  /* Line clamp utilities */
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Left Rail Icon Navigation */
+  .left-rail {
+    @apply bg-[#0A0A0A] border-r border-white/5;
+  }
+
+  .left-rail-icon {
+    @apply w-10 h-10 rounded-xl flex items-center justify-center;
+    @apply text-white/40 hover:text-white hover:bg-white/10 transition-all;
+  }
+
+  .left-rail-icon.active {
+    @apply text-primary bg-primary/15;
+    box-shadow: 0 0 15px rgba(240, 66, 28, 0.2);
+  }
+
+  /* Storyboard Dock Glassmorphism */
+  .storyboard-dock {
+    @apply bg-black/60 backdrop-blur-2xl border-t border-white/10;
+    box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  .storyboard-item {
+    @apply relative w-20 h-14 rounded-lg overflow-hidden cursor-pointer;
+    @apply border-2 border-transparent transition-all flex-shrink-0;
+    @apply hover:border-white/30 hover:scale-105;
+  }
+
+  .storyboard-item.active {
+    @apply border-primary;
+    box-shadow: 0 0 15px rgba(240, 66, 28, 0.3);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}

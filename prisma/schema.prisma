@@ -1,0 +1,111 @@
+// This is your Prisma schema file for Phở Video
+// Prisma 7.x - URLs in prisma.config.ts, adapter in PrismaClient
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// User model - synced with Clerk
+model User {
+  id          String       @id @default(cuid())
+  clerkId     String       @unique  // Clerk user ID
+  email       String?
+  name        String?
+  
+  // Legacy credits system (will be migrated to Phở Points)
+  credits     Int          @default(50)
+  
+  // Phở Points system (new)
+  phoPointsBalance        Int      @default(50000)  // Free tier: 50K points
+  phoPointsLifetimeEarned Int      @default(0)      // Total earned (for analytics)
+  phoPointsLifetimeSpent  Int      @default(0)      // Total spent (for analytics)
+  
+  // Subscription management
+  subscriptionTier        String   @default("free") // 'free' | 'starter' | 'creator' | 'pro' | 'lifetime'
+  subscriptionStatus      String   @default("inactive") // 'active' | 'canceled' | 'past_due' | 'inactive' | 'refunded'
+  
+  // Polar.sh integration
+  polarCustomerId         String?  @unique // Polar customer ID
+  polarSubscriptionId     String?  @unique // Polar subscription ID
+  
+  // Bonus tracking
+  hasReceivedSignupBonus  Boolean  @default(false)
+  
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  
+  // Relations
+  generations             Generation[]
+  phoPointsTransactions   PhoPointsTransaction[]
+  phoPointsAllocations    PhoPointsAllocation[]
+}
+
+// Generation history model
+model Generation {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  prompt    String
+  imageUrl  String?   // For I2V mode - stores reference, not full base64
+  imageUrls Json?     // For batch T2I mode - stores array of URLs
+  videoUrl  String?   // Filled on completion
+  audioUrl  String?   // Generated sound effect/music
+  upscaledUrl String? // 4K upscaled version (via Fal.ai)
+  model     String    // e.g., "kling-2.6-pro", "wan-2.6", "ltx-video", "flux-pro-v1.1"
+  status    String    @default("pending") // pending | completed | failed
+  cost      Int       // Credits spent (legacy) - will be migrated to costPhoPoints
+  costPhoPoints Int?  // Phở Points spent (new system)
+  type      String?   // image | video
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([type])
+}
+
+// Phở Points Transaction log (detailed tracking)
+model PhoPointsTransaction {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  amount          Int      // Positive for earn, negative for spend
+  balanceAfter    Int      // Snapshot of balance after this transaction
+  transactionType String   // 'subscription_grant' | 'bonus_signup' | 'bonus_referral' | 'bonus_streak' | 'spend_image' | 'spend_video' | 'spend_upscale' | 'refund'
+  
+  // Optional context
+  description     String?
+  metadata        Json?    // Flexible: { model, duration, resolution, checkoutId, etc. }
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([transactionType])
+}
+
+// Phở Points Allocation (monthly subscription tracking)
+model PhoPointsAllocation {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  subscriptionTier  String   // 'starter' | 'creator' | 'pro'
+  pointsAllocated   Int      // e.g., 3000000 for Creator
+  pointsUsed        Int      @default(0)
+  
+  allocationPeriod  DateTime // First day of month (e.g., '2026-01-01')
+  expiresAt         DateTime // Last day of month + 30 days rollover buffer
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@unique([userId, allocationPeriod])
+  @@index([userId, allocationPeriod(sort: Desc)])
+  @@index([expiresAt])
+}

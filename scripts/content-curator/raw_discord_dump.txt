@@ -1,0 +1,9 @@
+// Paste your Discord logs here.
+// The script looks for patterns like:
+// /imagine prompt: A futuristic city --ar 16:9
+// Prompt: A cool cat wearing sunglasses
+// Any text followed by --ar 9:16
+
+/imagine prompt: A samurai standing in the middle of a neon rainy street, cinematic lighting, 8k --ar 21:9
+Prompt: A giant whale flying through the clouds above a mountain range
+Cute cat eating ramen in a Japanese street stall --ar 1:1
