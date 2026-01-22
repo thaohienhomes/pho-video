@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
         const transactions = await getPhoPointsHistory(user.id, limit, offset)
 
         // Format transactions for response
-        const formattedTransactions = transactions.map(tx => ({
+        const formattedTransactions = transactions.map((tx: any) => ({
             id: tx.id,
             amount: tx.amount,
             amountFormatted: (tx.amount >= 0 ? "+" : "") + formatPhoPoints(tx.amount),
