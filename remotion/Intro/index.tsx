@@ -5,12 +5,12 @@ import { Title } from './Title';
 import { TerminalWindow } from './TerminalWindow';
 import { VideoReveal } from './VideoReveal';
 
-interface IntroVideoProps {
+export interface IntroVideoProps {
     title: string;
     subtitle: string;
 }
 
-export const IntroVideo: React.FC<IntroVideoProps> = ({ title, subtitle }) => {
+export const IntroVideo = ({ title, subtitle }: IntroVideoProps) => {
     return (
         <AbsoluteFill>
             <Background />

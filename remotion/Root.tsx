@@ -1,11 +1,11 @@
 import { Composition } from "remotion";
-import { IntroVideo } from "./Intro";
+import { IntroVideo, IntroVideoProps } from "./Intro";
 import "./style.css";
 
 export const RemotionRoot = () => {
     return (
         <>
-            <Composition
+            <Composition<IntroVideoProps, any>
                 id="Intro"
                 component={IntroVideo}
                 durationInFrames={300} // 10 seconds at 30 fps
