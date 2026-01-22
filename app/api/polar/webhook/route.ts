@@ -238,9 +238,5 @@ export async function POST(request: NextRequest) {
     }
 }
 
-// Disable body parsing for webhook (we need raw body for signature verification)
-export const config = {
-    api: {
-        bodyParser: false,
-    },
-}
+// This file uses standard Next.js 14+ Route Handler conventions.
+// The deprecated `export const config` has been removed to fix Vercel build errors.
