@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { auth } from "@clerk/nextjs/server"
 import { getOrCreateUser, getUserGenerations } from "@/lib/db"
 
+export const dynamic = 'force-dynamic'
 /**
  * GET /api/generations
  * Returns the current user's generation history

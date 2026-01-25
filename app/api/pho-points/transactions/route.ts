@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { getPhoPointsHistory } from "@/lib/pho-points/transactions";
 
+export const dynamic = 'force-dynamic'
 export async function GET(req: NextRequest) {
     try {
         const { userId: clerkId } = await auth();

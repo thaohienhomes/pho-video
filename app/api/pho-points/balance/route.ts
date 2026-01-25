@@ -8,6 +8,7 @@ import {
 } from "@/lib/pho-points"
 import { getPhoPointsStats } from "@/lib/pho-points/transactions"
 
+export const dynamic = 'force-dynamic'
 /**
  * GET /api/pho-points/balance
  * 

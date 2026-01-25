@@ -4,6 +4,7 @@ import { getOrCreateUser } from "@/lib/db"
 import { formatPhoPoints } from "@/lib/pho-points"
 import { getPhoPointsHistory } from "@/lib/pho-points/transactions"
 
+export const dynamic = 'force-dynamic'
 /**
  * GET /api/pho-points/history
  * 
