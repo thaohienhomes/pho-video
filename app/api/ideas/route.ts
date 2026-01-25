@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { IDEAS } from "@/data/ideas"
 
+export const dynamic = 'force-dynamic'
 /**
  * GET /api/ideas
  * 
