@@ -273,7 +273,7 @@ export function ControlPanel({
     }
 
     return (
-        <div className="w-80 flex flex-col h-full bg-[#0A0A0A] border-r border-white/5 flex-shrink-0">
+        <div className="w-80 flex flex-col h-full bg-[#0D0D0D] border-r border-white/5 flex-shrink-0">
             <div className="flex-1 overflow-y-auto p-4 space-y-5">
                 {/* Mode Switcher */}
                 <div className="flex gap-1 p-1 bg-black/40 rounded-xl border border-white/5 overflow-x-auto no-scrollbar">
@@ -381,7 +381,7 @@ export function ControlPanel({
                                 <Sparkles className="w-3 h-3" /> Model
                             </label>
                             <Select value={imageModel} onValueChange={setImageModel} disabled={isGenerating}>
-                                <SelectTrigger className="bg-white/5 border-white/5 h-9 text-xs focus:ring-1 focus:ring-primary/50 text-white/90">
+                                <SelectTrigger className="bg-white/5 border-white/5 h-10 text-sm focus:ring-1 focus:ring-primary/50 text-white/90">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
@@ -599,7 +599,7 @@ export function ControlPanel({
                                 <Monitor className="w-3 h-3" /> {tSidebar("resolution_label")}
                             </label>
                             <Select value={resolution} onValueChange={setResolutionAction} disabled={isGenerating}>
-                                <SelectTrigger className="bg-white/5 border-white/5 h-8 text-xs focus:ring-1 focus:ring-primary/50 text-white/90">
+                                <SelectTrigger className="bg-white/5 border-white/5 h-10 text-sm focus:ring-1 focus:ring-primary/50 text-white/90">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
@@ -650,7 +650,7 @@ export function ControlPanel({
                             value={seed}
                             onChange={(e) => setSeedAction(e.target.value)}
                             disabled={isGenerating}
-                            className="bg-white/5 border-white/5 h-8 text-xs focus-visible:ring-1 focus-visible:ring-primary/50 text-white/90 placeholder:text-white/20"
+                            className="bg-white/5 border-white/5 h-10 text-sm focus-visible:ring-1 focus-visible:ring-primary/50 text-white/90 placeholder:text-white/20"
                         />
                     </div>
 

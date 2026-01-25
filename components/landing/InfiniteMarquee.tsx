@@ -7,27 +7,30 @@ import Image from "next/image"
 const MARQUEE_ITEMS = [
     // Row 1 (Left to Right)
     [
-        { id: "1", title: "Cyberpunk City", thumbnail: "https://images.unsplash.com/photo-1573164713988-8665fc963095?w=400&q=80", prompt: "Neon-lit cyberpunk cityscape at night" },
-        { id: "2", title: "Ocean Waves", thumbnail: "https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=400&q=80", prompt: "Cinematic ocean waves crashing" },
-        { id: "3", title: "Forest Path", thumbnail: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80", prompt: "Misty forest with sun rays" },
-        { id: "4", title: "Mountain Peak", thumbnail: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=80", prompt: "Epic mountain sunrise timelapse" },
-        { id: "5", title: "City Traffic", thumbnail: "https://images.unsplash.com/photo-1514924013411-cbf25faa35bb?w=400&q=80", prompt: "Urban traffic light trails" },
+        { id: "1", title: "Cinematic Drone", thumbnail: "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400&q=80", prompt: "Aerial cinematic footage", video: "/videos/showcase_0001.mp4" },
+        { id: "2", title: "Cyberpunk Reveal", thumbnail: "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=400&q=80", prompt: "Neon city futuristic transition", video: "/videos/showcase_0002.mp4" },
+        { id: "3", title: "Nature Loop", thumbnail: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=400&q=80", prompt: "Seamless calm nature scene", video: "/videos/showcase_0003.mp4" },
+        { id: "4", title: "Macro Details", thumbnail: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=400&q=80", prompt: "Extreme close up texture", video: "/videos/showcase_0004.mp4" },
+        { id: "5", title: "Liquid Physics", thumbnail: "https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?w=400&q=80", prompt: "Satisfying fluid simulation", video: "/videos/showcase_0005.mp4" },
+        { id: "6", title: "Urban Flow", thumbnail: "https://images.unsplash.com/photo-1449824913929-2b3d14b8ba48?w=400&q=80", prompt: "City life timelapse", video: "/videos/showcase_0006.mp4" },
     ],
     // Row 2 (Right to Left)
     [
-        { id: "6", title: "Aurora Sky", thumbnail: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=400&q=80", prompt: "Northern lights dancing" },
-        { id: "7", title: "Desert Dunes", thumbnail: "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=400&q=80", prompt: "Golden desert dunes at sunset" },
-        { id: "8", title: "Rainy Street", thumbnail: "https://images.unsplash.com/photo-1519692933481-e162a57d6721?w=400&q=80", prompt: "Moody rainy city street" },
-        { id: "9", title: "Space Galaxy", thumbnail: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=400&q=80", prompt: "Deep space galaxy formation" },
-        { id: "10", title: "Waterfall", thumbnail: "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=400&q=80", prompt: "Majestic waterfall slow motion" },
+        { id: "7", title: "Abstract Motion", thumbnail: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&q=80", prompt: "Abstract 3D motion art", video: "/videos/showcase_0007.mp4" },
+        { id: "8", title: "High Fashion", thumbnail: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400&q=80", prompt: "Runway fashion showcase", video: "/videos/showcase_0008.mp4" },
+        { id: "9", title: "Futuristic Tech", thumbnail: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80", prompt: "Future technology reveal", video: "/videos/showcase_0009.mp4" },
+        { id: "10", title: "Viral Dance", thumbnail: "https://images.unsplash.com/photo-1535525266638-c5f768b8d3ea?w=400&q=80", prompt: "Trending dance choreography", video: "/videos/showcase_0010.mp4" },
+        { id: "11", title: "Morning Vibes", thumbnail: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&q=80", prompt: "Cozy morning atmosphere", video: "/videos/showcase_0011.mp4" },
+        { id: "12", title: "Neon Lights", thumbnail: "https://images.unsplash.com/photo-1563089145-599997674d42?w=400&q=80", prompt: "Bright neon signs cinematic", video: "/videos/showcase_0012.mp4" },
     ],
     // Row 3 (Left to Right)
     [
-        { id: "11", title: "Neon Signs", thumbnail: "https://images.unsplash.com/photo-1563089145-599997674d42?w=400&q=80", prompt: "Tokyo neon signs at night" },
-        { id: "12", title: "Sunset Beach", thumbnail: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80", prompt: "Tropical beach sunset panorama" },
-        { id: "13", title: "Snow Mountain", thumbnail: "https://images.unsplash.com/photo-1483921020237-2ff51e8e4b22?w=400&q=80", prompt: "Snowy mountain peak aerial" },
-        { id: "14", title: "City Skyline", thumbnail: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=400&q=80", prompt: "Modern city skyline timelapse" },
-        { id: "15", title: "Autumn Forest", thumbnail: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80", prompt: "Colorful autumn forest flyover" },
+        { id: "13", title: "Space Journey", thumbnail: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=400&q=80", prompt: "Deep space cinematic travel", video: "/videos/showcase_0013.mp4" },
+        { id: "14", title: "Anime Style", thumbnail: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=400&q=80", prompt: "Japanese animation style", video: "/videos/showcase_0014.mp4" },
+        { id: "15", title: "Product Commercial", thumbnail: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&q=80", prompt: "Professional product ad", video: "/videos/showcase_0015.mp4" },
+        { id: "16", title: "Epic Landscape", thumbnail: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=400&q=80", prompt: "Wide angle nature shot", video: "/videos/showcase_0016.mp4" },
+        { id: "17", title: "Slow Motion", thumbnail: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&q=80", prompt: "High frame rate action", video: "/videos/showcase_0017.mp4" },
+        { id: "18", title: "Character Reveal", thumbnail: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&q=80", prompt: "Detailed character portrait", video: "/videos/showcase_0018.mp4" },
     ],
 ]
 
@@ -69,6 +72,20 @@ function MarqueeRow({ items, direction = "left", speed = 30 }: {
                             className="object-cover transition-transform duration-500 group-hover:scale-110"
                             unoptimized
                         />
+
+                        {/* Video Layer (Always Play) */}
+                        {item.video && (
+                            <div className="absolute inset-0 z-10 bg-black">
+                                <video
+                                    src={item.video}
+                                    autoPlay
+                                    muted
+                                    loop
+                                    playsInline
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                        )}
 
                         {/* Gradient overlay */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
@@ -140,7 +157,7 @@ export function InfiniteMarquee() {
 
             {/* Marquee Rows */}
             <motion.div
-                className="space-y-4"
+                className="space-y-6"
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true, margin: "-100px" }}

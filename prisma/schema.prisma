@@ -35,6 +35,9 @@ model User {
   // Bonus tracking
   hasReceivedSignupBonus  Boolean  @default(false)
   
+  // Push notifications (mobile)
+  expoPushToken           String?  // Expo push token for mobile notifications
+  
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   
@@ -42,6 +45,7 @@ model User {
   generations             Generation[]
   phoPointsTransactions   PhoPointsTransaction[]
   phoPointsAllocations    PhoPointsAllocation[]
+  avatars                 Avatar[]
 }
 
 // Generation history model
@@ -61,6 +65,8 @@ model Generation {
   cost      Int       // Credits spent (legacy) - will be migrated to costPhoPoints
   costPhoPoints Int?  // Phở Points spent (new system)
   type      String?   // image | video
+  avatarId  String?
+  avatar    Avatar?   @relation(fields: [avatarId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -108,4 +114,30 @@ model PhoPointsAllocation {
   @@unique([userId, allocationPeriod])
   @@index([userId, allocationPeriod(sort: Desc)])
   @@index([expiresAt])
+}
+
+// Avatar model - for LoRA Training / Face Swap
+model Avatar {
+  id            String       @id @default(cuid())
+  userId        String
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name          String
+  imageUrl      String?      // Representative thumbnail
+  modelUrl      String?      // URL to trained LoRA/Embedding weights
+  replicateId   String?      // Training job ID from Replicate/Astria
+  status        AvatarStatus @default(TRAINING)
+  
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  generations   Generation[]
+
+  @@index([userId])
+}
+
+enum AvatarStatus {
+  TRAINING
+  READY
+  FAILED
 }

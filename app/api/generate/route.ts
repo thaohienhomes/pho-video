@@ -256,6 +256,9 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         console.error("❌ [API] Unexpected error:", error)
 
+        // Extract actual error message
+        const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred"
+
         // Handle specific error types
         if (error instanceof SyntaxError) {
             return NextResponse.json(
@@ -264,8 +267,16 @@ export async function POST(request: NextRequest) {
             )
         }
 
+        // Check for specific API error patterns
+        if (errorMessage.includes("Exhausted balance") || errorMessage.includes("locked")) {
+            return NextResponse.json(
+                { error: "External API credits exhausted. Please contact support or try a different model." },
+                { status: 503 }
+            )
+        }
+
         return NextResponse.json(
-            { error: "An unexpected error occurred. Please try again." },
+            { error: errorMessage },
             { status: 500 }
         )
     }

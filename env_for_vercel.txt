@@ -1,0 +1,30 @@
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_Z3JlYXQtbWFuYXRlZS00MC5jbGVyay5hY2NvdW50cy5kZXYk
+CLERK_SECRET_KEY=sk_test_aN5a7hYpwzhDzCiDRkloVStlNHm7Uyv8TqELGIbkzN
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/studio
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/studio
+
+# Database
+DATABASE_URL="postgresql://neondb_owner:npg_Opuz1WFyY4xX@ep-little-mountain-a1k02yw7-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+DIRECT_URL="postgresql://neondb_owner:npg_Opuz1WFyY4xX@ep-little-mountain-a1k02yw7.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+
+# AI Services
+FAL_KEY=76e91519-53db-4a56-92f7-34e9cc453192:38ec396b16fb3d47f1a7fd3a427a574a
+WAVESPEED_API_KEY=3ff6e4f0bcd2b0ddea91728b14c54d1d3b1bb900f722a32b29cb0a14a34167e2
+GOOGLE_API_KEY=AIzaSyD6Lb7oSuObvJTXpNd5wG3AiA_0iJ62ho4
+
+# Payments & App Configuration
+# UPDATED for Production:
+NEXT_PUBLIC_BASE_URL="https://pho-video-ax7r79l2b-thaohienhomes.vercel.app"
+
+# Polar.sh
+POLAR_ACCESS_TOKEN=polar_oat_DEUdQBQmcdAK0KcOSEWnSaeBNTpCvGLAYsrJk3otl2V
+POLAR_WEBHOOK_SECRET="polar_whs_0WNBCkXR2Z3Y040Q3TfgP50an7XpnXvgpqKoJ2kUld5"
+POLAR_STARTER_MONTHLY_PRODUCT_ID="39c3f670-380a-43ae-82f8-50af7cf47227"
+POLAR_STARTER_ANNUAL_PRODUCT_ID="a47c31d4-20a9-4605-985a-9e9924f82836"
+POLAR_CREATOR_MONTHLY_PRODUCT_ID="adf35556-ecec-4f64-9fc1-40cb68a99328"
+POLAR_CREATOR_ANNUAL_PRODUCT_ID="3806939f-3cb7-4458-8e36-99264580345f"
+POLAR_PRO_MONTHLY_PRODUCT_ID="31ff3bfb-756e-4ba3-b2df-b00f3c1c9b83"
+POLAR_PRO_ANNUAL_PRODUCT_ID="1c6cf3fd-40cc-4338-8955-2092ddbc99b7"

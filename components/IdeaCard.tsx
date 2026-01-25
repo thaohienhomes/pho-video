@@ -2,10 +2,10 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Play, Sparkles, Wand2 } from 'lucide-react';
+import { Play, Sparkles, Wand2, Volume2, VolumeX } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { formatPhoPoints } from '@/lib/pho-points';
 
 interface Idea {
@@ -31,6 +31,16 @@ interface IdeaCardProps {
 export default function IdeaCard({ idea }: IdeaCardProps) {
     const [isHovered, setIsHovered] = useState(false);
     const [videoLoaded, setVideoLoaded] = useState(false);
+    const [isMuted, setIsMuted] = useState(true);
+    const videoRef = useRef<HTMLVideoElement>(null);
+
+    const toggleMute = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (videoRef.current) {
+            videoRef.current.muted = !videoRef.current.muted;
+            setIsMuted(videoRef.current.muted);
+        }
+    };
 
     return (
         <motion.div
@@ -39,28 +49,60 @@ export default function IdeaCard({ idea }: IdeaCardProps) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            onMouseLeave={() => { setIsHovered(false); setIsMuted(true); }}
         >
             {/* 1. Base Image (Always Visible) */}
             <div className="relative w-full overflow-hidden bg-black/50">
-                <img
-                    src={idea.thumbnail}
-                    alt={idea.title}
-                    className="w-full h-auto object-cover transition-opacity duration-300"
-                    loading="lazy"
-                />
+                {/* Use thumbnail if available, otherwise show video as poster */}
+                {idea.thumbnail ? (
+                    <img
+                        src={idea.thumbnail}
+                        alt={idea.title}
+                        className="w-full h-auto object-cover transition-opacity duration-300"
+                        loading="lazy"
+                    />
+                ) : idea.videoUrl ? (
+                    <video
+                        src={idea.videoUrl}
+                        className="w-full h-auto object-cover"
+                        muted
+                        playsInline
+                        preload="metadata"
+                        poster=""
+                    />
+                ) : (
+                    <div className="w-full aspect-video bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+                        <Sparkles className="w-8 h-8 text-white/20" />
+                    </div>
+                )}
 
                 {/* 2. Video Overlay (Only if videoPreview exists) */}
                 {idea.videoPreview && isHovered && (
                     <video
+                        ref={videoRef}
                         src={idea.videoPreview}
                         className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
                         autoPlay
-                        muted // REQUIRED for autoplay
+                        muted={isMuted}
                         loop
                         playsInline
                         onLoadedData={() => setVideoLoaded(true)}
                     />
+                )}
+
+                {/* Sound Toggle Button */}
+                {idea.videoPreview && isHovered && videoLoaded && (
+                    <button
+                        onClick={toggleMute}
+                        className="absolute bottom-3 right-3 z-40 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-sm hover:bg-vermilion transition-colors"
+                        title={isMuted ? "Bật âm thanh" : "Tắt âm thanh"}
+                    >
+                        {isMuted ? (
+                            <VolumeX className="h-4 w-4" />
+                        ) : (
+                            <Volume2 className="h-4 w-4" />
+                        )}
+                    </button>
                 )}
 
                 {/* Play Icon Indicator (Hidden when video is playing) */}

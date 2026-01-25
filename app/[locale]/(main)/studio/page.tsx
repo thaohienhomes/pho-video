@@ -13,6 +13,7 @@ import confetti from "canvas-confetti"
 import { Button } from "@/components/ui/button"
 import { LanguageSwitcher } from "@/components/LanguageSwitcher"
 import { formatPhoPoints } from "@/lib/pho-points"
+import { PhoPointsBalance } from "@/components/PhoPointsBalance"
 
 // Model name to ID mapping
 const MODEL_NAME_TO_ID: Record<string, string> = {
@@ -252,11 +253,8 @@ export default function StudioPage() {
 
                     <div className="h-5 w-px bg-white/10" />
 
-                    {/* Credit Display */}
-                    <div className="credit-badge text-xs">
-                        <Coins className="w-3.5 h-3.5" />
-                        <span>{t("header.credits_label")}: <strong>{formatPhoPoints(credits)}</strong></span>
-                    </div>
+                    {/* Credit Display - Live from API */}
+                    <PhoPointsBalance variant="compact" showIcon={true} />
 
                     {/* User Button */}
                     <SignedIn>
@@ -291,7 +289,7 @@ export default function StudioPage() {
             )}
 
             {/* Main Studio Layout */}
-            <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-1 overflow-hidden bg-[#080808]">
                 {/* Control Panel - 320px fixed */}
                 <ControlPanel
                     onGenerateAction={handleGenerate}

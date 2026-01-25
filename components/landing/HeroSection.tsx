@@ -203,8 +203,8 @@ export function HeroSection() {
                                 className="w-full h-full object-cover"
                                 poster="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1280&q=80"
                             >
-                                {/* Using Pixabay CDN - Verified Working Mountain Video */}
-                                <source src="https://cdn.pixabay.com/video/2019/04/01/22512-328261507_large.mp4" type="video/mp4" />
+                                {/* Local Hero Video - Google Veo */}
+                                <source src="/videos/hero-main.mp4" type="video/mp4" />
                             </video>
 
                             {/* Subtle inner gradient overlay */}
@@ -221,7 +221,7 @@ export function HeroSection() {
                         <div className="flex items-center justify-between px-6 py-4 bg-black/40 border-t border-white/10">
                             <div className="flex items-center gap-3">
                                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                <span className="text-sm text-white/60">Generated with Kling 2.6 Pro</span>
+                                <span className="text-sm text-white/60">Generated with Google Veo</span>
                             </div>
                             <span className="text-sm text-white/40">10 seconds • 1080p</span>
                         </div>

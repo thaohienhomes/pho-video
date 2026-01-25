@@ -22,6 +22,12 @@ export interface VideoGenerationOptions {
     negativePrompt?: string
     includeAudio?: boolean     // Added: support for Phở Sound FX
     motion?: number            // Added: support for motion intensity (1-10)
+    // Webhook mode options
+    webhookUrl?: string        // If provided, use webhook mode instead of polling
+    webhookMetadata?: {        // Custom metadata to include in webhook callback
+        userId: string
+        generationId: string
+    }
 }
 
 export interface VideoGenerationResult {
@@ -107,11 +113,79 @@ async function submitFalJob(options: VideoGenerationOptions): Promise<string> {
     })
 
     if (!response.ok) {
-        throw new Error("Generation service busy. Please try again later.")
+        const errorBody = await response.text()
+        let errorDetail = "Generation service busy. Please try again later."
+        try {
+            const errorJson = JSON.parse(errorBody)
+            // Extract specific error from FAL response
+            if (errorJson.detail) {
+                errorDetail = errorJson.detail
+            } else if (errorJson.error) {
+                errorDetail = errorJson.error
+            } else if (errorJson.message) {
+                errorDetail = errorJson.message
+            }
+        } catch {
+            // If not JSON, use raw text if short enough
+            if (errorBody.length < 200) {
+                errorDetail = errorBody
+            }
+        }
+        console.error(`❌ [Fal.ai] API Error: ${errorDetail}`)
+        throw new Error(errorDetail)
     }
 
     const data: FalQueueResponse = await response.json()
     return data.request_id
+}
+
+/**
+ * Submit a video generation job to Fal.ai with webhook callback
+ * Instead of polling, Fal.ai will call our webhook when the job completes
+ */
+async function submitFalJobWithWebhook(
+    options: VideoGenerationOptions
+): Promise<{ requestId: string; status: "submitted" }> {
+    if (!options.webhookUrl) {
+        throw new Error("webhookUrl is required for webhook mode")
+    }
+
+    const response = await fetch(`${FAL_API_BASE}/fal-ai/ltx-video`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Key ${FAL_KEY}`,
+        },
+        body: JSON.stringify({
+            prompt: options.prompt,
+            negative_prompt: options.negativePrompt || "low quality, worst quality, deformed, distorted, disfigured, motion smear, motion artifacts, fused fingers, bad anatomy, weird hand, ugly",
+            num_inference_steps: 30,
+            guidance_scale: 3,
+            seed: options.seed,
+            // Webhook configuration
+            webhook_url: options.webhookUrl,
+            webhook_metadata: options.webhookMetadata,
+        }),
+    })
+
+    if (!response.ok) {
+        const errorBody = await response.text()
+        let errorDetail = "Generation service busy. Please try again later."
+        try {
+            const errorJson = JSON.parse(errorBody)
+            if (errorJson.detail) errorDetail = errorJson.detail
+            else if (errorJson.error) errorDetail = errorJson.error
+            else if (errorJson.message) errorDetail = errorJson.message
+        } catch {
+            if (errorBody.length < 200) errorDetail = errorBody
+        }
+        console.error(`❌ [Fal.ai Webhook] API Error: ${errorDetail}`)
+        throw new Error(errorDetail)
+    }
+
+    const data: FalQueueResponse = await response.json()
+    console.log(`📤 [Fal.ai Webhook] Job submitted with webhook: ${data.request_id}`)
+    return { requestId: data.request_id, status: "submitted" }
 }
 
 /**

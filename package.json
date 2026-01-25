@@ -13,6 +13,9 @@
     "hydrate": "node scripts/content-curator/hydrate-gallery.js",
     "ingest": "node scripts/content-curator/ingest-civitai.js",
     "mine": "node scripts/content-curator/auto-miner.js",
+    "curate:higgfield": "node scripts/content-curator/higgfield-miner.js && node scripts/content-curator/ingest-higgfield.js",
+    "produce:ltx": "node scripts/content-curator/generate-ltx.js",
+    "ingest:grok": "node scripts/content-curator/ingest-grok-videos.js",
     "remotion": "remotion preview remotion/Root.tsx"
   },
   "dependencies": {
@@ -41,6 +44,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.2.3",
+    "expo-server-sdk": "^4.0.0",
     "framer-motion": "^12.27.1",
     "lucide-react": "^0.461.0",
     "next": "^14.2.18",

@@ -326,7 +326,12 @@
       "lifestyle": "Đời sống",
       "action": "Hành động",
       "fashion": "Thời trang",
-      "abstract": "Trừu tượng"
+      "abstract": "Trừu tượng",
+      "showcase": "Trưng bày",
+      "ecommerce": "Thương mại điện tử",
+      "socialmedia": "Mạng xã hội",
+      "retro": "Retro",
+      "dance": "Nhảy múa"
     }
   },
   "pricing": {

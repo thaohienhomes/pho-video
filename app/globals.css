@@ -460,6 +460,127 @@
   }
 }
 
+/* Mobile TikTok-style Feed Utilities */
+@layer components {
+
+  /* Full-screen scroll snap container */
+  .mobile-feed-container {
+    height: 100dvh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+
+  /* Individual feed item */
+  .mobile-feed-item {
+    height: 100dvh;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    position: relative;
+  }
+
+  /* Thumb zone positioning (bottom 30%) */
+  .thumb-zone {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  /* Touch target minimum size (44x44px) */
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Mobile video overlay gradient */
+  .mobile-video-overlay {
+    background: linear-gradient(180deg,
+        rgba(0, 0, 0, 0.4) 0%,
+        transparent 20%,
+        transparent 60%,
+        rgba(0, 0, 0, 0.8) 100%);
+  }
+
+  /* Hide scrollbar on mobile feed */
+  .mobile-feed-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-feed-container {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* DESIGN SYSTEM STANDARDS (from DESIGN.md)                                    */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+@layer components {
+
+  /* Unified Input Height (40px) - Apply to all interactive elements */
+  .input-standard {
+    @apply h-10 px-3 rounded-md text-sm;
+    @apply bg-white/5 border border-white/10;
+    @apply focus:border-primary/50 focus:ring-1 focus:ring-primary/20;
+    @apply placeholder:text-white/30 text-white;
+  }
+
+  /* Select trigger height standardization */
+  .select-standard {
+    @apply h-10 text-sm;
+  }
+
+  /* Button Standards */
+  .btn-standard {
+    @apply h-10 px-4 rounded-md text-sm font-medium;
+    @apply transition-all duration-200;
+  }
+
+  /* Studio Layout - Fixed-Fluid-Fixed Pattern */
+  .studio-layout {
+    @apply flex h-full bg-[#080808];
+  }
+
+  .studio-sidebar {
+    @apply w-80 flex-shrink-0 bg-[#0D0D0D];
+    @apply border-r border-white/5;
+    @apply sticky top-0 h-full overflow-y-auto;
+  }
+
+  .studio-sidebar-panel {
+    @apply w-80 flex-shrink-0 bg-[#0A0A0A];
+    @apply border-l border-white/5;
+  }
+
+  .studio-canvas {
+    @apply flex-1 overflow-auto bg-[#080808];
+    @apply flex items-center justify-center;
+  }
+
+  /* Bento Grid - 12 Column System */
+  .grid-bento {
+    @apply grid grid-cols-12 gap-6;
+  }
+
+  .bento-feature {
+    @apply col-span-12 md:col-span-8 lg:col-span-6;
+  }
+
+  .bento-secondary {
+    @apply col-span-6 md:col-span-4 lg:col-span-3;
+  }
+
+  .bento-full {
+    @apply col-span-12;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;

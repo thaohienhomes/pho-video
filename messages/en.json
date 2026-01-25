@@ -332,7 +332,12 @@
       "lifestyle": "Lifestyle",
       "action": "Action",
       "fashion": "Fashion",
-      "abstract": "Abstract"
+      "abstract": "Abstract",
+      "showcase": "Showcase",
+      "ecommerce": "E-commerce",
+      "socialmedia": "Social Media",
+      "retro": "Retro",
+      "dance": "Dance"
     }
   },
   "pricing": {

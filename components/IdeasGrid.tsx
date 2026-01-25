@@ -7,12 +7,15 @@ import { Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import IdeaCard from './IdeaCard';
 import { useTranslations } from 'next-intl';
+import { useMobileDetect } from '@/hooks/useMobileDetect';
+import { MobileVideoFeed } from './gallery/MobileVideoFeed';
 
 interface Idea {
     id: string;
     title: string;
     thumbnail: string;
     videoUrl?: string;
+    videoPreview?: string;
     prompt: string;
     modelId: string;
     aspectRatio: string;
@@ -29,6 +32,7 @@ interface IdeasGridProps {
 
 export function IdeasGrid({ initialIdeas }: IdeasGridProps) {
     const t = useTranslations('Ideas');
+    const { isMobile, isClient } = useMobileDetect();
     const [activeCategory, setActiveCategory] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -41,6 +45,12 @@ export function IdeasGrid({ initialIdeas }: IdeasGridProps) {
         return matchesCategory && matchesSearch;
     });
 
+    // Mobile: Full-screen TikTok-style feed
+    if (isClient && isMobile) {
+        return <MobileVideoFeed ideas={filteredIdeas} />;
+    }
+
+    // Desktop: Original masonry grid with filters
     return (
         <div className="space-y-10">
             {/* Controls: Search & Filter */}

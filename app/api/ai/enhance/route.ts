@@ -2,15 +2,25 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@clerk/nextjs/server"
 import { enhancePrompt } from "@/lib/api-services"
 
+// Dev bypass token for mobile testing (remove in production)
+const DEV_BYPASS_TOKEN = process.env.DEV_BYPASS_TOKEN || "dev_bypass_token"
+
 export async function POST(request: NextRequest) {
     try {
-        // Check authentication
-        const { userId } = await auth()
-        if (!userId) {
-            return NextResponse.json(
-                { error: "Unauthorized. Please sign in." },
-                { status: 401 }
-            )
+        // Check for dev bypass token (for mobile app testing)
+        const authHeader = request.headers.get("authorization")
+        const isDev = process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview"
+        const hasDevToken = authHeader === `Bearer ${DEV_BYPASS_TOKEN}`
+
+        // Check authentication - allow dev bypass in non-production
+        if (!isDev || !hasDevToken) {
+            const { userId } = await auth()
+            if (!userId) {
+                return NextResponse.json(
+                    { error: "Unauthorized. Please sign in." },
+                    { status: 401 }
+                )
+            }
         }
 
         // Parse request body
