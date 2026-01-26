@@ -498,13 +498,14 @@ export default function HomeScreen() {
                                 <VideoCard
                                     item={{
                                         id: item.id,
-                                        thumb: item.thumbnailUrl || "",
+                                        thumb: item.thumbnail || item.thumbnailUrl || "",
                                         prompt: item.prompt,
                                         duration: `${item.duration || 5}s`,
                                         model: item.model,
                                         videoUrl: item.videoUrl || "",
                                     }}
                                     index={index}
+                                    isActive={index < 4} // First 4 videos autoplay
                                 />
                             </TouchableOpacity>
                         ))}

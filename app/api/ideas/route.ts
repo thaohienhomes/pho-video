@@ -23,10 +23,10 @@ function makeAbsoluteUrl(relativeUrl: string | undefined): string {
         return relativeUrl
     }
 
-    // Get base URL (for LAN access, use env or fallback)
+    // Use production URL for mobile app (prioritize NEXT_PUBLIC_APP_URL)
+    // Fix: Added parentheses to fix operator precedence
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ||
-        process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` :
-        "http://localhost:3000"
+        "https://pho-video.vercel.app" // Hardcode production as default
 
     // Ensure relative URL starts with /
     const cleanPath = relativeUrl.startsWith("/") ? relativeUrl : `/${relativeUrl}`

@@ -32,21 +32,26 @@ export const VideoCard: React.FC<VideoCardProps> = ({ item, index, isActive = fa
     const [showVideo, setShowVideo] = useState(false);
 
     // Extract video URL - handle both .mp4 URLs and image URLs
-    const videoSource = item.videoUrl || (item.thumb?.endsWith('.mp4') ? item.thumb : null);
+    const videoSource = item.videoUrl || (item.thumb?.toLowerCase().endsWith('.mp4') ? item.thumb : null);
 
     // Create video player instance with expo-video
     const player = useVideoPlayer(videoSource || '', (playerInstance) => {
         playerInstance.loop = true;
-        playerInstance.muted = true; // Muted for autoplay on scroll
+        playerInstance.muted = true;
         playerInstance.volume = 0;
+        if (isActive) {
+            playerInstance.play();
+        }
     });
 
     // Control playback based on visibility
     useEffect(() => {
-        if (isActive && videoSource && player) {
+        if (!player) return;
+
+        if (isActive && videoSource) {
             player.play();
             setShowVideo(true);
-        } else if (player) {
+        } else {
             player.pause();
         }
     }, [isActive, videoSource, player]);
