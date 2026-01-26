@@ -9,11 +9,10 @@ export async function POST(request: NextRequest) {
     try {
         // Check for dev bypass token (for mobile app testing)
         const authHeader = request.headers.get("authorization")
-        const isDev = process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview"
         const hasDevToken = authHeader === `Bearer ${DEV_BYPASS_TOKEN}`
 
-        // Check authentication - allow dev bypass in non-production
-        if (!isDev || !hasDevToken) {
+        // If no dev bypass token, check Clerk authentication
+        if (!hasDevToken) {
             const { userId } = await auth()
             if (!userId) {
                 return NextResponse.json(

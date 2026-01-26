@@ -505,7 +505,7 @@ export default function HomeScreen() {
                                         videoUrl: item.videoUrl || "",
                                     }}
                                     index={index}
-                                    isActive={index < 4} // First 4 videos autoplay
+                                    isActive={index < 2} // Only first 2 videos autoplay for performance
                                 />
                             </TouchableOpacity>
                         ))}
