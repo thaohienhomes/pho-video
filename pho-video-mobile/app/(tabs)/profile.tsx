@@ -58,7 +58,7 @@ const USER = {
 
 const ProfileHeader = ({ onEdit }: { onEdit: () => void }) => (
     <TouchableOpacity style={styles.profileHeader} onPress={onEdit} activeOpacity={0.8}>
-        <Image source={{ uri: USER.avatar }} style={styles.avatar} />
+        <Image source={{ uri: USER.avatar }} style={styles.avatar} alt="User Avatar" />
         <View style={styles.profileInfo}>
             <Text style={styles.userName}>{USER.name}</Text>
             <Text style={styles.userEmail}>{USER.email}</Text>
@@ -210,7 +210,7 @@ const EditProfileModal = ({
                     </View>
 
                     <View style={styles.avatarEdit}>
-                        <Image source={{ uri: USER.avatar }} style={styles.avatarLarge} />
+                        <Image source={{ uri: USER.avatar }} style={styles.avatarLarge} alt="Edit Profile Avatar" />
                         <TouchableOpacity style={styles.avatarEditButton}>
                             <Camera size={18} color={COLORS.text} />
                         </TouchableOpacity>
@@ -272,6 +272,7 @@ export default function ProfileScreen() {
                     onPress: async () => {
                         try {
                             // Clear file system cache
+                            // @ts-ignore
                             const cacheDir = FileSystem.cacheDirectory;
                             if (cacheDir) {
                                 const files = await FileSystem.readDirectoryAsync(cacheDir);

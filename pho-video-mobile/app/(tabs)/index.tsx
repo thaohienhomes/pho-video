@@ -469,11 +469,10 @@ export default function HomeScreen() {
                     </ScrollView>
 
                     <View style={styles.feedGrid}>
-                        {trendingVideos?.map((item: any, index: number) => (
+                        {(trendingVideos || []).map((item: any, index: number) => (
                             <TouchableOpacity
                                 key={item.id}
                                 onPress={() => {
-                                    // Navigate to video detail
                                     router.push({
                                         pathname: '/video/[id]',
                                         params: {
@@ -487,11 +486,9 @@ export default function HomeScreen() {
                                     });
                                 }}
                                 onLongPress={() => {
-                                    // Copy prompt to input on long press
                                     console.log("Long pressed trending:", item.prompt);
                                     setPrompt(item.prompt);
                                 }}
-                                style={{ zIndex: 1 }}
                                 activeOpacity={0.7}
                                 delayLongPress={500}
                             >
@@ -505,7 +502,7 @@ export default function HomeScreen() {
                                         videoUrl: item.videoUrl || "",
                                     }}
                                     index={index}
-                                    isActive={index < 2} // Only first 2 videos autoplay for performance
+                                    isActive={index < 2}
                                 />
                             </TouchableOpacity>
                         ))}

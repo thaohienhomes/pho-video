@@ -48,7 +48,7 @@ export default function AvatarHub() {
                                 style={styles.avatarCard}
                                 onPress={() => router.push(`/(tabs)?avatarId=${avatar.id}`)}
                             >
-                                <Image source={{ uri: avatar.imageUrl }} style={styles.avatarImage} />
+                                <Image source={{ uri: avatar.imageUrl }} style={styles.avatarImage} alt={avatar.name} />
                                 <View style={styles.avatarOverlay}>
                                     <Text style={styles.avatarName}>{avatar.name}</Text>
                                     <View style={[styles.statusBadge, avatar.status === 'READY' ? styles.statusReady : styles.statusTraining]}>

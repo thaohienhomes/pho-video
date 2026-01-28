@@ -162,17 +162,17 @@ const VideoCard = ({
                 {/* Thumbnail fallback while loading */}
                 <Animated.Image
                     source={{ uri: item.thumb || item.videoUrl }}
-                    style={styles.video}
-                    resizeMode="contain"
+                    style={styles.thumbnail}
+                    resizeMode="cover"
                 />
 
-                {/* Video Player with expo-video */}
+                {/* Video Player with expo-video - Full Screen */}
                 {item.videoUrl && (
                     <VideoView
                         player={player}
-                        style={styles.video}
+                        style={styles.videoPlayer}
                         nativeControls={false}
-                        contentFit="contain"
+                        contentFit="cover"
                     />
                 )}
 
@@ -386,13 +386,17 @@ const styles = StyleSheet.create({
     },
     videoContainer: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
         backgroundColor: COLORS.background,
     },
-    video: {
-        width: width,
-        height: height,
+    thumbnail: {
+        ...StyleSheet.absoluteFillObject,
+        width: '100%',
+        height: '100%',
+    },
+    videoPlayer: {
+        ...StyleSheet.absoluteFillObject,
+        width: '100%',
+        height: '100%',
     },
     overlay: {
         ...StyleSheet.absoluteFillObject,

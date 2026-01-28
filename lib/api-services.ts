@@ -1049,8 +1049,8 @@ export async function enhancePrompt(prompt: string): Promise<EnhancedPromptResul
     }
 
     const genAI = new GoogleGenerativeAI(apiKey)
-    // Using gemini-2.5-flash (gemini-2.0-flash was deprecated Feb 2026)
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
+    // Using gemini-1.5-flash - stable and fast model for prompt enhancement
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
 
     const systemPrompt = `
 You are a professional AI Video Prompt Engineer for "Phở Video". 
@@ -1082,9 +1082,9 @@ Target Style: Cinematic Masterpiece, 8k, Ultra-detailed.
         console.log(`✅ [Enhance] Enhanced prompt: "${cleanedText.substring(0, 80)}..."`)
         return { enhancedPrompt: cleanedText }
 
-    } catch (error) {
-        console.error(`❌ [Enhance] Gemini Error:`, error)
-        throw new Error("Failed to enhance prompt with Gemini AI")
+    } catch (error: any) {
+        console.error(`❌ [Enhance] Gemini Error:`, error?.message || error)
+        throw new Error(`Failed to enhance prompt with Gemini AI: ${error?.message || 'Unknown error'}`)
     }
 }
 

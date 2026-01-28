@@ -25,64 +25,80 @@ interface VideoCardProps {
     isActive?: boolean; // For controlling playback when visible
 }
 
-export const VideoCard: React.FC<VideoCardProps> = ({ item, index, isActive = false }) => {
+export const VideoCard: React.FC<VideoCardProps> = React.memo(({ item, index, isActive = false }) => {
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const translateY = useRef(new Animated.Value(30)).current;
     const [isBuffering, setIsBuffering] = useState(true);
     const [showVideo, setShowVideo] = useState(false);
+    const [playerReady, setPlayerReady] = useState(false);
 
     // Extract video URL - handle both .mp4 URLs and image URLs
     const videoSource = item.videoUrl || (item.thumb?.toLowerCase().endsWith('.mp4') ? item.thumb : null);
 
-    // Create video player instance with expo-video
-    const player = useVideoPlayer(videoSource || '', (playerInstance) => {
+    // OPTIMIZATION: Only create video player when isActive AND we have a video source
+    // This prevents all cards from creating expensive player instances
+    const shouldCreatePlayer = isActive && !!videoSource;
+
+    // Create video player instance with expo-video - ONLY when needed
+    const player = useVideoPlayer(shouldCreatePlayer ? videoSource : '', (playerInstance) => {
         playerInstance.loop = true;
         playerInstance.muted = true;
         playerInstance.volume = 0;
-        if (isActive) {
-            playerInstance.play();
-        }
+        // Don't auto-play in callback, let useEffect handle it
     });
 
     // Control playback based on visibility
     useEffect(() => {
-        if (!player) return;
+        if (!player || !shouldCreatePlayer) {
+            setShowVideo(false);
+            setPlayerReady(false);
+            return;
+        }
 
         if (isActive && videoSource) {
-            player.play();
-            setShowVideo(true);
+            // Small delay to ensure player is ready
+            const timer = setTimeout(() => {
+                player.play();
+                setShowVideo(true);
+            }, 100);
+            return () => clearTimeout(timer);
         } else {
             player.pause();
+            setShowVideo(false);
         }
-    }, [isActive, videoSource, player]);
+    }, [isActive, videoSource, player, shouldCreatePlayer]);
 
-    // Entrance animation
+    // Entrance animation - use shorter delay for better perceived performance
     useEffect(() => {
+        const delay = Math.min(index * 100, 400); // Cap max delay at 400ms
         Animated.parallel([
             Animated.timing(fadeAnim, {
                 toValue: 1,
-                duration: 600,
-                delay: index * 150,
+                duration: 400,
+                delay,
                 useNativeDriver: true,
             }),
             Animated.timing(translateY, {
                 toValue: 0,
-                duration: 600,
-                delay: index * 150,
+                duration: 400,
+                delay,
                 useNativeDriver: true,
             }),
         ]).start();
-    }, []);
+    }, [fadeAnim, index, translateY]);
 
-    // Handle buffering state
+    // Handle buffering state - only when player exists
     useEffect(() => {
-        if (player) {
-            const subscription = player.addListener('statusChange', (status) => {
-                setIsBuffering(status.status === 'loading');
-            });
-            return () => subscription?.remove();
-        }
-    }, [player]);
+        if (!player || !shouldCreatePlayer) return;
+
+        const subscription = player.addListener('statusChange', (status) => {
+            setIsBuffering(status.status === 'loading');
+            if (status.status === 'readyToPlay') {
+                setPlayerReady(true);
+            }
+        });
+        return () => subscription?.remove();
+    }, [player, shouldCreatePlayer]);
 
     return (
         <Animated.View
@@ -95,18 +111,19 @@ export const VideoCard: React.FC<VideoCardProps> = ({ item, index, isActive = fa
             ]}
         >
             <View style={styles.card}>
-                {/* Thumbnail Image (fallback/loading state) with blurhash */}
+                {/* Thumbnail Image (always visible until video is ready) */}
                 <Image
                     source={{ uri: item.thumb }}
-                    style={[styles.image, showVideo && !isBuffering && styles.imageHidden]}
+                    style={[styles.image, (showVideo && playerReady && !isBuffering) && styles.imageHidden]}
                     contentFit="cover"
                     placeholder={BLURHASH}
-                    transition={300}
-                    alt={`Thumbnail for ${item.prompt}`}
+                    transition={200}
+                    cachePolicy="memory-disk"
+                    alt={item.prompt.substring(0, 50)}
                 />
 
-                {/* Video Player (TikTok style) */}
-                {videoSource && showVideo && (
+                {/* Video Player - only render when active and player exists */}
+                {shouldCreatePlayer && showVideo && (
                     <VideoView
                         player={player}
                         style={styles.videoPlayer}
@@ -140,7 +157,10 @@ export const VideoCard: React.FC<VideoCardProps> = ({ item, index, isActive = fa
             </View>
         </Animated.View>
     );
-};
+});
+
+// Add display name for React DevTools
+VideoCard.displayName = 'VideoCard';
 
 const styles = StyleSheet.create({
     container: {

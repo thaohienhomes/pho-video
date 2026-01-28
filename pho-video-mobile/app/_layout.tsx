@@ -45,7 +45,7 @@ export default function RootLayout() {
         if (!isLoading && showOnboarding) {
             router.replace('/onboarding');
         }
-    }, [isLoading, showOnboarding]);
+    }, [isLoading, showOnboarding, router]);
 
     useEffect(() => {
         // Handle deep links

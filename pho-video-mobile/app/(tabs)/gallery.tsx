@@ -172,7 +172,15 @@ export default function GalleryScreen() {
         if (item.videoUrl && await Sharing.isAvailableAsync()) {
             try {
                 const fileName = `video_${item.id}.mp4`;
-                const fileUri = FileSystem.cacheDirectory + fileName;
+                // @ts-ignore - cacheDirectory exists but types might be mismatched
+                const cacheDir = FileSystem.cacheDirectory || FileSystem.documentDirectory;
+
+                if (!cacheDir) {
+                    Alert.alert("Error", "Could not access storage");
+                    return;
+                }
+
+                const fileUri = cacheDir + fileName;
                 await FileSystem.downloadAsync(item.videoUrl, fileUri);
                 await Sharing.shareAsync(fileUri);
             } catch (e) {

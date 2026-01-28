@@ -1,17 +1,19 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// HƯỚNG DẪN LẤY IP LAN (Windows):
-// 1. Mở Command Prompt (cmd)
-// 2. Gõ 'ipconfig'
-// 3. Tìm dòng 'IPv4 Address' (ví dụ: 192.168.1.15)
-// 4. Thay thế vào biến LOCAL_IP bên dưới
+// IMPORTANT: ALWAYS use production URL for testing
+// Local development should use Expo Go with tunneling or ngrok
+const LOCAL_IP = "192.168.1.228"; // Not used currently
 
-const LOCAL_IP = "192.168.1.228"; // <-- THAY ĐỔI IP CỦA BẠN TẠI ĐÂY
+// Force production URL for reliable testing
+// Set USE_LOCAL_API to true ONLY when testing with local Next.js server
+const USE_LOCAL_API = false;
 
-export const API_BASE_URL = __DEV__
+export const API_BASE_URL = USE_LOCAL_API
     ? `http://${LOCAL_IP}:3000/api`
     : "https://pho-video.vercel.app/api";
+
+console.log("[API] Using base URL:", API_BASE_URL);
 
 const STORAGE_KEYS = {
     AUTH_TOKEN: "pho_auth_token",
@@ -51,25 +53,73 @@ export interface GenerateVideoParams {
     style?: string;
 }
 
-// Axios Instance
+// Axios Instance with timeout
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
+    timeout: 30000, // 30 seconds timeout
     headers: {
         "Content-Type": "application/json",
     },
 });
 
+// Extended timeout client for AI-heavy operations (enhance, preview)
+const aiClient = axios.create({
+    baseURL: API_BASE_URL,
+    timeout: 45000, // 45 seconds for AI operations
+    headers: {
+        "Content-Type": "application/json",
+    },
+});
+
+// Apply same interceptors to AI client
+aiClient.interceptors.request.use(async (config) => {
+    const token = "dev_bypass_token";
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    console.log(`[AI API] ${config.method?.toUpperCase()} ${config.url}`);
+    return config;
+});
+
+aiClient.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        console.error(`[AI API Error] ${error.config?.url}:`, {
+            status: error.response?.status,
+            message: error.response?.data?.error || error.message,
+        });
+        return Promise.reject(error);
+    }
+);
+
 // Interceptor để thêm token
 apiClient.interceptors.request.use(async (config) => {
-    // const token = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
-    // 👇 SỬA TẠM THÀNH DÒNG NÀY ĐỂ TEST:
+    // 👇 Dev bypass token for mobile testing
     const token = "dev_bypass_token";
 
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Debug logging
+    console.log(`[API] ${config.method?.toUpperCase()} ${config.url}`, {
+        hasAuth: !!config.headers.Authorization,
+    });
+
     return config;
 });
+
+// Response interceptor for error logging
+apiClient.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        console.error(`[API Error] ${error.config?.url}:`, {
+            status: error.response?.status,
+            message: error.response?.data?.error || error.message,
+        });
+        return Promise.reject(error);
+    }
+);
 
 export const api = {
     // Auth
@@ -150,18 +200,51 @@ export const api = {
 
     // AI
     async enhancePrompt(prompt: string): Promise<{ enhancedPrompt: string }> {
-        const { data } = await apiClient.post("/ai/enhance", { prompt });
-        return data;
+        console.log("[Enhance] Starting prompt enhancement...");
+        try {
+            const { data } = await aiClient.post("/ai/enhance", { prompt });
+            console.log("[Enhance] Response received:", data);
+
+            if (!data?.enhancedPrompt) {
+                console.warn("[Enhance] Invalid response structure:", data);
+                throw new Error("Invalid response from enhance API");
+            }
+
+            return { enhancedPrompt: data.enhancedPrompt };
+        } catch (error: any) {
+            console.error("[Enhance] Error:", error.message);
+            // Provide more specific error messages
+            if (error.code === 'ECONNABORTED') {
+                throw new Error("Enhancement timed out. Please try again.");
+            }
+            throw error;
+        }
     },
 
     async instantPreview(prompt: string): Promise<{ imageUrl: string; rateLimitRemaining?: number }> {
-        const { data, headers } = await apiClient.post("/preview/instant", { prompt });
-        return {
-            imageUrl: data.imageUrl,
-            rateLimitRemaining: headers["x-ratelimit-remaining"]
-                ? parseInt(headers["x-ratelimit-remaining"])
-                : undefined
-        };
+        console.log("[Preview] Generating instant preview for:", prompt.substring(0, 30), "...");
+        try {
+            const { data, headers } = await aiClient.post("/preview/instant", { prompt });
+            console.log("[Preview] Response received:", { hasImageUrl: !!data?.imageUrl, success: data?.success });
+
+            if (!data?.imageUrl) {
+                console.warn("[Preview] Missing imageUrl in response:", data);
+                throw new Error("Preview generation failed - no image returned");
+            }
+
+            return {
+                imageUrl: data.imageUrl,
+                rateLimitRemaining: headers["x-ratelimit-remaining"]
+                    ? parseInt(headers["x-ratelimit-remaining"])
+                    : undefined
+            };
+        } catch (error: any) {
+            console.error("[Preview] Error:", error.message);
+            if (error.response?.status === 429) {
+                throw new Error("Too many preview requests. Please wait.");
+            }
+            throw error;
+        }
     },
 
     // Avatars

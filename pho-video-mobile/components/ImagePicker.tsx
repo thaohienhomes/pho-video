@@ -78,6 +78,7 @@ export const ImagePickerComponent: React.FC<ImagePickerComponentProps> = ({
             if (!result.canceled && result.assets[0]) {
                 // Convert to base64
                 const base64 = await FileSystem.readAsStringAsync(result.assets[0].uri, {
+                    // @ts-ignore
                     encoding: FileSystem.EncodingType.Base64,
                 });
                 onImageSelected(`data:image/jpeg;base64,${base64}`);
@@ -97,7 +98,7 @@ export const ImagePickerComponent: React.FC<ImagePickerComponentProps> = ({
     if (selectedImage) {
         return (
             <View style={styles.previewContainer}>
-                <Image source={{ uri: selectedImage }} style={styles.previewImage} />
+                <Image source={{ uri: selectedImage }} style={styles.previewImage} alt="Selected image for video generation" />
                 <TouchableOpacity style={styles.removeButton} onPress={removeImage}>
                     <X size={16} color={COLORS.text} />
                 </TouchableOpacity>
