@@ -4,16 +4,17 @@ import { getOrCreateUser, db } from "@/lib/db"
 
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const { userId: clerkId } = await auth()
         if (!clerkId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
         const user = await getOrCreateUser(clerkId)
         const avatar = await db.avatar.findUnique({
             where: {
-                id: params.id,
+                id: id,
                 userId: user.id // Security check
             }
         })
