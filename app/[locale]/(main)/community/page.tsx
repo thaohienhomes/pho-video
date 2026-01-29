@@ -14,7 +14,7 @@ export default function CommunityPage() {
 
     const handleRemix = (video: { prompt: string; authorId: string }) => {
         const encodedPrompt = encodeURIComponent(video.prompt)
-        router.push(`/studio2?prompt=${encodedPrompt}&remixFrom=${video.authorId}`)
+        router.push(`/studio?prompt=${encodedPrompt}&remixFrom=${video.authorId}`)
     }
 
     const handleVideoClick = (video: { id: string }) => {
@@ -51,7 +51,7 @@ export default function CommunityPage() {
                         </div>
 
                         <Button
-                            onClick={() => router.push("/studio2")}
+                            onClick={() => router.push("/studio")}
                             className="bg-primary hover:bg-primary/90"
                         >
                             <Sparkles className="w-4 h-4 mr-2" />
@@ -103,7 +103,7 @@ export default function CommunityPage() {
                         The best ones get featured here!
                     </p>
                     <Button
-                        onClick={() => router.push("/studio2")}
+                        onClick={() => router.push("/studio")}
                         size="lg"
                         className="bg-gradient-to-r from-primary to-orange-500 hover:from-primary/90 hover:to-orange-400"
                     >

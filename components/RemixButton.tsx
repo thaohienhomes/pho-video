@@ -49,7 +49,7 @@ export function RemixButton({
             setIsAnimating(false)
             // Navigate to studio with prompt in URL
             const encodedPrompt = encodeURIComponent(prompt)
-            router.push(`/studio2?prompt=${encodedPrompt}&remixFrom=${authorId || ""}`)
+            router.push(`/studio?prompt=${encodedPrompt}&remixFrom=${authorId || ""}`)
         }, 800)
 
         setTimeout(() => setShowCopied(false), 2000)

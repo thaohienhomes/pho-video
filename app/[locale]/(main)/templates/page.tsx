@@ -17,17 +17,17 @@ export default function TemplatesPage() {
 
     const handleSelectTemplate = (template: Template) => {
         const encodedPrompt = encodeURIComponent(template.prompt)
-        router.push(`/studio2?prompt=${encodedPrompt}`)
+        router.push(`/studio?prompt=${encodedPrompt}`)
     }
 
     const handleApplyStyle = (styledPrompt: string, style: StylePreset) => {
         const encodedPrompt = encodeURIComponent(styledPrompt)
-        router.push(`/studio2?prompt=${encodedPrompt}&style=${style.id}`)
+        router.push(`/studio?prompt=${encodedPrompt}&style=${style.id}`)
     }
 
     const handlePromptGenerated = (prompt: string) => {
         const encodedPrompt = encodeURIComponent(prompt)
-        router.push(`/studio2?prompt=${encodedPrompt}`)
+        router.push(`/studio?prompt=${encodedPrompt}`)
     }
 
     return (
@@ -59,7 +59,7 @@ export default function TemplatesPage() {
                         </div>
 
                         <Button
-                            onClick={() => router.push("/studio2")}
+                            onClick={() => router.push("/studio")}
                             variant="outline"
                             className="border-white/20 text-white/70"
                         >
@@ -133,7 +133,7 @@ export default function TemplatesPage() {
                 <p className="text-sm text-white/30">
                     Can&apos;t find what you&apos;re looking for?{" "}
                     <button
-                        onClick={() => router.push("/studio2")}
+                        onClick={() => router.push("/studio")}
                         className="text-primary hover:underline"
                     >
                         Create from scratch
