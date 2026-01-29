@@ -8,11 +8,12 @@ import {
     Maximize2,
     BookOpen,
     Sparkles,
+    Mic,
     LucideIcon
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-export type CreationMode = "video" | "image" | "audio" | "upscale" | "story" | "magic"
+export type CreationMode = "video" | "image" | "audio" | "upscale" | "story" | "magic" | "lipsync"
 
 interface ModeConfig {
     id: CreationMode
@@ -47,6 +48,14 @@ export const CREATION_MODES: ModeConfig[] = [
         description: "Music & TTS",
         color: "text-purple-400",
         gradient: "from-purple-500/20 to-pink-500/10",
+    },
+    {
+        id: "lipsync",
+        label: "Lip Sync",
+        icon: Mic,
+        description: "Talking Head Videos",
+        color: "text-pink-400",
+        gradient: "from-pink-500/20 to-rose-500/10",
     },
     {
         id: "upscale",

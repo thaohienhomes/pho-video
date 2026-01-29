@@ -50,6 +50,7 @@ import { ImageToVideoNode } from "@/components/workflow/nodes/ImageToVideoNode"
 import { UpscaleNode } from "@/components/workflow/nodes/UpscaleNode"
 import { MusicNode } from "@/components/workflow/nodes/MusicNode"
 import { MergeNode } from "@/components/workflow/nodes/MergeNode"
+import { LipSyncNode } from "@/components/workflow/nodes/LipSyncNode"
 
 // Import templates and store
 import { workflowTemplates, WorkflowTemplate } from "@/lib/workflow-templates"
@@ -75,6 +76,7 @@ const nodeTypes = {
     upscale: UpscaleNode,
     music: MusicNode,
     merge: MergeNode,
+    lipsync: LipSyncNode,
 }
 
 // Node templates for sidebar - grouped by category
@@ -84,6 +86,7 @@ const nodeTemplates = [
     { type: "imageToVideo", label: "Image to Video", icon: "🎞️", category: "Generate" },
     { type: "upscale", label: "Upscale 4K", icon: "🔍", category: "Enhance" },
     { type: "music", label: "Music", icon: "🎵", category: "Audio" },
+    { type: "lipsync", label: "Lip Sync", icon: "🗣️", category: "Audio" },
     { type: "merge", label: "Merge", icon: "🔗", category: "Combine" },
     { type: "preview", label: "Preview", icon: "👁️", category: "Output" },
 ]

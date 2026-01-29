@@ -34,6 +34,7 @@ import { WorkspacePanel } from "@/components/WorkspacePanel"
 import { SoundStudio } from "@/components/SoundStudio"
 import { VideoUpscaler } from "@/components/VideoUpscaler"
 import { StoryboardWizard } from "@/components/StoryboardWizard"
+import { LipSyncStudio } from "@/components/LipSyncStudio"
 import { useStudioStore } from "@/stores/useStudioStore"
 import {
     Select,
@@ -49,6 +50,7 @@ const MODE_DEFAULTS = {
     video: { model: "pho-instant", duration: 5, aspectRatio: "16:9" },
     image: { model: "flux-pro-v1.1", aspectRatio: "1:1", batch: 1 },
     audio: { musicModel: "minimax", duration: 30 },
+    lipsync: { expressionScale: 1.0, preprocess: "crop" },
     upscale: { model: "standard", scale: 2 },
     story: { scenes: 3, duration: 5 },
     magic: {},
@@ -492,6 +494,9 @@ export default function StudioPage() {
 
             case "audio":
                 return <SoundStudio />
+
+            case "lipsync":
+                return <LipSyncStudio />
 
             case "upscale":
                 return (
