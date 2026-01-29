@@ -18,7 +18,7 @@ import "reactflow/dist/style.css"
 import { Button } from "@/components/ui/button"
 import {
     Plus, Play, Save, Trash2, Sparkles, FolderOpen,
-    Layout, ChevronDown, Check, Coins, AlertCircle, Loader2
+    Layout, ChevronDown, Check, Coins, AlertCircle, Loader2, Share2, Copy, ExternalLink
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -59,6 +59,12 @@ import {
     calculateWorkflowCreditCost,
     validateWorkflow
 } from "@/lib/workflow-engine"
+import {
+    encodeWorkflowToUrl,
+    decodeWorkflowFromUrl,
+    copyToClipboard
+} from "@/lib/workflow-sharing"
+import { useSearchParams } from "next/navigation"
 
 // Register custom node types
 const nodeTypes = {
@@ -91,10 +97,29 @@ export default function WorkflowPage() {
     const [isExecuting, setIsExecuting] = useState(false)
     const [executingNodeId, setExecutingNodeId] = useState<string | null>(null)
     const [saveDialogOpen, setSaveDialogOpen] = useState(false)
+    const [shareDialogOpen, setShareDialogOpen] = useState(false)
+    const [shareUrl, setShareUrl] = useState("")
+    const [paletteOpen, setPaletteOpen] = useState(true)
     const [workflowName, setWorkflowName] = useState("")
     const [totalCreditSpent, setTotalCreditSpent] = useState(0)
 
     const { savedWorkflows, saveWorkflow, currentWorkflowId, setCurrentWorkflowId } = useWorkflowStore()
+    const searchParams = useSearchParams()
+
+    // Load workflow from URL parameter
+    useEffect(() => {
+        const workflowParam = searchParams.get("w")
+        if (workflowParam) {
+            const decoded = decodeWorkflowFromUrl(workflowParam)
+            if (decoded) {
+                setNodes(decoded.nodes)
+                setEdges(decoded.edges)
+                toast.success("Workflow Loaded!", {
+                    description: decoded.name || "Shared workflow loaded successfully",
+                })
+            }
+        }
+    }, [searchParams, setNodes, setEdges])
 
     // Calculate estimated credit cost
     const estimatedCost = useMemo(() => calculateWorkflowCreditCost(nodes), [nodes])
@@ -164,6 +189,21 @@ export default function WorkflowPage() {
             saveWorkflow(workflowName, nodes, edges)
             setSaveDialogOpen(false)
             setWorkflowName("")
+        }
+    }
+
+    const handleShare = async () => {
+        const url = encodeWorkflowToUrl(nodes, edges, workflowName || "My Workflow")
+        setShareUrl(url)
+        setShareDialogOpen(true)
+    }
+
+    const handleCopyShareUrl = async () => {
+        const success = await copyToClipboard(shareUrl)
+        if (success) {
+            toast.success("Link Copied!", {
+                description: "Share this link with anyone",
+            })
         }
     }
 
@@ -386,6 +426,54 @@ export default function WorkflowPage() {
                             </DialogContent>
                         </Dialog>
 
+                        {/* Share Dialog */}
+                        <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+                            <DialogTrigger asChild>
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={handleShare}
+                                    className="text-white/60 hover:text-white"
+                                >
+                                    <Share2 className="w-4 h-4 mr-1" />
+                                    Share
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Share Workflow</DialogTitle>
+                                    <DialogDescription>
+                                        Share this workflow with others using the link below.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                    <div className="flex gap-2">
+                                        <Input
+                                            value={shareUrl}
+                                            readOnly
+                                            className="font-mono text-xs"
+                                        />
+                                        <Button
+                                            onClick={handleCopyShareUrl}
+                                            variant="outline"
+                                            size="icon"
+                                        >
+                                            <Copy className="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                    <a
+                                        href={shareUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 text-sm text-primary hover:underline"
+                                    >
+                                        <ExternalLink className="w-4 h-4" />
+                                        Open in new tab
+                                    </a>
+                                </div>
+                            </DialogContent>
+                        </Dialog>
+
                         <Button
                             size="sm"
                             onClick={handleExecuteWorkflow}
@@ -398,27 +486,39 @@ export default function WorkflowPage() {
                     </div>
                 </Panel>
 
-                {/* Node Palette */}
-                <Panel position="top-right" className="w-64">
-                    <div className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-xl p-4">
-                        <h3 className="text-sm font-medium text-white mb-3">Add Nodes</h3>
-                        <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                {/* Node Palette - Collapsible on mobile */}
+                <Panel position="top-right" className="w-56 md:w-64">
+                    <div className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden">
+                        <button
+                            onClick={() => setPaletteOpen(!paletteOpen)}
+                            className="w-full p-3 md:p-4 flex items-center justify-between md:cursor-default"
+                        >
+                            <h3 className="text-sm font-medium text-white">Add Nodes</h3>
+                            <ChevronDown className={cn(
+                                "w-4 h-4 text-white/60 transition-transform md:hidden",
+                                paletteOpen && "rotate-180"
+                            )} />
+                        </button>
+                        <div className={cn(
+                            "space-y-2 px-3 md:px-4 pb-3 md:pb-4 max-h-[50vh] md:max-h-[60vh] overflow-y-auto transition-all",
+                            !paletteOpen && "hidden md:block"
+                        )}>
                             {nodeTemplates.map((template) => (
                                 <button
                                     key={template.type}
                                     onClick={() => addNode(template.type)}
                                     className={cn(
-                                        "w-full p-3 rounded-lg border border-white/10 bg-white/5",
+                                        "w-full p-2.5 md:p-3 rounded-lg border border-white/10 bg-white/5",
                                         "hover:bg-white/10 hover:border-white/20 transition-all",
-                                        "flex items-center gap-3 text-left"
+                                        "flex items-center gap-2 md:gap-3 text-left"
                                     )}
                                 >
-                                    <span className="text-xl">{template.icon}</span>
-                                    <div className="flex-1">
-                                        <span className="text-sm text-white block">{template.label}</span>
-                                        <span className="text-xs text-white/40">{template.category}</span>
+                                    <span className="text-lg md:text-xl">{template.icon}</span>
+                                    <div className="flex-1 min-w-0">
+                                        <span className="text-xs md:text-sm text-white block truncate">{template.label}</span>
+                                        <span className="text-xs text-white/40 hidden md:block">{template.category}</span>
                                     </div>
-                                    <Plus className="w-4 h-4 text-white/40" />
+                                    <Plus className="w-3.5 h-3.5 md:w-4 md:h-4 text-white/40 flex-shrink-0" />
                                 </button>
                             ))}
                         </div>
