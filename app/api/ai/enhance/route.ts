@@ -7,9 +7,11 @@ const DEV_BYPASS_TOKEN = process.env.DEV_BYPASS_TOKEN || "dev_bypass_token"
 
 export async function POST(request: NextRequest) {
     try {
+        console.log("🚀 [Enhance API] Start request");
         // Check for dev bypass token (for mobile app testing)
         const authHeader = request.headers.get("authorization")
         const hasDevToken = authHeader === `Bearer ${DEV_BYPASS_TOKEN}`
+        console.log("🔑 [Enhance API] hasDevToken:", hasDevToken);
 
         // If no dev bypass token, check Clerk authentication
         if (!hasDevToken) {
@@ -34,7 +36,9 @@ export async function POST(request: NextRequest) {
         }
 
         // Perform enhancement
+        console.log("🪄 [Enhance API] Calling enhancePrompt with:", prompt);
         const result = await enhancePrompt(prompt)
+        console.log("✅ [Enhance API] Result:", result.enhancedPrompt.substring(0, 30) + "...");
 
         return NextResponse.json({
             enhancedPrompt: result.enhancedPrompt,

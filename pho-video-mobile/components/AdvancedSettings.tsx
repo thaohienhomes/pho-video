@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, Pressable, ScrollView } from "react-native";
 import { ChevronDown, ChevronUp, Monitor, Smartphone, Square, Clock, Sparkles } from "lucide-react-native";
 import { STYLE_PRESETS } from "../constants/styles";
 
@@ -32,10 +32,9 @@ export const AdvancedSettings = ({
 }: AdvancedSettingsProps) => {
     return (
         <View className="bg-white/5 rounded-[20px] border border-white/10 mb-4 overflow-hidden">
-            <TouchableOpacity
+            <Pressable
                 className="flex-row justify-between items-center p-4"
                 onPress={onToggle}
-                activeOpacity={0.7}
             >
                 <Text className="text-white text-[14px] font-semibold">Advanced Controls</Text>
                 {isOpen ? (
@@ -43,7 +42,7 @@ export const AdvancedSettings = ({
                 ) : (
                     <ChevronDown size={20} color="#A3A3A3" />
                 )}
-            </TouchableOpacity>
+            </Pressable>
 
             {isOpen && (
                 <View className="p-4 pt-0 gap-5">
@@ -52,7 +51,7 @@ export const AdvancedSettings = ({
                         <Text className="text-gray-400 text-[12px] font-bold uppercase tracking-wider">Aspect Ratio</Text>
                         <View className="flex-row gap-2.5">
                             {ASPECT_RATIOS.map((ratio) => (
-                                <TouchableOpacity
+                                <Pressable
                                     key={ratio.id}
                                     className={`flex-1 flex-row items-center justify-center gap-1.5 py-2.5 rounded-xl border ${selectedRatio === ratio.id
                                         ? "border-primary bg-primary/10"
@@ -68,7 +67,7 @@ export const AdvancedSettings = ({
                                         }`}>
                                         {ratio.label}
                                     </Text>
-                                </TouchableOpacity>
+                                </Pressable>
                             ))}
                         </View>
                     </View>
@@ -78,7 +77,7 @@ export const AdvancedSettings = ({
                         <Text className="text-gray-400 text-[12px] font-bold uppercase tracking-wider">Duration</Text>
                         <View className="flex-row gap-2.5">
                             {[5, 10].map((d) => (
-                                <TouchableOpacity
+                                <Pressable
                                     key={d}
                                     className={`flex-1 flex-row items-center justify-center gap-1.5 py-2.5 rounded-xl border ${duration === d
                                         ? "border-primary bg-primary/10"
@@ -94,7 +93,7 @@ export const AdvancedSettings = ({
                                         }`}>
                                         {d}s
                                     </Text>
-                                </TouchableOpacity>
+                                </Pressable>
                             ))}
                         </View>
                     </View>
@@ -108,7 +107,7 @@ export const AdvancedSettings = ({
                             contentContainerStyle={{ gap: 10, paddingRight: 10 }}
                         >
                             {STYLE_PRESETS.map((style) => (
-                                <TouchableOpacity
+                                <Pressable
                                     key={style.id}
                                     className={`flex-row items-center gap-1.5 px-3 py-2 rounded-full border ${selectedStyleId === style.id
                                         ? "border-primary bg-primary/10"
@@ -124,7 +123,7 @@ export const AdvancedSettings = ({
                                         }`}>
                                         {style.id === 'none' ? 'Default' : style.id.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
                                     </Text>
-                                </TouchableOpacity>
+                                </Pressable>
                             ))}
                         </ScrollView>
                     </View>

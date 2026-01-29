@@ -4,7 +4,7 @@ import {
     View,
     Text,
     TextInput,
-    TouchableOpacity,
+    Pressable,
     ScrollView,
     Dimensions,
     StyleSheet,
@@ -14,7 +14,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { Settings2, Sparkles, Loader2, User } from "lucide-react-native";
-import { AdvancedSettingsSheet, AdvancedSettingsSheetRef } from "../../components/AdvancedSettingsSheet";
+import { AdvancedSettingsSheet, AdvancedSettingsSheetRef, CameraMotionType } from "../../components/AdvancedSettingsSheet";
 import { PaywallSheet, PaywallSheetRef } from "../../components/PaywallSheet";
 import { BlurView } from "expo-blur";
 import { StatusBar } from "expo-status-bar";
@@ -92,6 +92,8 @@ export default function HomeScreen() {
     const [generationMode, setGenerationMode] = useState<'text' | 'image' | 'avatar'>('text');
     const [controlImage, setControlImage] = useState<string | null>(null);
     const [controlType, setControlType] = useState<'none' | 'pose' | 'depth'>('none');
+    const [cameraMotion, setCameraMotion] = useState<CameraMotionType>('static');
+    const [motionIntensity, setMotionIntensity] = useState(50);
     const [selectedCategory, setSelectedCategory] = useState('All');
     const { previewUrl, isLoading, generatePreview } = useInstantPreview();
 
@@ -240,7 +242,7 @@ export default function HomeScreen() {
             >
                 {/* Mode Toggle */}
                 <View style={styles.modeToggle}>
-                    <TouchableOpacity
+                    <Pressable
                         style={[
                             styles.modeButton,
                             generationMode === 'text' && styles.modeButtonActive
@@ -249,7 +251,6 @@ export default function HomeScreen() {
                             setGenerationMode('text');
                             setSelectedImage(null);
                         }}
-                        activeOpacity={0.7}
                     >
                         <Text style={[
                             styles.modeButtonText,
@@ -257,14 +258,13 @@ export default function HomeScreen() {
                         ]}>
                             Text-to-Video
                         </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </Pressable>
+                    <Pressable
                         style={[
                             styles.modeButton,
                             generationMode === 'image' && styles.modeButtonActive
                         ]}
                         onPress={() => setGenerationMode('image')}
-                        activeOpacity={0.7}
                     >
                         <Text style={[
                             styles.modeButtonText,
@@ -272,14 +272,13 @@ export default function HomeScreen() {
                         ]}>
                             Image-to-Video
                         </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </Pressable>
+                    <Pressable
                         style={[
                             styles.modeButton,
                             generationMode === 'avatar' && styles.modeButtonActive
                         ]}
                         onPress={() => setGenerationMode('avatar')}
-                        activeOpacity={0.7}
                     >
                         <Text style={[
                             styles.modeButtonText,
@@ -287,13 +286,13 @@ export default function HomeScreen() {
                         ]}>
                             My Avatar
                         </Text>
-                    </TouchableOpacity>
+                    </Pressable>
                 </View>
 
                 {/* Avatar Selection - Only show in avatar mode */}
                 {generationMode === 'avatar' && (
                     <View style={styles.avatarSelectionContainer}>
-                        <TouchableOpacity
+                        <Pressable
                             style={styles.avatarCard}
                             onPress={() => router.push("/avatar")}
                         >
@@ -301,7 +300,7 @@ export default function HomeScreen() {
                                 <User size={24} color={COLORS.primary} />
                             </View>
                             <Text style={styles.avatarCardText}>Select Avatar</Text>
-                        </TouchableOpacity>
+                        </Pressable>
                         <Text style={styles.avatarTip}>
                             Avatar will be used as the subject of the video.
                         </Text>
@@ -364,7 +363,7 @@ export default function HomeScreen() {
                             generatePreview(text);
                         }}
                     />
-                    <TouchableOpacity
+                    <Pressable
                         style={[styles.enhanceButton, (!prompt.trim() || isEnhancing) && styles.enhanceButtonDisabled]}
                         onPress={handleEnhancePrompt}
                         disabled={!prompt.trim() || isEnhancing}
@@ -374,10 +373,10 @@ export default function HomeScreen() {
                         ) : (
                             <Sparkles size={16} color={COLORS.primary} />
                         )}
-                    </TouchableOpacity>
+                    </Pressable>
                 </View>
 
-                <TouchableOpacity
+                <Pressable
                     style={styles.settingsToggle}
                     onPress={() => {
                         console.log('Settings button pressed!');
@@ -388,7 +387,7 @@ export default function HomeScreen() {
                     <Text style={styles.settingsText}>
                         {config?.models?.find((m: any) => m.id === selectedModel)?.name || selectedModel} • {config?.aspectRatios?.find((r: any) => r.id === selectedRatio)?.label || selectedRatio}
                     </Text>
-                </TouchableOpacity>
+                </Pressable>
 
                 {/* Style Presets */}
                 <View style={styles.stylePresetsSection}>
@@ -401,7 +400,7 @@ export default function HomeScreen() {
                         {STYLE_PRESETS.map((style) => {
                             const isSelected = selectedStyleId === style.id;
                             return (
-                                <TouchableOpacity
+                                <Pressable
                                     key={style.id}
                                     style={[
                                         styles.stylePresetPill,
@@ -411,7 +410,6 @@ export default function HomeScreen() {
                                         }
                                     ]}
                                     onPress={() => setSelectedStyleId(style.id)}
-                                    activeOpacity={0.7}
                                 >
                                     <Text style={styles.stylePresetEmoji}>{style.emoji}</Text>
                                     <Text style={[
@@ -420,7 +418,7 @@ export default function HomeScreen() {
                                     ]}>
                                         {style.name}
                                     </Text>
-                                </TouchableOpacity>
+                                </Pressable>
                             );
                         })}
                     </ScrollView>
@@ -447,14 +445,13 @@ export default function HomeScreen() {
                         {CATEGORIES.map((cat) => {
                             const isSelected = selectedCategory === cat.id;
                             return (
-                                <TouchableOpacity
+                                <Pressable
                                     key={cat.id}
                                     style={[
                                         styles.categoryChip,
                                         isSelected && styles.categoryChipActive
                                     ]}
                                     onPress={() => setSelectedCategory(cat.id)}
-                                    activeOpacity={0.7}
                                 >
                                     <Text style={styles.categoryChipEmoji}>{cat.emoji}</Text>
                                     <Text style={[
@@ -463,14 +460,14 @@ export default function HomeScreen() {
                                     ]}>
                                         {cat.id}
                                     </Text>
-                                </TouchableOpacity>
+                                </Pressable>
                             );
                         })}
                     </ScrollView>
 
                     <View style={styles.feedGrid}>
                         {(trendingVideos || []).map((item: any, index: number) => (
-                            <TouchableOpacity
+                            <Pressable
                                 key={item.id}
                                 onPress={() => {
                                     router.push({
@@ -489,7 +486,6 @@ export default function HomeScreen() {
                                     console.log("Long pressed trending:", item.prompt);
                                     setPrompt(item.prompt);
                                 }}
-                                activeOpacity={0.7}
                                 delayLongPress={500}
                             >
                                 <VideoCard
@@ -504,7 +500,7 @@ export default function HomeScreen() {
                                     index={index}
                                     isActive={index < 2}
                                 />
-                            </TouchableOpacity>
+                            </Pressable>
                         ))}
                     </View>
                 </View>
@@ -525,8 +521,12 @@ export default function HomeScreen() {
                 onSelectControlImage={(img) => img === 'placeholder' ? handleSelectControlImage() : setControlImage(img)}
                 controlType={controlType}
                 onSelectControlType={setControlType}
+                cameraMotion={cameraMotion}
+                onSelectCameraMotion={setCameraMotion}
+                motionIntensity={motionIntensity}
+                onSelectMotionIntensity={setMotionIntensity}
                 onApply={() => {
-                    console.log('Settings applied:', { selectedModel, selectedRatio, duration, magicPrompt, controlType });
+                    console.log('Settings applied:', { selectedModel, selectedRatio, duration, magicPrompt, controlType, cameraMotion, motionIntensity });
                     settingsSheetRef.current?.close();
                 }}
             />

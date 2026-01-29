@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Alert } from "react-native";
+import { View, Text, Pressable, StyleSheet, Dimensions, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Camera as CameraIcon, X, Check, RefreshCw } from "lucide-react-native";
@@ -94,9 +94,9 @@ export default function AvatarCapture() {
         <View style={styles.container}>
             <SafeAreaView style={styles.safeArea}>
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={() => router.back()} style={styles.iconButton}>
+                    <Pressable onPress={() => router.back()} style={styles.iconButton}>
                         <X size={24} color="#FFF" />
-                    </TouchableOpacity>
+                    </Pressable>
                     <View style={styles.stepIndicator}>
                         <Text style={styles.stepText}>{currentStep.title}</Text>
                         <View style={styles.progressCounter}>
@@ -147,13 +147,13 @@ export default function AvatarCapture() {
                         )}
                     </View>
 
-                    <TouchableOpacity style={styles.captureButton} onPress={handleCapture}>
+                    <Pressable style={styles.captureButton} onPress={handleCapture}>
                         <View style={styles.captureInner} />
-                    </TouchableOpacity>
+                    </Pressable>
 
-                    <TouchableOpacity style={styles.galleryButton} onPress={() => { }}>
+                    <Pressable style={styles.galleryButton} onPress={() => { }}>
                         <RefreshCw size={24} color="#FFF" />
-                    </TouchableOpacity>
+                    </Pressable>
                 </View>
 
                 <View style={styles.footer}>

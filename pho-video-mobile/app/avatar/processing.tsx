@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, Dimensions, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Loader2, Sparkles, Bell } from "lucide-react-native";
@@ -148,12 +148,12 @@ export default function AvatarProcessing() {
                     </Text>
                 </View>
 
-                <TouchableOpacity
+                <Pressable
                     style={styles.minimizeButton}
                     onPress={() => router.push("/(tabs)")}
                 >
                     <Text style={styles.minimizeText}>Go back to Studio</Text>
-                </TouchableOpacity>
+                </Pressable>
             </View>
         </SafeAreaView>
     );

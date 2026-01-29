@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import {
     View,
     Text,
-    TouchableOpacity,
-    Image,
+    Pressable,
     StyleSheet,
     Alert,
     ActivityIndicator,
 } from "react-native";
+import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import { Image as ImageIcon, X, Camera, FolderOpen } from "lucide-react-native";
@@ -98,10 +98,19 @@ export const ImagePickerComponent: React.FC<ImagePickerComponentProps> = ({
     if (selectedImage) {
         return (
             <View style={styles.previewContainer}>
-                <Image source={{ uri: selectedImage }} style={styles.previewImage} alt="Selected image for video generation" />
-                <TouchableOpacity style={styles.removeButton} onPress={removeImage}>
+                <Image
+                    source={{ uri: selectedImage }}
+                    style={styles.previewImage}
+                    contentFit="cover"
+                    transition={200}
+                    alt="Selected image for video generation"
+                />
+                <Pressable
+                    style={({ pressed }) => [styles.removeButton, pressed && { opacity: 0.7 }]}
+                    onPress={removeImage}
+                >
                     <X size={16} color={COLORS.text} />
-                </TouchableOpacity>
+                </Pressable>
                 <View style={styles.i2vBadge}>
                     <Text style={styles.i2vText}>Image-to-Video</Text>
                 </View>
@@ -113,8 +122,8 @@ export const ImagePickerComponent: React.FC<ImagePickerComponentProps> = ({
         <View style={styles.container}>
             <Text style={styles.title}>Or start from an image</Text>
             <View style={styles.buttonRow}>
-                <TouchableOpacity
-                    style={styles.pickButton}
+                <Pressable
+                    style={({ pressed }) => [styles.pickButton, pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] }]}
                     onPress={() => pickImage(false)}
                     disabled={loading}
                 >
@@ -126,16 +135,16 @@ export const ImagePickerComponent: React.FC<ImagePickerComponentProps> = ({
                             <Text style={styles.buttonText}>Gallery</Text>
                         </>
                     )}
-                </TouchableOpacity>
+                </Pressable>
 
-                <TouchableOpacity
-                    style={styles.pickButton}
+                <Pressable
+                    style={({ pressed }) => [styles.pickButton, pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] }]}
                     onPress={() => pickImage(true)}
                     disabled={loading}
                 >
                     <Camera size={20} color={COLORS.primary} />
                     <Text style={styles.buttonText}>Camera</Text>
-                </TouchableOpacity>
+                </Pressable>
             </View>
         </View>
     );

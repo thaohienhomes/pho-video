@@ -1,16 +1,17 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, memo } from "react";
 import {
     View,
     Text,
     TextInput,
-    TouchableOpacity,
-    FlatList,
+    Pressable,
     Dimensions,
     StyleSheet,
     ActivityIndicator,
     RefreshControl,
     Alert,
 } from "react-native";
+import { FlashList } from "@shopify/flash-list";
+import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
@@ -44,7 +45,8 @@ const SORT_OPTIONS = [
     { id: "favorites", label: "Favorites", icon: Star },
 ];
 
-const VideoCard = ({
+// Memoized VideoCard component for FlashList performance
+const VideoCard = memo(({
     item,
     onDelete,
     onShare,
@@ -62,9 +64,8 @@ const VideoCard = ({
 
     return (
         <View style={styles.cardContainer}>
-            <TouchableOpacity
-                style={styles.card}
-                activeOpacity={0.9}
+            <Pressable
+                style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
                 onLongPress={() => setShowActions(true)}
                 onPress={() => {
                     if (showActions) setShowActions(false);
@@ -77,12 +78,12 @@ const VideoCard = ({
                         <Text style={styles.processingText}>Developing...</Text>
                     </View>
                 ) : (
-                    <Animated.Image
+                    <Image
                         source={{ uri: item.thumbnailUrl }}
                         style={styles.cardImage}
-                        resizeMode="cover"
-                        // @ts-ignore
-                        sharedTransitionTag={`video-${item.id}`}
+                        contentFit="cover"
+                        transition={200}
+                        alt={item.prompt || 'Video thumbnail'}
                     />
                 )}
 
@@ -96,13 +97,13 @@ const VideoCard = ({
                                 <Play size={8} color={COLORS.primary} fill={COLORS.primary} />
                                 <Text style={styles.durationText}>{item.duration}s</Text>
                             </View>
-                            <TouchableOpacity onPress={() => onToggleFavorite(item.id)}>
+                            <Pressable onPress={() => onToggleFavorite(item.id)} hitSlop={8}>
                                 <Heart
                                     size={16}
                                     color={item.isFavorite ? COLORS.primary : COLORS.textMuted}
                                     fill={item.isFavorite ? COLORS.primary : "transparent"}
                                 />
-                            </TouchableOpacity>
+                            </Pressable>
                         </View>
                         <Text numberOfLines={1} style={styles.cardPrompt}>{item.prompt}</Text>
                     </LinearGradient>
@@ -110,21 +111,23 @@ const VideoCard = ({
 
                 {showActions && !isProcessing && (
                     <View style={styles.actionsOverlay}>
-                        <TouchableOpacity style={styles.actionButton} onPress={() => onShare(item)}>
+                        <Pressable style={styles.actionButton} onPress={() => onShare(item)}>
                             <Share2 size={20} color={COLORS.text} />
-                        </TouchableOpacity>
-                        <TouchableOpacity
+                        </Pressable>
+                        <Pressable
                             style={[styles.actionButton, styles.actionButtonDanger]}
                             onPress={() => onDelete(item.id)}
                         >
                             <Trash2 size={20} color={COLORS.danger} />
-                        </TouchableOpacity>
+                        </Pressable>
                     </View>
                 )}
-            </TouchableOpacity>
+            </Pressable>
         </View>
     );
-};
+});
+
+VideoCard.displayName = 'VideoCard';
 
 export default function GalleryScreen() {
     const [activeFilter, setActiveFilter] = useState<"all" | "processing" | "favorites">("all");
@@ -239,8 +242,8 @@ export default function GalleryScreen() {
                 <View style={styles.headerRow}>
                     <Text style={styles.title}>My Creations</Text>
                     <View style={styles.headerActions}>
-                        <TouchableOpacity
-                            style={styles.headerButton}
+                        <Pressable
+                            style={({ pressed }) => [styles.headerButton, pressed && { opacity: 0.7 }]}
                             onPress={() => setShowSearch(!showSearch)}
                         >
                             {showSearch ? (
@@ -248,7 +251,7 @@ export default function GalleryScreen() {
                             ) : (
                                 <Search size={20} color={COLORS.textMuted} />
                             )}
-                        </TouchableOpacity>
+                        </Pressable>
                     </View>
                 </View>
 
@@ -269,9 +272,9 @@ export default function GalleryScreen() {
                             autoFocus
                         />
                         {searchQuery.length > 0 && (
-                            <TouchableOpacity onPress={() => setSearchQuery("")}>
+                            <Pressable onPress={() => setSearchQuery("")} hitSlop={8}>
                                 <X size={16} color={COLORS.textMuted} />
-                            </TouchableOpacity>
+                            </Pressable>
                         )}
                     </Animated.View>
                 )}
@@ -281,27 +284,27 @@ export default function GalleryScreen() {
             <View style={styles.filterRow}>
                 <View style={styles.filterContainer}>
                     {(["all", "processing", "favorites"] as const).map(f => (
-                        <TouchableOpacity
+                        <Pressable
                             key={f}
                             onPress={() => setActiveFilter(f)}
-                            style={[styles.filterTab, activeFilter === f && styles.filterTabActive]}
+                            style={({ pressed }) => [styles.filterTab, activeFilter === f && styles.filterTabActive, pressed && { opacity: 0.8 }]}
                         >
                             <Text style={[styles.filterText, activeFilter === f && styles.filterTextActive]}>
                                 {f.charAt(0).toUpperCase() + f.slice(1)}
                             </Text>
-                        </TouchableOpacity>
+                        </Pressable>
                     ))}
                 </View>
 
                 {/* Sort Dropdown */}
-                <TouchableOpacity
-                    style={styles.sortButton}
+                <Pressable
+                    style={({ pressed }) => [styles.sortButton, pressed && { opacity: 0.7 }]}
                     onPress={() => setShowSortMenu(!showSortMenu)}
                 >
                     {currentSort && <currentSort.icon size={14} color={COLORS.textMuted} />}
                     <Text style={styles.sortButtonText}>{currentSort?.label}</Text>
                     <ChevronDown size={14} color={COLORS.textMuted} />
-                </TouchableOpacity>
+                </Pressable>
             </View>
 
             {/* Sort Menu Dropdown */}
@@ -312,11 +315,12 @@ export default function GalleryScreen() {
                     style={styles.sortMenu}
                 >
                     {SORT_OPTIONS.map(option => (
-                        <TouchableOpacity
+                        <Pressable
                             key={option.id}
-                            style={[
+                            style={({ pressed }) => [
                                 styles.sortMenuItem,
-                                sortBy === option.id && styles.sortMenuItemActive
+                                sortBy === option.id && styles.sortMenuItemActive,
+                                pressed && { opacity: 0.7 }
                             ]}
                             onPress={() => {
                                 setSortBy(option.id);
@@ -330,7 +334,7 @@ export default function GalleryScreen() {
                             ]}>
                                 {option.label}
                             </Text>
-                        </TouchableOpacity>
+                        </Pressable>
                     ))}
                 </Animated.View>
             )}
@@ -347,11 +351,10 @@ export default function GalleryScreen() {
                     <ActivityIndicator color={COLORS.primary} size="large" />
                 </View>
             ) : (
-                <FlatList
+                <FlashList
                     data={filteredAndSortedVideos}
                     keyExtractor={item => item.id}
                     numColumns={2}
-                    columnWrapperStyle={styles.row}
                     contentContainerStyle={styles.listContent}
                     refreshControl={
                         <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor={COLORS.primary} />
@@ -474,6 +477,7 @@ const styles = StyleSheet.create({
     row: { justifyContent: "space-between" },
     cardContainer: { marginBottom: 16 },
     card: { width: CARD_WIDTH, height: CARD_WIDTH * 1.4, backgroundColor: COLORS.surface, borderRadius: 16, overflow: "hidden", borderWidth: 1, borderColor: COLORS.border },
+    cardPressed: { opacity: 0.9, transform: [{ scale: 0.98 }] },
     cardImage: { width: "100%", height: "100%" },
     cardOverlay: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 12, paddingTop: 40 },
     cardBadgeRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },

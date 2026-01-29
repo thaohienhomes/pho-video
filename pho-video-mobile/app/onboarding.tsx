@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
     View,
     Text,
-    TouchableOpacity,
+    Pressable,
     ScrollView,
     StyleSheet,
     Dimensions,
@@ -97,13 +97,12 @@ export default function OnboardingScreen() {
         <SafeAreaView style={styles.container}>
             <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
                 {/* Skip Button */}
-                <TouchableOpacity
+                <Pressable
                     style={styles.skipButton}
                     onPress={handleSkip}
-                    activeOpacity={0.7}
                 >
                     <Text style={styles.skipText}>Skip</Text>
-                </TouchableOpacity>
+                </Pressable>
 
                 {/* Logo */}
                 <View style={styles.logoContainer}>
@@ -148,10 +147,9 @@ export default function OnboardingScreen() {
 
                 {/* CTA Button */}
                 <View style={styles.ctaContainer}>
-                    <TouchableOpacity
+                    <Pressable
                         style={styles.ctaButton}
                         onPress={goToNextSlide}
-                        activeOpacity={0.8}
                     >
                         <Text style={styles.ctaText}>
                             {currentIndex === SLIDES.length - 1 ? 'Get Started' : 'Next'}
@@ -159,7 +157,7 @@ export default function OnboardingScreen() {
                         {currentIndex !== SLIDES.length - 1 && (
                             <Sparkles size={20} color="white" style={{ marginLeft: 8 }} />
                         )}
-                    </TouchableOpacity>
+                    </Pressable>
                 </View>
             </Animated.View>
         </SafeAreaView>

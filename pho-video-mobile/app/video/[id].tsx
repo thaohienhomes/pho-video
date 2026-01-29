@@ -1,14 +1,15 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect, memo } from "react";
 import {
     View,
     Text,
     StyleSheet,
     Dimensions,
-    TouchableOpacity,
+    Pressable,
     Share,
     Alert,
     FlatList,
 } from "react-native";
+import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Animated, {
     FadeIn,
@@ -58,8 +59,8 @@ interface VideoItem {
     duration?: number;
 }
 
-// Single Video Card Component
-const VideoCard = ({
+// Single Video Card Component - Memoized for FlatList performance
+const VideoCard = memo(({
     item,
     isActive,
     onClose,
@@ -154,16 +155,17 @@ const VideoCard = ({
     return (
         <View style={styles.videoCard}>
             {/* Video/Image */}
-            <TouchableOpacity
+            <Pressable
                 style={styles.videoContainer}
-                activeOpacity={1}
                 onPress={handleDoubleTap}
             >
                 {/* Thumbnail fallback while loading */}
-                <Animated.Image
+                <Image
                     source={{ uri: item.thumb || item.videoUrl }}
                     style={styles.thumbnail}
-                    resizeMode="cover"
+                    contentFit="cover"
+                    transition={200}
+                    alt={item.prompt || 'Video thumbnail'}
                 />
 
                 {/* Video Player with expo-video - Full Screen */}
@@ -185,7 +187,7 @@ const VideoCard = ({
                         <Heart size={100} color={COLORS.primary} fill={COLORS.primary} />
                     </Animated.View>
                 )}
-            </TouchableOpacity>
+            </Pressable>
 
             {/* Overlay UI */}
             {showControls && (
@@ -196,55 +198,54 @@ const VideoCard = ({
                 >
                     {/* Close Button */}
                     <View style={styles.topBar}>
-                        <TouchableOpacity
+                        <Pressable
                             onPress={onClose}
-                            style={styles.closeButton}
-                            activeOpacity={0.7}
+                            style={({ pressed }) => [styles.closeButton, pressed && { opacity: 0.7 }]}
                         >
                             <X color="white" size={24} />
-                        </TouchableOpacity>
+                        </Pressable>
                     </View>
 
                     {/* Right Sidebar */}
                     <View style={styles.rightSidebar}>
-                        <TouchableOpacity style={styles.sidebarButton} onPress={handleLike}>
+                        <Pressable style={styles.sidebarButton} onPress={handleLike}>
                             <Heart
                                 size={28}
                                 color={isLiked ? COLORS.primary : "white"}
                                 fill={isLiked ? COLORS.primary : "transparent"}
                             />
                             <Text style={styles.sidebarLabel}>Like</Text>
-                        </TouchableOpacity>
+                        </Pressable>
 
-                        <TouchableOpacity
+                        <Pressable
                             style={styles.sidebarButton}
                             onPress={() => onRemix(item.prompt)}
                         >
                             <RotateCcw size={26} color="white" />
                             <Text style={styles.sidebarLabel}>Remix</Text>
-                        </TouchableOpacity>
+                        </Pressable>
 
-                        <TouchableOpacity style={styles.sidebarButton} onPress={handleCopyPrompt}>
+                        <Pressable style={styles.sidebarButton} onPress={handleCopyPrompt}>
                             <Copy size={24} color="white" />
                             <Text style={styles.sidebarLabel}>Copy</Text>
-                        </TouchableOpacity>
+                        </Pressable>
 
-                        <TouchableOpacity style={styles.sidebarButton} onPress={handleShare}>
+                        <Pressable style={styles.sidebarButton} onPress={handleShare}>
                             <Share2 size={24} color="white" />
                             <Text style={styles.sidebarLabel}>Share</Text>
-                        </TouchableOpacity>
+                        </Pressable>
 
-                        <TouchableOpacity style={styles.sidebarButton} onPress={handleDownload}>
+                        <Pressable style={styles.sidebarButton} onPress={handleDownload}>
                             <Download size={24} color="white" />
                             <Text style={styles.sidebarLabel}>Save</Text>
-                        </TouchableOpacity>
+                        </Pressable>
                     </View>
 
                     {/* Bottom Panel */}
                     <View style={styles.bottomPanel}>
                         {item.videoUrl && (
-                            <TouchableOpacity
-                                style={styles.playPauseButton}
+                            <Pressable
+                                style={({ pressed }) => [styles.playPauseButton, pressed && { opacity: 0.7 }]}
                                 onPress={togglePlayPause}
                             >
                                 {isPlaying ? (
@@ -252,7 +253,7 @@ const VideoCard = ({
                                 ) : (
                                     <Play size={20} color="white" fill="white" />
                                 )}
-                            </TouchableOpacity>
+                            </Pressable>
                         )}
 
                         <Text style={styles.promptText} numberOfLines={3}>
@@ -280,7 +281,9 @@ const VideoCard = ({
             )}
         </View>
     );
-};
+});
+
+VideoCard.displayName = 'VideoCard';
 
 export default function VideoDetailScreen() {
     const { id, thumb, prompt, videoUrl, model, duration } = useLocalSearchParams();

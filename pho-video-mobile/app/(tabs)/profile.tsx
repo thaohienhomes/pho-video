@@ -2,15 +2,15 @@ import React, { useState } from "react";
 import {
     View,
     Text,
-    TouchableOpacity,
+    Pressable,
     ScrollView,
     StyleSheet,
-    Image,
     Alert,
     Switch,
     Modal,
     TextInput,
 } from "react-native";
+import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
@@ -57,8 +57,8 @@ const USER = {
 };
 
 const ProfileHeader = ({ onEdit }: { onEdit: () => void }) => (
-    <TouchableOpacity style={styles.profileHeader} onPress={onEdit} activeOpacity={0.8}>
-        <Image source={{ uri: USER.avatar }} style={styles.avatar} alt="User Avatar" />
+    <Pressable style={styles.profileHeader} onPress={onEdit}>
+        <Image source={{ uri: USER.avatar }} style={styles.avatar} contentFit="cover" />
         <View style={styles.profileInfo}>
             <Text style={styles.userName}>{USER.name}</Text>
             <Text style={styles.userEmail}>{USER.email}</Text>
@@ -67,7 +67,7 @@ const ProfileHeader = ({ onEdit }: { onEdit: () => void }) => (
             <Crown size={12} color={COLORS.primary} />
             <Text style={styles.planText}>{USER.plan}</Text>
         </View>
-    </TouchableOpacity>
+    </Pressable>
 );
 
 const CreditsCard = () => {
@@ -116,9 +116,8 @@ const CreditsCard = () => {
                     </View>
                 </View>
 
-                <TouchableOpacity
+                <Pressable
                     style={styles.upgradeButton}
-                    activeOpacity={0.8}
                     onPress={() => router.push('/paywall')}
                 >
                     <LinearGradient
@@ -127,7 +126,7 @@ const CreditsCard = () => {
                     >
                         <Text style={styles.upgradeText}>Buy More Credits</Text>
                     </LinearGradient>
-                </TouchableOpacity>
+                </Pressable>
             </LinearGradient>
         </View>
     );
@@ -152,10 +151,10 @@ const SettingsItem = ({
     onSwitchChange?: (value: boolean) => void;
     onPress?: () => void;
 }) => (
-    <TouchableOpacity
+    <Pressable
         style={styles.settingsItem}
         onPress={showSwitch ? undefined : onPress}
-        activeOpacity={showSwitch ? 1 : 0.7}
+        disabled={showSwitch}
     >
         <View style={[styles.settingsIcon, danger && styles.settingsIconDanger]}>
             <Icon size={18} color={danger ? COLORS.danger : COLORS.textMuted} />
@@ -178,7 +177,7 @@ const SettingsItem = ({
                 </>
             )}
         </View>
-    </TouchableOpacity>
+    </Pressable>
 );
 
 // Edit Profile Modal
@@ -204,16 +203,16 @@ const EditProfileModal = ({
                 <View style={styles.modalContent}>
                     <View style={styles.modalHeader}>
                         <Text style={styles.modalTitle}>Edit Profile</Text>
-                        <TouchableOpacity onPress={onClose} style={styles.modalClose}>
+                        <Pressable onPress={onClose} style={styles.modalClose}>
                             <X size={24} color={COLORS.text} />
-                        </TouchableOpacity>
+                        </Pressable>
                     </View>
 
                     <View style={styles.avatarEdit}>
-                        <Image source={{ uri: USER.avatar }} style={styles.avatarLarge} alt="Edit Profile Avatar" />
-                        <TouchableOpacity style={styles.avatarEditButton}>
+                        <Image source={{ uri: USER.avatar }} style={styles.avatarLarge} contentFit="cover" />
+                        <Pressable style={styles.avatarEditButton}>
                             <Camera size={18} color={COLORS.text} />
-                        </TouchableOpacity>
+                        </Pressable>
                     </View>
 
                     <View style={styles.inputGroup}>
@@ -237,9 +236,9 @@ const EditProfileModal = ({
                         />
                     </View>
 
-                    <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                    <Pressable style={styles.saveButton} onPress={handleSave}>
                         <Text style={styles.saveButtonText}>Save Changes</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                 </View>
             </View>
         </Modal>

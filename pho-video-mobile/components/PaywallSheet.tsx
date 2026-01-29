@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, forwardRef, useImperativeHandle } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Dimensions } from 'react-native';
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Zap, Check, Star, ShieldCheck, Crown } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
@@ -111,9 +111,9 @@ export const PaywallSheet = forwardRef<PaywallSheetRef>((_, ref) => {
                                 <Text style={styles.creditValue}>{pkg.credits}⚡</Text>
                                 {pkg.bonus && <Text style={styles.bonusText}>+{pkg.bonus}</Text>}
                             </View>
-                            <TouchableOpacity style={[styles.buyButton, pkg.popular && styles.buyButtonPopular]}>
+                            <Pressable style={[styles.buyButton, pkg.popular && styles.buyButtonPopular]}>
                                 <Text style={styles.buyButtonText}>Chọn Gói</Text>
-                            </TouchableOpacity>
+                            </Pressable>
                         </Animated.View>
                     ))}
                 </View>

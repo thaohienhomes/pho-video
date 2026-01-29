@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo, useRef, forwardRef, useImperativeHandle } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView, BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import { Sparkles, Check, Image as ImageIcon, Layers, X, Trash2 } from 'lucide-react-native';
-import { Image } from 'react-native';
+import { Sparkles, Check, Image as ImageIcon, Layers, X, Trash2, MoveLeft, MoveRight, ZoomIn, ZoomOut, RotateCcw, Circle, Film } from 'lucide-react-native';
+import { Image } from 'expo-image';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, FadeIn } from 'react-native-reanimated';
 
 interface AdvancedSettingsSheetProps {
@@ -18,8 +18,14 @@ interface AdvancedSettingsSheetProps {
     onSelectControlImage: (uri: string | null) => void;
     controlType: 'none' | 'pose' | 'depth';
     onSelectControlType: (type: 'none' | 'pose' | 'depth') => void;
+    cameraMotion: CameraMotionType;
+    onSelectCameraMotion: (motion: CameraMotionType) => void;
+    motionIntensity: number;
+    onSelectMotionIntensity: (intensity: number) => void;
     onApply: () => void;
 }
+
+export type CameraMotionType = 'static' | 'pan_left' | 'pan_right' | 'zoom_in' | 'zoom_out' | 'orbit';
 
 export interface AdvancedSettingsSheetRef {
     open: () => void;
@@ -43,6 +49,17 @@ const DURATIONS = [
     { value: 10, credits: 100 },
     { value: 15, credits: 150 },
 ];
+
+const CAMERA_MOTIONS = [
+    { id: 'static' as CameraMotionType, icon: Circle, label: 'Static' },
+    { id: 'pan_left' as CameraMotionType, icon: MoveLeft, label: 'Pan Left' },
+    { id: 'pan_right' as CameraMotionType, icon: MoveRight, label: 'Pan Right' },
+    { id: 'zoom_in' as CameraMotionType, icon: ZoomIn, label: 'Zoom In' },
+    { id: 'zoom_out' as CameraMotionType, icon: ZoomOut, label: 'Zoom Out' },
+    { id: 'orbit' as CameraMotionType, icon: RotateCcw, label: 'Orbit' },
+];
+
+const INTENSITY_STEPS = [10, 30, 50, 70, 100];
 
 const COLORS = {
     primary: '#F0421C',
@@ -70,16 +87,15 @@ const ToggleSwitch = ({ value, onToggle }: { value: boolean; onToggle: () => voi
     }));
 
     return (
-        <TouchableOpacity
+        <Pressable
             style={[
                 styles.toggleTrack,
                 { backgroundColor: value ? COLORS.primary : '#525252' }
             ]}
             onPress={onToggle}
-            activeOpacity={0.8}
         >
             <Animated.View style={[styles.toggleKnob, knobStyle]} />
-        </TouchableOpacity>
+        </Pressable>
     );
 };
 
@@ -98,6 +114,10 @@ export const AdvancedSettingsSheet = forwardRef<AdvancedSettingsSheetRef, Advanc
             onSelectControlImage,
             controlType,
             onSelectControlType,
+            cameraMotion,
+            onSelectCameraMotion,
+            motionIntensity,
+            onSelectMotionIntensity,
             onApply,
         },
         ref
@@ -155,7 +175,7 @@ export const AdvancedSettingsSheet = forwardRef<AdvancedSettingsSheetRef, Advanc
                             {MODELS.map((model) => {
                                 const isSelected = selectedModel === model.id;
                                 return (
-                                    <TouchableOpacity
+                                    <Pressable
                                         key={model.id}
                                         style={[
                                             styles.modelCard,
@@ -163,7 +183,6 @@ export const AdvancedSettingsSheet = forwardRef<AdvancedSettingsSheetRef, Advanc
                                             { marginRight: 12 }
                                         ]}
                                         onPress={() => onSelectModel(model.id)}
-                                        activeOpacity={0.7}
                                     >
                                         <View style={[styles.modelIcon, isSelected && styles.modelIconSelected]}>
                                             <Text style={styles.modelEmoji}>{model.emoji}</Text>
@@ -181,7 +200,7 @@ export const AdvancedSettingsSheet = forwardRef<AdvancedSettingsSheetRef, Advanc
                                                 <Check size={12} color="white" strokeWidth={3} />
                                             </View>
                                         )}
-                                    </TouchableOpacity>
+                                    </Pressable>
                                 );
                             })}
                         </ScrollView>
@@ -198,7 +217,7 @@ export const AdvancedSettingsSheet = forwardRef<AdvancedSettingsSheetRef, Advanc
                             {ASPECT_RATIOS.map((ratio, index) => {
                                 const isSelected = aspectRatio === ratio.id;
                                 return (
-                                    <TouchableOpacity
+                                    <Pressable
                                         key={ratio.id}
                                         style={[
                                             styles.ratioCard,
@@ -206,7 +225,6 @@ export const AdvancedSettingsSheet = forwardRef<AdvancedSettingsSheetRef, Advanc
                                             { marginRight: index < ASPECT_RATIOS.length - 1 ? 12 : 0 }
                                         ]}
                                         onPress={() => onSelectAspectRatio(ratio.id)}
-                                        activeOpacity={0.7}
                                     >
                                         <View
                                             style={[
@@ -221,7 +239,7 @@ export const AdvancedSettingsSheet = forwardRef<AdvancedSettingsSheetRef, Advanc
                                         <Text style={[styles.ratioDesc, isSelected && styles.ratioDescSelected]}>
                                             {ratio.description}
                                         </Text>
-                                    </TouchableOpacity>
+                                    </Pressable>
                                 );
                             })}
                         </ScrollView>
@@ -239,19 +257,18 @@ export const AdvancedSettingsSheet = forwardRef<AdvancedSettingsSheetRef, Advanc
                             {DURATIONS.map((d) => {
                                 const isSelected = duration === d.value;
                                 return (
-                                    <TouchableOpacity
+                                    <Pressable
                                         key={d.value}
                                         style={[
                                             styles.segment,
                                             isSelected && styles.segmentSelected
                                         ]}
                                         onPress={() => onSelectDuration(d.value)}
-                                        activeOpacity={0.7}
                                     >
                                         <Text style={[styles.segmentText, isSelected && styles.segmentTextSelected]}>
                                             {d.value}s
                                         </Text>
-                                    </TouchableOpacity>
+                                    </Pressable>
                                 );
                             })}
                         </View>
@@ -280,13 +297,71 @@ export const AdvancedSettingsSheet = forwardRef<AdvancedSettingsSheetRef, Advanc
                         </View>
                     </View>
 
+                    {/* Camera Motion Section */}
+                    <View style={[styles.section, styles.sectionBorder]}>
+                        <View style={styles.sectionHeaderRow}>
+                            <Film size={16} color={COLORS.primary} />
+                            <Text style={styles.sectionLabel}>CAMERA MOTION</Text>
+                        </View>
+
+                        <View style={styles.cameraGrid}>
+                            {CAMERA_MOTIONS.map((motion) => {
+                                const Icon = motion.icon;
+                                const isSelected = cameraMotion === motion.id;
+                                return (
+                                    <Pressable
+                                        key={motion.id}
+                                        style={[
+                                            styles.cameraItem,
+                                            isSelected && styles.cameraItemSelected
+                                        ]}
+                                        onPress={() => onSelectCameraMotion(motion.id)}
+                                    >
+                                        <View style={[styles.cameraIconBox, isSelected && styles.cameraIconBoxSelected]}>
+                                            <Icon size={18} color={isSelected ? COLORS.primary : COLORS.textSecondary} />
+                                        </View>
+                                        <Text style={[styles.cameraLabel, isSelected && styles.cameraLabelSelected]}>
+                                            {motion.label}
+                                        </Text>
+                                    </Pressable>
+                                );
+                            })}
+                        </View>
+
+                        {/* Intensity Slider */}
+                        {cameraMotion !== 'static' && (
+                            <Animated.View entering={FadeIn} style={styles.intensitySection}>
+                                <View style={styles.intensityHeader}>
+                                    <Text style={styles.intensityLabel}>Motion Intensity</Text>
+                                    <Text style={styles.intensityValue}>{motionIntensity}%</Text>
+                                </View>
+                                <View style={styles.intensitySlider}>
+                                    {INTENSITY_STEPS.map((step) => {
+                                        const active = motionIntensity >= step;
+                                        return (
+                                            <Pressable
+                                                key={step}
+                                                style={[styles.intensityStep, active && styles.intensityStepActive]}
+                                                onPress={() => onSelectMotionIntensity(step)}
+                                            />
+                                        );
+                                    })}
+                                </View>
+                                <View style={styles.intensityLabels}>
+                                    <Text style={styles.intensityHint}>Subtle</Text>
+                                    <Text style={styles.intensityHint}>Dramatic</Text>
+                                </View>
+                            </Animated.View>
+                        )}
+                    </View>
+
                     <View style={[styles.section, styles.sectionBorder]}>
                         <Text style={styles.sectionLabel}>STRUCTURE CONTROL</Text>
                         <Text style={styles.sectionDesc}>Guide the layout with a pose or depth reference image</Text>
 
                         <View style={styles.controlTypeGrid}>
                             {(['none', 'pose', 'depth'] as const).map((type) => (
-                                <TouchableOpacity
+                                <Pressable
                                     key={type}
                                     style={[
                                         styles.controlTypeItem,
@@ -308,7 +383,7 @@ export const AdvancedSettingsSheet = forwardRef<AdvancedSettingsSheetRef, Advanc
                                     ]}>
                                         {type.charAt(0) + type.slice(1)}
                                     </Text>
-                                </TouchableOpacity>
+                                </Pressable>
                             ))}
                         </View>
 
@@ -321,21 +396,21 @@ export const AdvancedSettingsSheet = forwardRef<AdvancedSettingsSheetRef, Advanc
                                             style={styles.imagePreview}
                                             alt="Control Reference"
                                         />
-                                        <TouchableOpacity
+                                        <Pressable
                                             style={styles.removeImageButton}
                                             onPress={() => onSelectControlImage(null)}
                                         >
                                             <Trash2 size={16} color="white" />
-                                        </TouchableOpacity>
+                                        </Pressable>
                                     </View>
                                 ) : (
-                                    <TouchableOpacity
+                                    <Pressable
                                         style={styles.uploadBox}
                                         onPress={() => onSelectControlImage('placeholder')} // Will be handled by ImagePicker in Parent
                                     >
                                         <ImageIcon size={32} color={COLORS.textSecondary} />
                                         <Text style={styles.uploadText}>Select {controlType} image</Text>
-                                    </TouchableOpacity>
+                                    </Pressable>
                                 )}
                             </Animated.View>
                         )}
@@ -346,24 +421,22 @@ export const AdvancedSettingsSheet = forwardRef<AdvancedSettingsSheetRef, Advanc
 
                     {/* Footer Buttons */}
                     <View style={styles.footer}>
-                        <TouchableOpacity
+                        <Pressable
                             style={styles.applyButton}
                             onPress={() => {
                                 onApply();
                                 bottomSheetModalRef.current?.dismiss();
                             }}
-                            activeOpacity={0.8}
                         >
                             <Text style={styles.applyButtonText}>Apply Settings</Text>
-                        </TouchableOpacity>
+                        </Pressable>
 
-                        <TouchableOpacity
+                        <Pressable
                             style={styles.cancelButton}
                             onPress={() => bottomSheetModalRef.current?.dismiss()}
-                            activeOpacity={0.7}
                         >
                             <Text style={styles.cancelButtonText}>Cancel</Text>
-                        </TouchableOpacity>
+                        </Pressable>
                     </View>
                 </BottomSheetScrollView>
             </BottomSheetModal>
@@ -727,5 +800,94 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.6)',
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    // Camera Motion styles
+    sectionHeaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        marginBottom: 12,
+    },
+    cameraGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        justifyContent: 'space-between',
+    },
+    cameraItem: {
+        width: '31%',
+        backgroundColor: COLORS.surface,
+        borderRadius: 12,
+        padding: 12,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: COLORS.border,
+    },
+    cameraItemSelected: {
+        borderColor: COLORS.primary,
+        backgroundColor: 'rgba(240,66,28,0.1)',
+    },
+    cameraIconBox: {
+        width: 36,
+        height: 36,
+        borderRadius: 10,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 6,
+    },
+    cameraIconBoxSelected: {
+        backgroundColor: 'rgba(240,66,28,0.2)',
+    },
+    cameraLabel: {
+        color: COLORS.textSecondary,
+        fontSize: 10,
+        fontWeight: '600',
+    },
+    cameraLabelSelected: {
+        color: COLORS.primary,
+    },
+    intensitySection: {
+        marginTop: 16,
+        paddingTop: 16,
+        borderTopWidth: 1,
+        borderTopColor: COLORS.border,
+    },
+    intensityHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    intensityLabel: {
+        color: COLORS.textSecondary,
+        fontSize: 13,
+    },
+    intensityValue: {
+        color: COLORS.primary,
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    intensitySlider: {
+        flexDirection: 'row',
+        gap: 6,
+        height: 8,
+    },
+    intensityStep: {
+        flex: 1,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        borderRadius: 4,
+    },
+    intensityStepActive: {
+        backgroundColor: COLORS.primary,
+    },
+    intensityLabels: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 8,
+    },
+    intensityHint: {
+        color: COLORS.textMuted,
+        fontSize: 11,
     },
 });

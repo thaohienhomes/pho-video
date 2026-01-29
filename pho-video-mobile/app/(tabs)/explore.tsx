@@ -1,15 +1,15 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, memo } from "react";
 import {
     View,
     Text,
-    TouchableOpacity,
+    Pressable,
     FlatList,
     Dimensions,
     StyleSheet,
     ActivityIndicator,
     RefreshControl,
-    Image,
 } from "react-native";
+import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
@@ -45,16 +45,15 @@ const CATEGORIES = [
     { id: 'Travel', emoji: '✈️', gradient: ['#14B8A6', '#2DD4BF'] as const },
 ];
 
-const CategoryCard = ({
+const CategoryCard = memo(({
     category,
     onPress
 }: {
     category: typeof CATEGORIES[0];
     onPress: () => void;
 }) => (
-    <TouchableOpacity
-        style={styles.categoryCard}
-        activeOpacity={0.8}
+    <Pressable
+        style={({ pressed }) => [styles.categoryCard, pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] }]}
         onPress={onPress}
     >
         <LinearGradient
@@ -66,26 +65,28 @@ const CategoryCard = ({
             <Text style={styles.categoryEmoji}>{category.emoji}</Text>
             <Text style={styles.categoryName}>{category.id}</Text>
         </LinearGradient>
-    </TouchableOpacity>
-);
+    </Pressable>
+));
 
-const IdeaCard = ({
+CategoryCard.displayName = 'CategoryCard';
+
+const IdeaCard = memo(({
     item,
     onPress,
 }: {
     item: Partial<Idea>;
     onPress: () => void;
 }) => (
-    <TouchableOpacity
-        style={styles.ideaCard}
-        activeOpacity={0.9}
+    <Pressable
+        style={({ pressed }) => [styles.ideaCard, pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] }]}
         onPress={onPress}
     >
         <Image
             source={{ uri: item.thumbnailUrl || item.thumbnail }}
             style={styles.ideaThumbnail}
-            resizeMode="cover"
-            alt={`Thumbnail for ${item.prompt || item.title}`}
+            contentFit="cover"
+            transition={200}
+            alt={item.prompt || item.title || 'Idea thumbnail'}
         />
         <LinearGradient
             colors={['transparent', 'rgba(0,0,0,0.8)']}
@@ -99,8 +100,10 @@ const IdeaCard = ({
                 {item.prompt || item.title}
             </Text>
         </LinearGradient>
-    </TouchableOpacity>
-);
+    </Pressable>
+));
+
+IdeaCard.displayName = 'IdeaCard';
 
 export default function ExploreScreen() {
     const router = useRouter();
@@ -143,9 +146,9 @@ export default function ExploreScreen() {
             {/* Title */}
             <View style={styles.header}>
                 <Text style={styles.title}>Explore</Text>
-                <TouchableOpacity style={styles.searchButton}>
+                <Pressable style={({ pressed }) => [styles.searchButton, pressed && { opacity: 0.7 }]}>
                     <Search size={20} color={COLORS.textMuted} />
-                </TouchableOpacity>
+                </Pressable>
             </View>
 
             {/* Categories Grid */}
@@ -165,9 +168,9 @@ export default function ExploreScreen() {
                 <View style={styles.trendingHeader}>
                     <TrendingUp size={18} color={COLORS.primary} />
                     <Text style={styles.trendingTitle}>{selectedCategory}</Text>
-                    <TouchableOpacity onPress={() => setSelectedCategory(null)}>
+                    <Pressable onPress={() => setSelectedCategory(null)} hitSlop={8}>
                         <Text style={styles.clearButton}>Clear</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                 </View>
             )}
         </>

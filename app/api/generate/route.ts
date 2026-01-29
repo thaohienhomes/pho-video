@@ -14,30 +14,70 @@ import {
     checkSufficientPhoPoints,
 } from "@/lib/pho-points/transactions"
 
-// Phở Points cost mapping for video generation
+// Phở Points cost mapping for video generation (Updated with new tiers)
 const MODEL_PHO_POINTS_COSTS: Record<string, Record<string, number>> = {
-    "ltx-video": {
-        "5": COST_PHO_POINTS.VIDEO_5S_1080P_FAST,   // 50K
+    // === FAST TIER (Budget-friendly) ===
+    "pho-instant": {
+        "5": COST_PHO_POINTS.VIDEO_5S_1080P_FAST,   // 50K - LTX-2 19B
         "10": COST_PHO_POINTS.VIDEO_10S_1080P_FAST, // 100K
     },
-    "ltx-video-pro": {
-        "5": COST_PHO_POINTS.VIDEO_5S_1080P_PRO,   // 75K
-        "10": COST_PHO_POINTS.VIDEO_10S_1080P_PRO, // 150K
-        "5-4k": COST_PHO_POINTS.VIDEO_5S_4K_PRO,   // 300K
+    "pho-fast": {
+        "5": 40000,   // 40K - Seedance v1.5 (cheaper than LTX)
+        "10": 80000,  // 80K
+    },
+
+    // === STANDARD TIER (Quality balance) ===
+    "pho-cinematic": {
+        "5": COST_PHO_POINTS.VIDEO_5S_1080P_PRO,    // 75K - Kling 2.5 Pro
+        "10": COST_PHO_POINTS.VIDEO_10S_1080P_PRO,  // 150K
+    },
+    "pho-motion": {
+        "5": COST_PHO_POINTS.I2V_5S_1080P,          // 55K - Minimax Hailuo
+        "10": COST_PHO_POINTS.I2V_10S_1080P,        // 110K
+    },
+    "pho-motion-pro": {
+        "5": 70000,   // 70K - Hailuo Pro (higher quality)
+        "10": 140000, // 140K
+    },
+
+    // === PREMIUM TIER (Enterprise) ===
+    "pho-ultra": {
+        "5": 200000,  // 200K - Veo 3.1 (Google flagship)
+        "10": 400000, // 400K
+    },
+    "pho-sora": {
+        "5": 250000,  // 250K - Sora 2 Pro (OpenAI flagship)
+        "10": 500000, // 500K
+    },
+
+    // LEGACY: Backward compatibility aliases
+    "ltx-video": {
+        "5": COST_PHO_POINTS.VIDEO_5S_1080P_FAST,
+        "10": COST_PHO_POINTS.VIDEO_10S_1080P_FAST,
     },
     "kling-2.6-pro": {
-        "5": COST_PHO_POINTS.I2V_5S_1080P,  // 55K
-        "10": COST_PHO_POINTS.I2V_10S_1080P, // 110K
+        "5": COST_PHO_POINTS.VIDEO_5S_1080P_PRO,
+        "10": COST_PHO_POINTS.VIDEO_10S_1080P_PRO,
     },
     "wan-2.6": {
-        "5": COST_PHO_POINTS.I2V_5S_1080P,  // 55K
-        "10": COST_PHO_POINTS.I2V_10S_1080P, // 110K
+        "5": COST_PHO_POINTS.I2V_5S_1080P,
+        "10": COST_PHO_POINTS.I2V_10S_1080P,
     },
 }
 
-// Validate model is supported
+// Validate model is supported (includes all tiers)
+const VALID_MODELS = [
+    // Fast tier
+    "pho-instant", "pho-fast",
+    // Standard tier
+    "pho-cinematic", "pho-motion", "pho-motion-pro",
+    // Premium tier
+    "pho-ultra", "pho-sora",
+    // Legacy aliases
+    "ltx-video", "kling-2.6-pro", "wan-2.6"
+]
 function isValidModel(model: string): model is SupportedModel {
-    return ["ltx-video", "kling-2.6-pro", "wan-2.6"].includes(model)
+    return VALID_MODELS.includes(model)
 }
 
 // Calculate Phở Points cost for video generation

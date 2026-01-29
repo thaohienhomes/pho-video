@@ -4,7 +4,7 @@ import {
     Text,
     StyleSheet,
     Dimensions,
-    TouchableOpacity,
+    Pressable,
     Animated,
     Easing,
     Modal,
@@ -134,13 +134,12 @@ export const ProcessingScreen: React.FC<ProcessingScreenProps> = ({
                 {/* Header with close button */}
                 <View style={styles.header}>
                     {progress < 10 && onCancel && (
-                        <TouchableOpacity
+                        <Pressable
                             style={styles.closeButton}
                             onPress={onCancel}
-                            activeOpacity={0.7}
                         >
                             <X color="white" size={22} />
-                        </TouchableOpacity>
+                        </Pressable>
                     )}
                 </View>
 
@@ -220,14 +219,13 @@ export const ProcessingScreen: React.FC<ProcessingScreenProps> = ({
 
                     {/* Browse button */}
                     {showMinimizeButton && progress >= 50 && onMinimize && (
-                        <TouchableOpacity
+                        <Pressable
                             style={styles.minimizeButton}
                             onPress={onMinimize}
-                            activeOpacity={0.8}
                         >
                             <Eye size={18} color="white" />
                             <Text style={styles.minimizeButtonText}>Browse while you wait</Text>
-                        </TouchableOpacity>
+                        </Pressable>
                     )}
                 </View>
             </View>

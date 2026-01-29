@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Dimensions, Alert } from "react-native";
+import { View, Text, Pressable, StyleSheet, ScrollView, Dimensions, Alert } from "react-native";
+import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { ChevronRight, X, Trash2, ShieldCheck } from "lucide-react-native";
@@ -74,9 +75,9 @@ export default function PhotoReview() {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.iconButton}>
+                <Pressable onPress={() => router.back()} style={styles.iconButton}>
                     <X size={24} color="#FFF" />
-                </TouchableOpacity>
+                </Pressable>
                 <Text style={styles.title}>Review Photos</Text>
                 <View style={styles.placeholder} />
             </View>
@@ -96,28 +97,28 @@ export default function PhotoReview() {
                 <View style={styles.grid}>
                     {photos.map((photo, index) => (
                         <View key={index} style={styles.photoContainer}>
-                            <Image source={{ uri: photo }} style={styles.photo} alt={`User photo ${index + 1}`} />
-                            <TouchableOpacity
+                            <Image source={{ uri: photo }} style={styles.photo} contentFit="cover" />
+                            <Pressable
                                 style={styles.removeButton}
                                 onPress={() => handleRemove(index)}
                             >
                                 <Trash2 size={16} color="#FFF" />
-                            </TouchableOpacity>
+                            </Pressable>
                         </View>
                     ))}
 
                     {photos.length < 12 && (
-                        <TouchableOpacity style={styles.addMore} onPress={() => router.back()}>
+                        <Pressable style={styles.addMore} onPress={() => router.back()}>
                             <View style={styles.addCircle}>
                                 <Text style={styles.addText}>+</Text>
                             </View>
-                        </TouchableOpacity>
+                        </Pressable>
                     )}
                 </View>
             </ScrollView>
 
             <View style={styles.footer}>
-                <TouchableOpacity
+                <Pressable
                     style={[styles.trainButton, (photos.length < 5 || isUploading) && styles.trainButtonDisabled]}
                     onPress={handleStartTraining}
                     disabled={photos.length < 5 || isUploading}
@@ -126,7 +127,7 @@ export default function PhotoReview() {
                         {isUploading ? "Uploading..." : "Start Training"}
                     </Text>
                     {!isUploading && <ChevronRight size={20} color="#FFF" />}
-                </TouchableOpacity>
+                </Pressable>
             </View>
 
             <PaywallSheet ref={paywallSheetRef} />

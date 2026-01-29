@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from "react-native";
+import { View, Text, StyleSheet, Pressable, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Check, Sparkles, Play } from "lucide-react-native";
@@ -60,13 +60,13 @@ export default function AvatarSuccess() {
                     </Text>
                 </View>
 
-                <TouchableOpacity
+                <Pressable
                     style={styles.ctaButton}
                     onPress={() => router.push(`/(tabs)?avatarId=${avatarId}`)}
                 >
                     <Text style={styles.ctaText}>Go to Studio</Text>
                     <Play size={20} color="#FFF" fill="#FFF" />
-                </TouchableOpacity>
+                </Pressable>
             </View>
         </SafeAreaView>
     );

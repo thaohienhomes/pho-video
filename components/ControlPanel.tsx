@@ -59,10 +59,21 @@ interface ControlPanelProps {
     onImageUsed?: () => void
 }
 
-// Phở Points cost per action (replaces legacy credits)
+// Phở Points cost per action (All tiers)
 const PHO_POINTS_COSTS = {
     video: {
-        "kling-2.6-pro": { 5: COST_PHO_POINTS.I2V_5S_1080P, 10: COST_PHO_POINTS.I2V_10S_1080P },
+        // === FAST TIER ===
+        "pho-instant": { 5: COST_PHO_POINTS.VIDEO_5S_1080P_FAST, 10: COST_PHO_POINTS.VIDEO_10S_1080P_FAST },
+        "pho-fast": { 5: 40000, 10: 80000 }, // Seedance - cheapest
+        // === STANDARD TIER ===
+        "pho-cinematic": { 5: COST_PHO_POINTS.VIDEO_5S_1080P_PRO, 10: COST_PHO_POINTS.VIDEO_10S_1080P_PRO },
+        "pho-motion": { 5: COST_PHO_POINTS.I2V_5S_1080P, 10: COST_PHO_POINTS.I2V_10S_1080P },
+        "pho-motion-pro": { 5: 70000, 10: 140000 }, // Hailuo Pro
+        // === PREMIUM TIER ===
+        "pho-ultra": { 5: 200000, 10: 400000 }, // Veo 3.1
+        "pho-sora": { 5: 250000, 10: 500000 }, // Sora 2 Pro
+        // LEGACY: Backward compatibility
+        "kling-2.6-pro": { 5: COST_PHO_POINTS.VIDEO_5S_1080P_PRO, 10: COST_PHO_POINTS.VIDEO_10S_1080P_PRO },
         "wan-2.6": { 5: COST_PHO_POINTS.I2V_5S_1080P, 10: COST_PHO_POINTS.I2V_10S_1080P },
         "ltx-video": { 5: COST_PHO_POINTS.VIDEO_5S_1080P_FAST, 10: COST_PHO_POINTS.VIDEO_10S_1080P_FAST },
     },
@@ -72,8 +83,11 @@ const PHO_POINTS_COSTS = {
     }
 }
 
-// Models that support I2V
-const I2V_SUPPORTED_MODELS = ["kling-2.6-pro", "wan-2.6"]
+// All Fal.AI models support I2V
+const I2V_SUPPORTED_MODELS = [
+    "pho-instant", "pho-fast", "pho-cinematic", "pho-motion", "pho-motion-pro",
+    "pho-ultra", "pho-sora", "kling-2.6-pro", "wan-2.6", "ltx-video"
+]
 
 export function ControlPanel({
     onGenerateAction,
@@ -112,47 +126,86 @@ export function ControlPanel({
     const [imageModel, setImageModel] = useState("flux-pro-v1.1")
     const [imageCount, setImageCount] = useState<1 | 4>(1)
 
-    // Available Models
+    // Available Models - Organized by Tier
     const AVAILABLE_MODELS: VideoModel[] = [
+        // === PREMIUM TIER (Enterprise) ===
         {
-            id: "kling-2.6-pro",
-            name: "Phở Cinematic (Max)",
+            id: "pho-ultra",
+            name: "Phở Ultra (Veo 3.1)",
+            description: "Google's flagship - Ultra-cinematic, best quality",
+            isAvailable: true,
+            provider: "Google Veo 3.1 via Fal.AI",
+            tag: "ULTRA",
+            tagKey: "Ultra",
+            costTier: "high",
+            creditCostPerSecond: 40,
+        },
+        {
+            id: "pho-sora",
+            name: "Phở Sora (OpenAI)",
+            description: "OpenAI Sora 2 Pro - Best motion physics",
+            isAvailable: true,
+            provider: "OpenAI Sora 2 via Fal.AI",
+            tag: "SORA",
+            tagKey: "Sora",
+            costTier: "high",
+            creditCostPerSecond: 50,
+        },
+        // === STANDARD TIER (Quality balance) ===
+        {
+            id: "pho-cinematic",
+            name: "Phở Cinematic (Pro)",
             description: tSidebar("kling_desc"),
             isAvailable: true,
-            provider: "pho-engine-cinematic",
+            provider: "Kling 2.5 Pro via Fal.AI",
             tag: tSidebar("tag_cinematic"),
             tagKey: "Cinematic",
             costTier: "high",
-            creditCostPerSecond: 10,
+            creditCostPerSecond: 15,
         },
         {
-            id: "wan-2.6",
-            name: "Phở Realistic (Pro)",
+            id: "pho-motion",
+            name: "Phở Motion (Smooth)",
             description: tSidebar("wan_desc"),
             isAvailable: true,
-            provider: "pho-engine-realistic",
-            tag: tSidebar("tag_realistic"),
-            tagKey: "Realistic",
-            costTier: "high",
-            creditCostPerSecond: 8,
+            provider: "Minimax Hailuo via Fal.AI",
+            tag: "MOTION",
+            tagKey: "Motion",
+            costTier: "medium",
+            creditCostPerSecond: 11,
         },
+        // === FAST TIER (Budget-friendly) ===
         {
-            id: "ltx-video",
+            id: "pho-instant",
             name: "Phở Instant (Fast)",
             description: tSidebar("ltx_desc"),
             isAvailable: true,
-            provider: "pho-engine-instant",
+            provider: "LTX-2 19B via Fal.AI",
             tag: tSidebar("tag_fast"),
             tagKey: "Fast",
             costTier: "low",
-            creditCostPerSecond: 2,
+            creditCostPerSecond: 10,
+        },
+        {
+            id: "pho-fast",
+            name: "Phở Fast (Budget)",
+            description: "ByteDance Seedance - Cheapest option, good for drafts",
+            isAvailable: true,
+            provider: "ByteDance Seedance via Fal.AI",
+            tag: "BUDGET",
+            tagKey: "Budget",
+            costTier: "low",
+            creditCostPerSecond: 8,
         },
     ]
 
     const tagStyles: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
+        Ultra: { bg: "bg-gradient-to-r from-purple-500/30 to-pink-500/30", text: "text-pink-400", icon: <Crown className="w-3 h-3" /> },
+        Sora: { bg: "bg-gradient-to-r from-blue-500/30 to-cyan-500/30", text: "text-cyan-400", icon: <Star className="w-3 h-3" /> },
         Cinematic: { bg: "bg-primary/20", text: "text-primary", icon: <Crown className="w-3 h-3" /> },
-        Realistic: { bg: "bg-blue-500/20", text: "text-blue-400", icon: <Star className="w-3 h-3" /> },
+        Motion: { bg: "bg-purple-500/20", text: "text-purple-400", icon: <Star className="w-3 h-3" /> },
         Fast: { bg: "bg-green-500/20", text: "text-green-400", icon: <Zap className="w-3 h-3" /> },
+        Budget: { bg: "bg-yellow-500/20", text: "text-yellow-400", icon: <Zap className="w-3 h-3" /> },
     }
 
     // Check if current model supports I2V

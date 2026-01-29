@@ -10,7 +10,10 @@
 // Types
 // ============================================================================
 
-import { GoogleGenerativeAI } from "@google/generative-ai"
+// Google Gemini API types (we use manual fetch now to avoid SDK version issues)
+export interface EnhancedPromptResult {
+    enhancedPrompt: string;
+}
 
 export interface VideoGenerationOptions {
     prompt: string
@@ -67,11 +70,18 @@ interface PollOptions {
 }
 
 // ============================================================================
-// Fal.ai Service (LTX-Video)
+// Fal.ai Service (LTX-Video, Kling, Minimax via SDK)
 // ============================================================================
+
+import { fal } from "@fal-ai/client"
 
 const FAL_API_BASE = "https://queue.fal.run"
 const FAL_KEY = process.env.FAL_KEY
+
+// Configure Fal.AI client
+if (FAL_KEY) {
+    fal.config({ credentials: FAL_KEY })
+}
 
 interface FalQueueResponse {
     request_id: string
@@ -286,7 +296,317 @@ export async function generateFalVideo(
 }
 
 // ============================================================================
-// WaveSpeedAI Service (Kling & Wan)
+// Fal.AI Kling 2.5 Pro Service (NEW - Replaces WaveSpeed)
+// ============================================================================
+
+/**
+ * Fal.AI Model Mapping
+ * Maps our internal model IDs to Fal.AI endpoint paths
+ */
+const FAL_VIDEO_MODELS = {
+    // === FAST TIER (Budget-friendly) ===
+    // LTX-2 19B - Fast generation
+    "pho-instant": "fal-ai/ltx-2-19b/text-to-video",
+    "pho-instant-i2v": "fal-ai/ltx-2-19b/image-to-video",
+
+    // Seedance v1.5 - ByteDance's fast alternative (NEW!)
+    "pho-fast": "fal-ai/bytedance/seedance/v1/pro",
+    "pho-fast-i2v": "fal-ai/bytedance/seedance/v1.5/pro/image-to-video",
+
+    // === STANDARD TIER (Quality balance) ===
+    // Kling 2.5 Turbo Pro - Cinematic
+    "pho-cinematic": "fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
+    "pho-cinematic-i2v": "fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
+
+    // Kling v2.6 Pro - Latest I2V upgrade (NEW!)
+    "pho-cinematic-v26-i2v": "fal-ai/kling-video/v2.6/pro/image-to-video",
+
+    // Minimax Hailuo 02 Standard - Smooth Motion
+    "pho-motion": "fal-ai/minimax/hailuo-02/standard/text-to-video",
+    "pho-motion-i2v": "fal-ai/minimax/hailuo-02/standard/image-to-video",
+
+    // Minimax Hailuo 02 Pro - Higher quality (NEW!)
+    "pho-motion-pro": "fal-ai/minimax/hailuo-02/pro/text-to-video",
+
+    // === PREMIUM TIER (Enterprise quality) ===
+    // Veo 3.1 - Google's flagship (Enterprise only)
+    "pho-ultra": "fal-ai/veo3.1",
+    "pho-ultra-fast": "fal-ai/veo3/fast",
+
+    // Sora 2 Pro - OpenAI's flagship (Enterprise only)
+    "pho-sora": "fal-ai/sora-2/pro",
+
+    // Legacy mappings for backward compatibility
+    "ltx-video": "fal-ai/ltx-2-19b/text-to-video",
+    "kling-2.6-pro": "fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
+    "wan-2.6": "fal-ai/minimax/hailuo-02/standard/text-to-video",
+}
+
+type FalVideoModelId = keyof typeof FAL_VIDEO_MODELS
+
+/**
+ * Calculate video dimensions from resolution and aspect ratio
+ */
+function getVideoDimensions(resolution: string, aspectRatio: string): { width: number; height: number } {
+    const baseWidths: Record<string, number> = {
+        "480p": 854,
+        "720p": 1280,
+        "1080p": 1920,
+    }
+    const baseWidth = baseWidths[resolution] || 1280
+
+    switch (aspectRatio) {
+        case "16:9":
+            return { width: baseWidth, height: Math.round(baseWidth * 9 / 16) }
+        case "9:16":
+            return { width: Math.round(baseWidth * 9 / 16), height: baseWidth }
+        case "1:1":
+            return { width: Math.min(baseWidth, 1024), height: Math.min(baseWidth, 1024) }
+        case "21:9":
+            return { width: baseWidth, height: Math.round(baseWidth * 9 / 21) }
+        default:
+            return { width: 1280, height: 720 }
+    }
+}
+
+/**
+ * Submit a video generation job to Fal.AI using the new unified endpoints
+ */
+async function submitFalVideoJob(
+    modelId: FalVideoModelId,
+    options: VideoGenerationOptions
+): Promise<string> {
+    const endpoint = FAL_VIDEO_MODELS[modelId] || FAL_VIDEO_MODELS["pho-instant"]
+    const isI2V = !!options.imageBase64
+    const dimensions = getVideoDimensions(options.resolution || "720p", options.aspectRatio || "16:9")
+
+    console.log(`📤 [Fal.AI] Submitting to ${endpoint}`)
+    console.log(`   Dimensions: ${dimensions.width}x${dimensions.height}`)
+    console.log(`   Duration: ${options.duration || 5}s`)
+
+    // Build request body based on model capabilities
+    const requestBody: Record<string, unknown> = {
+        prompt: options.prompt,
+        negative_prompt: options.negativePrompt || "low quality, worst quality, deformed, distorted, blurry, watermark",
+        duration: options.duration || 5,
+        aspect_ratio: options.aspectRatio || "16:9",
+    }
+
+    // Kling-specific parameters
+    if (modelId.includes("kling") || modelId.includes("pho-cinematic")) {
+        requestBody.cfg_scale = 0.5
+        requestBody.camera_control = { type: "none" }
+    }
+
+    // Minimax-specific parameters
+    if (modelId.includes("minimax") || modelId.includes("pho-motion")) {
+        requestBody.resolution = `${dimensions.width}x${dimensions.height}`
+    }
+
+    // LTX-2 specific parameters
+    if (modelId.includes("ltx") || modelId.includes("pho-instant")) {
+        requestBody.num_inference_steps = 50  // Increased from 30 for quality
+        requestBody.guidance_scale = 4
+    }
+
+    // Add image for I2V mode
+    if (isI2V && options.imageBase64) {
+        // Strip data URL prefix if present
+        let imageData = options.imageBase64
+        if (imageData.startsWith('data:')) {
+            const commaIndex = imageData.indexOf(',')
+            if (commaIndex !== -1) {
+                imageData = imageData.substring(commaIndex + 1)
+            }
+        }
+        requestBody.image_url = `data:image/png;base64,${imageData}`
+    }
+
+    // Add seed if specified
+    if (options.seed) {
+        requestBody.seed = options.seed
+    }
+
+    const response = await fetch(`${FAL_API_BASE}/${endpoint}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Key ${FAL_KEY}`,
+        },
+        body: JSON.stringify(requestBody),
+    })
+
+    if (!response.ok) {
+        const errorBody = await response.text()
+        let errorDetail = "Generation service at capacity. Please try again."
+        try {
+            const errorJson = JSON.parse(errorBody)
+            errorDetail = errorJson.detail || errorJson.error || errorJson.message || errorDetail
+        } catch {
+            if (errorBody.length < 200) errorDetail = errorBody
+        }
+        console.error(`❌ [Fal.AI] API Error (${endpoint}): ${errorDetail}`)
+        throw new Error(errorDetail)
+    }
+
+    const data: FalQueueResponse = await response.json()
+    console.log(`📋 [Fal.AI] Job submitted: ${data.request_id}`)
+    return data.request_id
+}
+
+/**
+ * Check status of a Fal.AI job (works for any model)
+ */
+async function checkFalJobStatus(modelId: FalVideoModelId, requestId: string): Promise<FalStatusResponse> {
+    // Fal.AI queue status uses /requests/{id}/status (no model path needed)
+    const statusUrl = `${FAL_API_BASE}/requests/${requestId}/status`
+
+    console.log(`🔍 [Fal.AI] Checking status: ${statusUrl}`)
+
+    const response = await fetch(statusUrl, {
+        headers: { "Authorization": `Key ${FAL_KEY}` },
+    })
+
+    if (!response.ok) {
+        const errorBody = await response.text()
+        console.error(`❌ [Fal.AI] Status check failed (${response.status}): ${errorBody}`)
+        throw new Error(`Status check failed: ${response.status} ${response.statusText}`)
+    }
+
+    return response.json()
+}
+
+/**
+ * Get result of a completed Fal.AI job
+ */
+async function getFalJobResult(modelId: FalVideoModelId, requestId: string): Promise<FalResultResponse> {
+    // Fal.AI queue result uses /requests/{id} (no model path needed)
+    const resultUrl = `${FAL_API_BASE}/requests/${requestId}`
+
+    console.log(`📦 [Fal.AI] Getting result: ${resultUrl}`)
+
+    const response = await fetch(resultUrl, {
+        headers: { "Authorization": `Key ${FAL_KEY}` },
+    })
+
+    if (!response.ok) {
+        const errorBody = await response.text()
+        console.error(`❌ [Fal.AI] Result fetch failed (${response.status}): ${errorBody}`)
+        throw new Error(`Result fetch failed: ${response.status} ${response.statusText}`)
+    }
+
+    return response.json()
+}
+
+/**
+ * Generate video using any Fal.AI model
+ * Uses fal.subscribe() SDK for proper queue handling
+ */
+export async function generateFalVideoUnified(
+    modelId: string,
+    options: VideoGenerationOptions,
+    pollOptions: PollOptions = {}
+): Promise<VideoGenerationResult> {
+    // Determine if this is I2V mode and adjust model ID
+    const isI2V = !!options.imageBase64
+    let effectiveModelId = modelId as FalVideoModelId
+
+    // Auto-switch to I2V variant if image provided
+    if (isI2V && !modelId.includes("i2v")) {
+        if (modelId === "pho-instant" || modelId === "ltx-video") {
+            effectiveModelId = "pho-instant-i2v"
+        } else if (modelId === "pho-cinematic" || modelId === "kling-2.6-pro") {
+            effectiveModelId = "pho-cinematic-i2v"
+        } else if (modelId === "pho-motion" || modelId === "wan-2.6") {
+            effectiveModelId = "pho-motion-i2v"
+        }
+    }
+
+    if (!FAL_KEY) {
+        console.warn("⚠️ FAL_KEY not configured, using mock response")
+        return mockVideoGeneration(options, "fal-mock")
+    }
+
+    try {
+        const endpoint = FAL_VIDEO_MODELS[effectiveModelId] || FAL_VIDEO_MODELS["pho-instant"]
+        const dimensions = getVideoDimensions(options.resolution || "720p", options.aspectRatio || "16:9")
+
+        console.log(`🎬 [Fal.AI SDK] Starting ${effectiveModelId} generation...`)
+        console.log(`   Endpoint: ${endpoint}`)
+        console.log(`   Mode: ${isI2V ? 'Image-to-Video' : 'Text-to-Video'}`)
+        console.log(`   Prompt: ${options.prompt.substring(0, 80)}...`)
+
+        // Build input based on model type
+        const input: Record<string, unknown> = {
+            prompt: options.prompt,
+            negative_prompt: options.negativePrompt || "low quality, worst quality, deformed, distorted, blurry, watermark",
+            duration: options.duration || 5,
+            aspect_ratio: options.aspectRatio || "16:9",
+        }
+
+        // Model-specific parameters
+        if (effectiveModelId.includes("kling") || effectiveModelId.includes("pho-cinematic")) {
+            input.cfg_scale = 0.5
+        }
+        if (effectiveModelId.includes("minimax") || effectiveModelId.includes("pho-motion")) {
+            input.resolution = `${dimensions.width}x${dimensions.height}`
+        }
+        if (effectiveModelId.includes("ltx") || effectiveModelId.includes("pho-instant")) {
+            input.num_inference_steps = 50
+            input.guidance_scale = 4
+        }
+
+        // Add image for I2V mode
+        if (isI2V && options.imageBase64) {
+            let imageData = options.imageBase64
+            if (imageData.startsWith('data:')) {
+                const commaIndex = imageData.indexOf(',')
+                if (commaIndex !== -1) {
+                    imageData = imageData.substring(commaIndex + 1)
+                }
+            }
+            input.image_url = `data:image/png;base64,${imageData}`
+        }
+
+        if (options.seed) {
+            input.seed = options.seed
+        }
+
+        // Use fal.subscribe() for proper queue handling
+        const result = await fal.subscribe(endpoint, {
+            input,
+            logs: true,
+            onQueueUpdate: (update) => {
+                console.log(`🔄 [Fal.AI SDK] ${effectiveModelId} status: ${update.status}`)
+            },
+        })
+
+        console.log(`✅ [Fal.AI SDK] ${effectiveModelId} completed successfully`)
+
+        // Extract video URL from result
+        const videoUrl = (result.data as { video?: { url: string } })?.video?.url
+        if (!videoUrl) {
+            throw new Error("No video URL in response")
+        }
+
+        return {
+            videoUrl,
+            requestId: result.requestId,
+            status: "completed",
+        }
+    } catch (error) {
+        console.error(`❌ [Fal.AI SDK] ${effectiveModelId} error:`, error)
+        return {
+            videoUrl: "",
+            requestId: "",
+            status: "failed",
+            error: error instanceof Error ? error.message : "Generation failed",
+        }
+    }
+}
+
+// ============================================================================
+// WaveSpeedAI Service (DEPRECATED - Kept for backward compatibility)
 // ============================================================================
 
 const WAVESPEED_API_BASE = "https://api.wavespeed.ai/api/v3"
@@ -542,26 +862,35 @@ async function mockVideoGeneration(
 // Unified Generation Function
 // ============================================================================
 
-export type SupportedModel = "ltx-video" | "kling-2.6-pro" | "wan-2.6"
+// Fal.AI Model IDs - All tiers
+export type SupportedModel =
+    // Fast Tier (Budget-friendly)
+    | "pho-instant"      // LTX-2 19B - Fast
+    | "pho-fast"         // Seedance v1.5 - Cheapest
+    // Standard Tier (Quality balance)
+    | "pho-cinematic"    // Kling 2.5 Pro - Cinematic
+    | "pho-motion"       // Minimax Hailuo Standard
+    | "pho-motion-pro"   // Minimax Hailuo Pro
+    // Premium Tier (Enterprise)
+    | "pho-ultra"        // Veo 3.1 - Google flagship
+    | "pho-sora"         // Sora 2 Pro - OpenAI flagship
+    // Legacy aliases (backward compatibility)
+    | "ltx-video"
+    | "kling-2.6-pro"
+    | "wan-2.6"
 
 /**
- * Generate video using the appropriate provider based on model selection
+ * Generate video using Fal.AI (all models now route through Fal.AI)
+ * Legacy WaveSpeed models are automatically mapped to Fal.AI equivalents
  */
 export async function generateVideo(
     model: SupportedModel,
     options: VideoGenerationOptions
 ): Promise<VideoGenerationResult> {
-    switch (model) {
-        case "ltx-video":
-            return generateFalVideo(options)
-
-        case "kling-2.6-pro":
-        case "wan-2.6":
-            return generateWaveSpeedVideo(model, options)
-
-        default:
-            throw new Error(`Unsupported model: ${model}`)
-    }
+    // All models now use Fal.AI unified function
+    // Legacy model IDs are automatically mapped in FAL_VIDEO_MODELS
+    console.log(`🎬 [VideoService] Generating with model: ${model}`)
+    return generateFalVideoUnified(model, options)
 }
 
 // ============================================================================
@@ -1048,9 +1377,9 @@ export async function enhancePrompt(prompt: string): Promise<EnhancedPromptResul
         throw new Error("Gemini API Key is not configured. Please add GOOGLE_API_KEY to your .env.local file.")
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey)
-    // Using gemini-1.5-flash - stable and fast model for prompt enhancement
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+    // Use manual fetch to bypass potential SDK issues with newer models or regional endpoints
+    const modelName = "gemini-2.5-flash"
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`
 
     const systemPrompt = `
 You are a professional AI Video Prompt Engineer for "Phở Video". 
@@ -1068,13 +1397,31 @@ Target Style: Cinematic Masterpiece, 8k, Ultra-detailed.
 `
 
     try {
-        const result = await model.generateContent([
-            { text: systemPrompt },
-            { text: `User request: "${prompt}"` }
-        ])
+        console.log(`📡 [Enhance] Calling Gemini API (${modelName})...`)
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [
+                    { parts: [{ text: systemPrompt }] },
+                    { parts: [{ text: `User request: "${prompt}"` }] }
+                ]
+            })
+        })
 
-        const response = await result.response
-        const text = response.text().trim()
+        const data = await res.json()
+
+        if (!res.ok) {
+            console.error(`❌ [Enhance] API Error ${res.status}:`, JSON.stringify(data, null, 2))
+            throw new Error(`Gemini API error: ${data?.error?.message || 'Unknown error'}`)
+        }
+
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
+
+        if (!text) {
+            console.error("❌ [Enhance] Empty response from Gemini API")
+            throw new Error("Empty response from Gemini API")
+        }
 
         // Clean up potential quotes if the AI included them
         const cleanedText = text.replace(/^"|"$/g, '').trim()
@@ -1172,3 +1519,383 @@ export async function generateAudio(
 }
 
 
+// ============================================================================
+// Phase 2: AI Music Generation (NEW!)
+// ============================================================================
+
+export interface MusicGenerationOptions {
+    prompt: string                    // Description of the music
+    duration?: number                 // Duration in seconds (default: 30)
+    model?: "minimax" | "elevenlabs" | "lyria2" | "ace-step"
+    referenceAudioUrl?: string        // Optional reference audio for style
+}
+
+export interface MusicGenerationResult {
+    audioUrl: string
+    requestId: string
+    status: "completed" | "failed"
+    error?: string
+}
+
+// Music model endpoints
+const FAL_MUSIC_MODELS = {
+    "minimax": "fal-ai/minimax-music/v2",
+    "elevenlabs": "fal-ai/elevenlabs/music",
+    "lyria2": "fal-ai/lyria2",
+    "ace-step": "fal-ai/ace-step",
+}
+
+/**
+ * Generate AI Music using Fal.AI
+ * Supports MiniMax Music v2, ElevenLabs, Lyria2, and ACE-Step
+ */
+export async function generateMusic(
+    options: MusicGenerationOptions
+): Promise<MusicGenerationResult> {
+    const modelId = options.model || "minimax"
+    const endpoint = FAL_MUSIC_MODELS[modelId] || FAL_MUSIC_MODELS["minimax"]
+
+    if (!FAL_KEY) {
+        console.warn("⚠️ FAL_KEY not configured for music generation")
+        return { audioUrl: "", requestId: "", status: "failed", error: "API key not configured" }
+    }
+
+    try {
+        console.log(`🎵 [Music] Generating with ${modelId}...`)
+        console.log(`   Prompt: ${options.prompt.substring(0, 80)}...`)
+        console.log(`   Duration: ${options.duration || 30}s`)
+
+        const input: Record<string, unknown> = {
+            prompt: options.prompt,
+            duration: options.duration || 30,
+        }
+
+        // Add reference audio if provided (for style transfer)
+        if (options.referenceAudioUrl) {
+            input.reference_audio_url = options.referenceAudioUrl
+        }
+
+        // Use fal.subscribe for queue handling
+        const result = await fal.subscribe(endpoint, {
+            input,
+            logs: true,
+            onQueueUpdate: (update) => {
+                console.log(`🔄 [Music] ${modelId} status: ${update.status}`)
+            },
+        })
+
+        console.log(`✅ [Music] Generation complete!`)
+
+        // Extract audio URL from result
+        const audioUrl = (result.data as { audio_url?: { url: string }, audio?: { url: string } })?.audio_url?.url
+            || (result.data as { audio?: { url: string } })?.audio?.url
+
+        if (!audioUrl) {
+            throw new Error("No audio URL in response")
+        }
+
+        return {
+            audioUrl,
+            requestId: result.requestId,
+            status: "completed",
+        }
+    } catch (error) {
+        console.error(`❌ [Music] Error:`, error)
+        return {
+            audioUrl: "",
+            requestId: "",
+            status: "failed",
+            error: error instanceof Error ? error.message : "Music generation failed",
+        }
+    }
+}
+
+// ============================================================================
+// Phase 2: Text-to-Speech (TTS) Service
+// ============================================================================
+
+export interface TTSOptions {
+    text: string
+    voice?: string                    // Voice ID or name
+    model?: "elevenlabs" | "minimax" | "chatterbox"
+    language?: string                 // For multilingual models
+}
+
+export interface TTSResult {
+    audioUrl: string
+    requestId: string
+    status: "completed" | "failed"
+    error?: string
+}
+
+const FAL_TTS_MODELS = {
+    "elevenlabs": "fal-ai/elevenlabs/eleven-v3",
+    "minimax": "fal-ai/minimax/speech-2.6-hd",
+    "chatterbox": "fal-ai/chatterbox/multilingual",
+}
+
+/**
+ * Generate Text-to-Speech using Fal.AI
+ */
+export async function generateTTS(
+    options: TTSOptions
+): Promise<TTSResult> {
+    const modelId = options.model || "elevenlabs"
+    const endpoint = FAL_TTS_MODELS[modelId] || FAL_TTS_MODELS["elevenlabs"]
+
+    if (!FAL_KEY) {
+        return { audioUrl: "", requestId: "", status: "failed", error: "API key not configured" }
+    }
+
+    try {
+        console.log(`🗣️ [TTS] Generating with ${modelId}...`)
+        console.log(`   Text: ${options.text.substring(0, 100)}...`)
+
+        const input: Record<string, unknown> = {
+            text: options.text,
+        }
+
+        if (options.voice) {
+            input.voice_id = options.voice
+        }
+        if (options.language) {
+            input.language = options.language
+        }
+
+        const result = await fal.subscribe(endpoint, {
+            input,
+            logs: true,
+        })
+
+        const audioUrl = (result.data as { audio_url?: { url: string }, audio?: { url: string } })?.audio_url?.url
+            || (result.data as { audio?: { url: string } })?.audio?.url
+
+        if (!audioUrl) {
+            throw new Error("No audio URL in TTS response")
+        }
+
+        console.log(`✅ [TTS] Complete!`)
+        return { audioUrl, requestId: result.requestId, status: "completed" }
+    } catch (error) {
+        console.error(`❌ [TTS] Error:`, error)
+        return { audioUrl: "", requestId: "", status: "failed", error: error instanceof Error ? error.message : "TTS failed" }
+    }
+}
+
+// ============================================================================
+// Phase 2: Speech-to-Text (STT) / Transcription Service
+// ============================================================================
+
+export interface STTOptions {
+    audioUrl: string
+    model?: "whisper" | "scribe"
+    language?: string
+}
+
+export interface STTResult {
+    text: string
+    requestId: string
+    status: "completed" | "failed"
+    error?: string
+}
+
+const FAL_STT_MODELS = {
+    "whisper": "fal-ai/whisper",
+    "scribe": "fal-ai/elevenlabs/scribe",
+}
+
+/**
+ * Transcribe audio to text using Fal.AI Whisper or ElevenLabs Scribe
+ */
+export async function transcribeAudio(
+    options: STTOptions
+): Promise<STTResult> {
+    const modelId = options.model || "whisper"
+    const endpoint = FAL_STT_MODELS[modelId] || FAL_STT_MODELS["whisper"]
+
+    if (!FAL_KEY) {
+        return { text: "", requestId: "", status: "failed", error: "API key not configured" }
+    }
+
+    try {
+        console.log(`📝 [STT] Transcribing with ${modelId}...`)
+
+        const input: Record<string, unknown> = {
+            audio_url: options.audioUrl,
+        }
+        if (options.language) {
+            input.language = options.language
+        }
+
+        const result = await fal.subscribe(endpoint, { input, logs: true })
+
+        const text = (result.data as { text?: string, transcription?: string })?.text
+            || (result.data as { transcription?: string })?.transcription
+
+        if (!text) {
+            throw new Error("No transcription in response")
+        }
+
+        console.log(`✅ [STT] Transcription complete: ${text.substring(0, 100)}...`)
+        return { text, requestId: result.requestId, status: "completed" }
+    } catch (error) {
+        console.error(`❌ [STT] Error:`, error)
+        return { text: "", requestId: "", status: "failed", error: error instanceof Error ? error.message : "STT failed" }
+    }
+}
+
+// ============================================================================
+// Phase 2: Premium Video Upscaler (Topaz)
+// ============================================================================
+
+export interface PremiumUpscaleOptions {
+    videoUrl: string
+    model?: "topaz" | "seedvr" | "flashvsr" | "standard"
+    scale?: 2 | 4
+}
+
+export interface PremiumUpscaleResult {
+    videoUrl: string
+    requestId: string
+    status: "completed" | "failed"
+    error?: string
+}
+
+const FAL_UPSCALE_MODELS = {
+    "topaz": "fal-ai/topaz/upscale/video",       // Premium quality
+    "seedvr": "fal-ai/seedvr/upscale/video",     // ByteDance tech
+    "flashvsr": "fal-ai/flashvsr",               // Fast real-time
+    "standard": "fal-ai/video-upscaler",         // Basic
+}
+
+/**
+ * Premium Video Upscaling with Topaz Labs quality
+ */
+export async function upscaleVideoPremium(
+    options: PremiumUpscaleOptions
+): Promise<PremiumUpscaleResult> {
+    const modelId = options.model || "topaz"
+    const endpoint = FAL_UPSCALE_MODELS[modelId] || FAL_UPSCALE_MODELS["standard"]
+
+    if (!FAL_KEY) {
+        return { videoUrl: "", requestId: "", status: "failed", error: "API key not configured" }
+    }
+
+    try {
+        console.log(`📈 [Upscale Premium] Starting ${modelId} upscale...`)
+        console.log(`   Source: ${options.videoUrl.substring(0, 80)}...`)
+        console.log(`   Scale: ${options.scale || 2}x`)
+
+        const input: Record<string, unknown> = {
+            video_url: options.videoUrl,
+            scale: options.scale || 2,
+        }
+
+        const result = await fal.subscribe(endpoint, {
+            input,
+            logs: true,
+            onQueueUpdate: (update) => {
+                console.log(`🔄 [Upscale] ${modelId} status: ${update.status}`)
+            },
+        })
+
+        const videoUrl = (result.data as { video?: { url: string } })?.video?.url
+
+        if (!videoUrl) {
+            throw new Error("No video URL in upscale response")
+        }
+
+        console.log(`✅ [Upscale Premium] Complete!`)
+        return { videoUrl, requestId: result.requestId, status: "completed" }
+    } catch (error) {
+        console.error(`❌ [Upscale Premium] Error:`, error)
+        return { videoUrl: "", requestId: "", status: "failed", error: error instanceof Error ? error.message : "Upscale failed" }
+    }
+}
+
+// ============================================================================
+// Phase 2: Storyboard Utilities (FFmpeg)
+// ============================================================================
+
+export interface MergeVideosOptions {
+    videoUrls: string[]               // Array of video URLs to merge
+}
+
+export interface MergeAudioVideoOptions {
+    videoUrl: string
+    audioUrl: string
+}
+
+export interface MergeResult {
+    resultUrl: string
+    requestId: string
+    status: "completed" | "failed"
+    error?: string
+}
+
+/**
+ * Merge multiple videos into one using Fal.AI FFmpeg
+ */
+export async function mergeVideos(
+    options: MergeVideosOptions
+): Promise<MergeResult> {
+    if (!FAL_KEY) {
+        return { resultUrl: "", requestId: "", status: "failed", error: "API key not configured" }
+    }
+
+    try {
+        console.log(`🎬 [Merge] Combining ${options.videoUrls.length} videos...`)
+
+        const result = await fal.subscribe("fal-ai/ffmpeg-api/merge-videos", {
+            input: { video_urls: options.videoUrls },
+            logs: true,
+        })
+
+        const resultUrl = (result.data as { video?: { url: string } })?.video?.url
+
+        if (!resultUrl) {
+            throw new Error("No merged video URL in response")
+        }
+
+        console.log(`✅ [Merge] Videos combined successfully!`)
+        return { resultUrl, requestId: result.requestId, status: "completed" }
+    } catch (error) {
+        console.error(`❌ [Merge] Error:`, error)
+        return { resultUrl: "", requestId: "", status: "failed", error: error instanceof Error ? error.message : "Merge failed" }
+    }
+}
+
+/**
+ * Merge audio track onto video using Fal.AI FFmpeg
+ */
+export async function mergeAudioWithVideo(
+    options: MergeAudioVideoOptions
+): Promise<MergeResult> {
+    if (!FAL_KEY) {
+        return { resultUrl: "", requestId: "", status: "failed", error: "API key not configured" }
+    }
+
+    try {
+        console.log(`🔊 [Audio Merge] Adding audio to video...`)
+
+        const result = await fal.subscribe("fal-ai/ffmpeg-api/merge-audio-video", {
+            input: {
+                video_url: options.videoUrl,
+                audio_url: options.audioUrl,
+            },
+            logs: true,
+        })
+
+        const resultUrl = (result.data as { video?: { url: string } })?.video?.url
+
+        if (!resultUrl) {
+            throw new Error("No merged video URL in response")
+        }
+
+        console.log(`✅ [Audio Merge] Audio added successfully!`)
+        return { resultUrl, requestId: result.requestId, status: "completed" }
+    } catch (error) {
+        console.error(`❌ [Audio Merge] Error:`, error)
+        return { resultUrl: "", requestId: "", status: "failed", error: error instanceof Error ? error.message : "Audio merge failed" }
+    }
+}

@@ -1,5 +1,6 @@
-import React, { useRef } from "react";
-import { Text, TouchableOpacity, View, ActivityIndicator, StyleSheet, Animated } from "react-native";
+import React from "react";
+import { Text, Pressable, View, ActivityIndicator, StyleSheet } from "react-native";
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { Sparkles, CheckCircle2 } from "lucide-react-native";
 
@@ -11,23 +12,19 @@ interface GenerateButtonProps {
 }
 
 export const GenerateButton: React.FC<GenerateButtonProps> = ({ onPress, status = "idle" }) => {
-    const scaleAnim = useRef(new Animated.Value(1)).current;
+    const scale = useSharedValue(1);
 
     const handlePressIn = () => {
-        Animated.spring(scaleAnim, {
-            toValue: 0.96,
-            friction: 3,
-            useNativeDriver: true,
-        }).start();
+        scale.value = withSpring(0.96, { damping: 15 });
     };
 
     const handlePressOut = () => {
-        Animated.spring(scaleAnim, {
-            toValue: 1,
-            friction: 3,
-            useNativeDriver: true,
-        }).start();
+        scale.value = withSpring(1, { damping: 15 });
     };
+
+    const animatedStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: scale.value }],
+    }));
 
     const gradientColors = status === "success"
         ? ["#10B981", "#059669"] as const
@@ -36,9 +33,8 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({ onPress, status 
             : ["#F0421C", "#E0320C"] as const;
 
     return (
-        <Animated.View style={[styles.buttonWrapper, { transform: [{ scale: scaleAnim }] }]}>
-            <TouchableOpacity
-                activeOpacity={0.9}
+        <Animated.View style={[styles.buttonWrapper, animatedStyle]}>
+            <Pressable
                 onPressIn={handlePressIn}
                 onPressOut={handlePressOut}
                 onPress={onPress}
@@ -78,7 +74,7 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({ onPress, status 
                         </View>
                     )}
                 </LinearGradient>
-            </TouchableOpacity>
+            </Pressable>
         </Animated.View>
     );
 };

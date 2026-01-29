@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Dimensions } from "react-native";
+import { View, Text, Pressable, StyleSheet, ScrollView, Dimensions } from "react-native";
+import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { User, Plus, Info, ChevronRight, Sparkles } from "lucide-react-native";
@@ -30,41 +31,41 @@ export default function AvatarHub() {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                <Pressable onPress={() => router.back()} style={styles.backButton}>
                     <ChevronRight size={24} color={COLORS.text} style={{ transform: [{ rotate: '180deg' }] }} />
-                </TouchableOpacity>
+                </Pressable>
                 <Text style={styles.title}>My Avatar</Text>
-                <TouchableOpacity style={styles.infoButton}>
+                <Pressable style={styles.infoButton}>
                     <Info size={20} color={COLORS.textMuted} />
-                </TouchableOpacity>
+                </Pressable>
             </View>
 
             <ScrollView contentContainerStyle={styles.content}>
                 {avatars && avatars.length > 0 ? (
                     <View style={styles.avatarGrid}>
                         {avatars.map((avatar: any) => (
-                            <TouchableOpacity
+                            <Pressable
                                 key={avatar.id}
                                 style={styles.avatarCard}
                                 onPress={() => router.push(`/(tabs)?avatarId=${avatar.id}`)}
                             >
-                                <Image source={{ uri: avatar.imageUrl }} style={styles.avatarImage} alt={avatar.name} />
+                                <Image source={{ uri: avatar.imageUrl }} style={styles.avatarImage} contentFit="cover" />
                                 <View style={styles.avatarOverlay}>
                                     <Text style={styles.avatarName}>{avatar.name}</Text>
                                     <View style={[styles.statusBadge, avatar.status === 'READY' ? styles.statusReady : styles.statusTraining]}>
                                         <Text style={styles.statusText}>{avatar.status}</Text>
                                     </View>
                                 </View>
-                            </TouchableOpacity>
+                            </Pressable>
                         ))}
 
-                        <TouchableOpacity
+                        <Pressable
                             style={styles.addCard}
                             onPress={() => router.push("/avatar/guide")}
                         >
                             <Plus size={32} color={COLORS.primary} />
                             <Text style={styles.addText}>New Avatar</Text>
-                        </TouchableOpacity>
+                        </Pressable>
                     </View>
                 ) : (
                     <View style={styles.emptyState}>
@@ -77,12 +78,12 @@ export default function AvatarHub() {
                             Teach Phở Video your face to generate yourself in any scene or style.
                         </Text>
 
-                        <TouchableOpacity
+                        <Pressable
                             style={styles.createButton}
                             onPress={() => router.push("/avatar/guide")}
                         >
                             <Text style={styles.createButtonText}>Create Your First Avatar</Text>
-                        </TouchableOpacity>
+                        </Pressable>
 
                         <View style={styles.costInfo}>
                             <Text style={styles.costText}>⚡ 50K Phở Points per training</Text>

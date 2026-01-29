@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions } from "react-native";
+import { View, Text, Pressable, StyleSheet, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { ChevronRight, ChevronLeft, Check, X } from "lucide-react-native";
@@ -54,9 +54,9 @@ export default function CaptureGuide() {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
+                <Pressable onPress={() => router.back()} style={styles.closeButton}>
                     <X size={24} color={COLORS.text} />
-                </TouchableOpacity>
+                </Pressable>
                 <View style={styles.progressContainer}>
                     {STEPS.map((_, i) => (
                         <View
@@ -88,21 +88,21 @@ export default function CaptureGuide() {
             </Animated.View>
 
             <View style={styles.footer}>
-                <TouchableOpacity
+                <Pressable
                     onPress={() => setCurrentStep(Math.max(0, currentStep - 1))}
                     style={[styles.backButton, currentStep === 0 && { opacity: 0 }]}
                     disabled={currentStep === 0}
                 >
                     <ChevronLeft size={24} color={COLORS.textMuted} />
                     <Text style={styles.backText}>Back</Text>
-                </TouchableOpacity>
+                </Pressable>
 
-                <TouchableOpacity onPress={handleNext} style={styles.nextButton}>
+                <Pressable onPress={handleNext} style={styles.nextButton}>
                     <Text style={styles.nextText}>
                         {currentStep === STEPS.length - 1 ? "Start Capture" : "Next"}
                     </Text>
                     <ChevronRight size={20} color="#FFF" />
-                </TouchableOpacity>
+                </Pressable>
             </View>
         </SafeAreaView>
     );

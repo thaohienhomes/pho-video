@@ -1,20 +1,19 @@
-# Mobile Feature Bug Fixes
+# Fal.AI Model Integration
 
-## Current Task: Fixing 4 Mobile Issues
+## Phase 1: Core Refactor ✅
+- [x] Update `lib/api-services.ts` with new Fal.AI endpoints
+  - [x] Add Kling 2.5 Pro T2V/I2V
+  - [x] Upgrade LTX to LTX-2 19B with resolution params
+  - [x] Add Minimax Hailuo support
+- [x] Update `app/api/generate/route.ts` model validation
+- [x] Update `components/ControlPanel.tsx` model selector
+- [x] Update `lib/pho-points/index.ts` costs (handled in route.ts)
+- [x] Update `types/index.ts` model definitions
 
-- [x] Bug 1: Enhance Prompt not working
-- [x] Bug 2: Imagining Preview not working  
-- [x] Bug 3: Trending Styles incomplete display
-- [x] Bug 4: Video playback performance issues
+## Phase 2: Quality Tier (Deferred)
+- [ ] Add model quality badges in UI
+- [ ] Implement tier-gating
 
-## Summary
-All 4 bugs fixed:
-1. Extended API timeout to 45s for AI operations
-2. Added response validation and error logging
-3. Replaced map with FlatList for proper grid rendering
-4. Implemented lazy video player creation with React.memo
-
-## Files Modified
-- `lib/api.ts` - Extended timeout, better error handling
-- `components/VideoCard.tsx` - Lazy player, React.memo, caching
-- `app/(tabs)/index.tsx` - FlatList, visibility tracking
+## Phase 3: Premium Models (Future)
+- [ ] Add Veo 3.1
+- [ ] Add Sora 2

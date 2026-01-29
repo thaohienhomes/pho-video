@@ -21,7 +21,23 @@ export interface GenerateResponse {
     generationId?: string;
 }
 
-export type ModelProvider = "wavespeed" | "fal" | "pho-engine-cinematic" | "pho-engine-realistic" | "pho-engine-instant";
+// Model providers (Updated with all Fal.AI tiers)
+export type ModelProvider =
+    | "wavespeed"
+    | "fal"
+    // Legacy
+    | "pho-engine-cinematic"
+    | "pho-engine-realistic"
+    | "pho-engine-instant"
+    // Fal.AI Standard Tier
+    | "Kling 2.5 Pro via Fal.AI"
+    | "Minimax Hailuo via Fal.AI"
+    | "LTX-2 19B via Fal.AI"
+    // Fal.AI Premium Tier (NEW)
+    | "Google Veo 3.1 via Fal.AI"
+    | "OpenAI Sora 2 via Fal.AI"
+    // Fal.AI Fast Tier (NEW)
+    | "ByteDance Seedance via Fal.AI";
 export type CostTier = "low" | "medium" | "high";
 
 export interface VideoModel {
