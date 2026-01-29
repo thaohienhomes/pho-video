@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useState, useMemo } from "react"
+import { useCallback, useState, useMemo, useEffect } from "react"
 import ReactFlow, {
     Node,
     Edge,
@@ -98,6 +98,27 @@ export default function WorkflowPage() {
 
     // Calculate estimated credit cost
     const estimatedCost = useMemo(() => calculateWorkflowCreditCost(nodes), [nodes])
+
+    // Keyboard shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Cmd/Ctrl + S = Save
+            if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+                e.preventDefault()
+                setSaveDialogOpen(true)
+            }
+            // Cmd/Ctrl + Enter = Execute
+            if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                e.preventDefault()
+                if (!isExecuting) {
+                    handleExecuteWorkflow()
+                }
+            }
+        }
+
+        window.addEventListener("keydown", handleKeyDown)
+        return () => window.removeEventListener("keydown", handleKeyDown)
+    }, [isExecuting])
 
     const onConnect = useCallback(
         (params: Connection) =>
@@ -416,6 +437,50 @@ export default function WorkflowPage() {
                     size={1}
                     color="rgba(255,255,255,0.05)"
                 />
+
+                {/* Status Bar */}
+                <Panel position="bottom-center" className="w-full max-w-2xl">
+                    <div className="bg-black/80 backdrop-blur-xl border border-white/10 rounded-xl px-4 py-2 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                <div className={cn(
+                                    "w-2 h-2 rounded-full",
+                                    isExecuting ? "bg-amber-400 animate-pulse" : "bg-emerald-400"
+                                )} />
+                                <span className="text-xs text-white/60">
+                                    {isExecuting ? `Running...` : "Ready"}
+                                </span>
+                            </div>
+                            <div className="h-4 w-px bg-white/10" />
+                            <span className="text-xs text-white/40">
+                                {nodes.length} nodes • {edges.length} connections
+                            </span>
+                        </div>
+
+                        {isExecuting && executingNodeId && (
+                            <div className="flex items-center gap-2">
+                                <Loader2 className="w-3 h-3 text-primary animate-spin" />
+                                <span className="text-xs text-primary">
+                                    Processing node...
+                                </span>
+                            </div>
+                        )}
+
+                        {!isExecuting && totalCreditSpent > 0 && (
+                            <div className="flex items-center gap-2">
+                                <Coins className="w-3 h-3 text-emerald-400" />
+                                <span className="text-xs text-emerald-400">
+                                    Used {totalCreditSpent}K pts
+                                </span>
+                            </div>
+                        )}
+
+                        <div className="flex items-center gap-3 text-xs text-white/30">
+                            <span className="hidden md:inline">⌘S Save</span>
+                            <span className="hidden md:inline">⌘Enter Run</span>
+                        </div>
+                    </div>
+                </Panel>
             </ReactFlow>
         </div>
     )
