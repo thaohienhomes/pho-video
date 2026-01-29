@@ -63,6 +63,7 @@
     "react-intersection-observer": "^10.0.2",
     "reactflow": "^11.11.4",
     "remotion": "^4.0.407",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "ws": "^8.19.0",

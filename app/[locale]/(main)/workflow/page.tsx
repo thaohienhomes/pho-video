@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useCallback, useState, useMemo } from "react"
 import ReactFlow, {
     Node,
     Edge,
@@ -18,7 +18,7 @@ import "reactflow/dist/style.css"
 import { Button } from "@/components/ui/button"
 import {
     Plus, Play, Save, Trash2, Sparkles, FolderOpen,
-    Layout, ChevronDown, Check
+    Layout, ChevronDown, Check, Coins, AlertCircle, Loader2
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { toast } from "sonner"
 
 // Import custom nodes
 import { PromptNode } from "@/components/workflow/nodes/PromptNode"
@@ -53,6 +54,11 @@ import { MergeNode } from "@/components/workflow/nodes/MergeNode"
 // Import templates and store
 import { workflowTemplates, WorkflowTemplate } from "@/lib/workflow-templates"
 import { useWorkflowStore } from "@/lib/workflow-store"
+import {
+    executeWorkflow as runWorkflow,
+    calculateWorkflowCreditCost,
+    validateWorkflow
+} from "@/lib/workflow-engine"
 
 // Register custom node types
 const nodeTypes = {
@@ -83,10 +89,15 @@ export default function WorkflowPage() {
     const [nodes, setNodes, onNodesChange] = useNodesState(defaultTemplate.nodes)
     const [edges, setEdges, onEdgesChange] = useEdgesState(defaultTemplate.edges)
     const [isExecuting, setIsExecuting] = useState(false)
+    const [executingNodeId, setExecutingNodeId] = useState<string | null>(null)
     const [saveDialogOpen, setSaveDialogOpen] = useState(false)
     const [workflowName, setWorkflowName] = useState("")
+    const [totalCreditSpent, setTotalCreditSpent] = useState(0)
 
     const { savedWorkflows, saveWorkflow, currentWorkflowId, setCurrentWorkflowId } = useWorkflowStore()
+
+    // Calculate estimated credit cost
+    const estimatedCost = useMemo(() => calculateWorkflowCreditCost(nodes), [nodes])
 
     const onConnect = useCallback(
         (params: Connection) =>
@@ -135,10 +146,87 @@ export default function WorkflowPage() {
         }
     }
 
-    const executeWorkflow = async () => {
+    const handleExecuteWorkflow = async () => {
+        // Validate workflow first
+        const validation = validateWorkflow(nodes, edges)
+        if (!validation.valid) {
+            toast.error("Workflow Validation Failed", {
+                description: validation.errors.join(", "),
+            })
+            return
+        }
+
         setIsExecuting(true)
-        // TODO: Implement workflow execution engine
-        setTimeout(() => setIsExecuting(false), 2000)
+        setTotalCreditSpent(0)
+
+        try {
+            const results = await runWorkflow({
+                nodes,
+                edges,
+                results: new Map(),
+                onNodeStart: (nodeId) => {
+                    setExecutingNodeId(nodeId)
+                    // Update node to show processing state
+                    setNodes((nds) =>
+                        nds.map((n) =>
+                            n.id === nodeId
+                                ? { ...n, data: { ...n.data, isProcessing: true } }
+                                : n
+                        )
+                    )
+                },
+                onNodeComplete: (nodeId, output, creditCost) => {
+                    setTotalCreditSpent((prev) => prev + creditCost)
+                    // Update node with output and clear processing state
+                    setNodes((nds) =>
+                        nds.map((n) =>
+                            n.id === nodeId
+                                ? {
+                                    ...n,
+                                    data: {
+                                        ...n.data,
+                                        isProcessing: false,
+                                        ...(output as Record<string, unknown>)
+                                    }
+                                }
+                                : n
+                        )
+                    )
+                    toast.success(`Node completed`, {
+                        description: `Used ${creditCost}K credits`,
+                    })
+                },
+                onNodeError: (nodeId, error) => {
+                    // Clear processing state on error
+                    setNodes((nds) =>
+                        nds.map((n) =>
+                            n.id === nodeId
+                                ? { ...n, data: { ...n.data, isProcessing: false } }
+                                : n
+                        )
+                    )
+                    toast.error(`Node failed`, {
+                        description: error,
+                    })
+                },
+            })
+
+            // Count successful nodes
+            const successful = Array.from(results.values()).filter(
+                (r) => r.status === "completed"
+            ).length
+
+            toast.success("Workflow Complete!", {
+                description: `${successful}/${nodes.length} nodes executed successfully`,
+            })
+        } catch (error) {
+            toast.error("Workflow execution failed", {
+                description: error instanceof Error ? error.message : "Unknown error",
+            })
+        } finally {
+            setIsExecuting(false)
+            setExecutingNodeId(null)
+        }
     }
 
     return (
@@ -161,6 +249,15 @@ export default function WorkflowPage() {
                             <Sparkles className="w-5 h-5 text-primary" />
                             <span className="font-bold text-white">Workflow Editor</span>
                         </div>
+
+                        {/* Credit Cost Display */}
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-500/30">
+                            <Coins className="w-4 h-4 text-amber-400" />
+                            <span className="text-sm font-medium text-amber-400">
+                                {estimatedCost}K pts
+                            </span>
+                        </div>
+
                         <div className="h-6 w-px bg-white/10" />
 
                         {/* Templates Dropdown */}
@@ -270,7 +367,7 @@ export default function WorkflowPage() {
 
                         <Button
                             size="sm"
-                            onClick={executeWorkflow}
+                            onClick={handleExecuteWorkflow}
                             disabled={isExecuting}
                             className="bg-primary hover:bg-primary/90"
                         >
