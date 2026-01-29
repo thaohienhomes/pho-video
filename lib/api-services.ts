@@ -1899,3 +1899,81 @@ export async function mergeAudioWithVideo(
         return { resultUrl: "", requestId: "", status: "failed", error: error instanceof Error ? error.message : "Audio merge failed" }
     }
 }
+
+// ============================================================================
+// Talking Head / Lip Sync Generation (SadTalker via Fal.ai)
+// ============================================================================
+
+export interface TalkingHeadOptions {
+    sourceImageUrl: string     // Portrait image URL or base64
+    drivenAudioUrl: string     // Audio URL or base64
+    expressionScale?: number   // 0-3, default 1.0
+    preprocess?: "crop" | "extcrop" | "resize" | "full" | "extfull"
+    stillMode?: boolean        // Reduce head motion, keep facial animation
+    enhanceFace?: boolean      // Use GFPGAN enhancement
+}
+
+export interface TalkingHeadResult {
+    videoUrl: string
+    requestId: string
+    status: "completed" | "failed"
+    error?: string
+}
+
+/**
+ * Generate talking head video using Fal.ai SadTalker
+ * Transforms static portrait + audio into lip-synced video
+ */
+export async function generateTalkingHead(
+    options: TalkingHeadOptions
+): Promise<TalkingHeadResult> {
+    try {
+        if (!FAL_KEY) {
+            throw new Error("FAL_KEY not configured")
+        }
+
+        console.log(`🎤 [Talking Head] Generating with SadTalker...`)
+        console.log(`   Image: ${options.sourceImageUrl.substring(0, 50)}...`)
+        console.log(`   Expression Scale: ${options.expressionScale || 1.0}`)
+        console.log(`   Still Mode: ${options.stillMode || false}`)
+
+        const result = await fal.subscribe("fal-ai/sadtalker", {
+            input: {
+                source_image_url: options.sourceImageUrl,
+                driven_audio_url: options.drivenAudioUrl,
+                expression_scale: options.expressionScale || 1.0,
+                preprocess: options.preprocess || "crop",
+                still_mode: options.stillMode || false,
+                face_enhancer: options.enhanceFace ? "gfpgan" : undefined,
+            },
+            logs: true,
+            onQueueUpdate: (update) => {
+                if (update.status === "IN_PROGRESS") {
+                    console.log(`   ⏳ Processing SadTalker...`)
+                }
+            },
+        })
+
+        const videoUrl = (result.data as { video?: { url: string } })?.video?.url
+
+        if (!videoUrl) {
+            throw new Error("No video URL in SadTalker response")
+        }
+
+        console.log(`✅ [Talking Head] Video generated successfully!`)
+        return {
+            videoUrl,
+            requestId: result.requestId,
+            status: "completed",
+        }
+    } catch (error) {
+        console.error(`❌ [Talking Head] Error:`, error)
+        return {
+            videoUrl: "",
+            requestId: "",
+            status: "failed",
+            error: error instanceof Error ? error.message : "Talking head generation failed",
+        }
+    }
+}
+
