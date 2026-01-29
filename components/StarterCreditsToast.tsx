@@ -76,6 +76,7 @@ export function StarterCreditsToast({
             const timer = setTimeout(handleClose, 8000)
             return () => clearTimeout(timer)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isVisible])
 
     return (
@@ -136,7 +137,7 @@ export function StarterCreditsToast({
                                     🎉 Welcome Gift!
                                 </h4>
                                 <p className="text-sm text-white/60 mt-1">
-                                    You've received{" "}
+                                    You&apos;ve received{" "}
                                     <span className="font-bold text-primary">
                                         {(credits / 1000).toFixed(0)}K credits
                                     </span>{" "}

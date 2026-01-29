@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
     request: Request,
-    { params }: { params: { taskId: string } }
+    { params }: { params: Promise<{ taskId: string }> }
 ) {
+    const { taskId } = await params;
     // In a real application, you would use the taskId to fetch the actual status from your database.
     // const { taskId } = params;
 

@@ -56,7 +56,6 @@ interface Scene {
     error?: string
 }
 
-// Video models for storyboard
 const VIDEO_MODELS = [
     { id: "pho-instant", name: "Phở Instant", description: "Fast generation", costPer5s: 50 },
     { id: "pho-cinematic", name: "Phở Cinematic", description: "Best quality", costPer5s: 75 },
@@ -211,6 +210,40 @@ function SceneCard({
                 </div>
             </div>
         </motion.div>
+    )
+}
+
+// Wrapper component to properly use useDragControls hook
+function DraggableSceneItem({
+    scene,
+    scenes,
+    updateScene,
+    deleteScene,
+    duplicateScene,
+}: {
+    scene: Scene
+    scenes: Scene[]
+    updateScene: (id: string, updates: Partial<Scene>) => void
+    deleteScene: (id: string) => void
+    duplicateScene: (id: string) => void
+}) {
+    const dragControls = useDragControls()
+    return (
+        <Reorder.Item
+            key={scene.id}
+            value={scene}
+            dragListener={false}
+            dragControls={dragControls}
+        >
+            <SceneCard
+                scene={scene}
+                onUpdate={(updates) => updateScene(scene.id, updates)}
+                onDelete={() => deleteScene(scene.id)}
+                onDuplicate={() => duplicateScene(scene.id)}
+                canDelete={scenes.length > 1}
+                dragControls={dragControls}
+            />
+        </Reorder.Item>
     )
 }
 
@@ -540,26 +573,16 @@ export function StoryboardWizard({ onComplete }: StoryboardWizardProps) {
                                     onReorder={reorderScenes}
                                     className="space-y-3"
                                 >
-                                    {scenes.map((scene) => {
-                                        const dragControls = useDragControls()
-                                        return (
-                                            <Reorder.Item
-                                                key={scene.id}
-                                                value={scene}
-                                                dragListener={false}
-                                                dragControls={dragControls}
-                                            >
-                                                <SceneCard
-                                                    scene={scene}
-                                                    onUpdate={(updates) => updateScene(scene.id, updates)}
-                                                    onDelete={() => deleteScene(scene.id)}
-                                                    onDuplicate={() => duplicateScene(scene.id)}
-                                                    canDelete={scenes.length > 1}
-                                                    dragControls={dragControls}
-                                                />
-                                            </Reorder.Item>
-                                        )
-                                    })}
+                                    {scenes.map((scene) => (
+                                        <DraggableSceneItem
+                                            key={scene.id}
+                                            scene={scene}
+                                            scenes={scenes}
+                                            updateScene={updateScene}
+                                            deleteScene={deleteScene}
+                                            duplicateScene={duplicateScene}
+                                        />
+                                    ))}
                                 </Reorder.Group>
                             </div>
 
