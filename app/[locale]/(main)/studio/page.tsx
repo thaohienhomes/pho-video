@@ -488,7 +488,7 @@ export default function StudioPage() {
                 return <LipSyncStudio />
 
             case "tryon":
-                return <TryOnStudio />
+                return <TryOnStudio onBackToModes={() => setSelectedMode("video")} />
 
             case "upscale":
                 return (
