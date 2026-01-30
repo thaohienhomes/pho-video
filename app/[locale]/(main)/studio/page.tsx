@@ -35,6 +35,7 @@ import { SoundStudio } from "@/components/SoundStudio"
 import { VideoUpscaler } from "@/components/VideoUpscaler"
 import { StoryboardWizard } from "@/components/StoryboardWizard"
 import { LipSyncStudio } from "@/components/LipSyncStudio"
+import { BatchSizeSelector } from "@/components/BatchSizeSelector"
 import { useStudioStore } from "@/stores/useStudioStore"
 import {
     Select,
@@ -468,25 +469,11 @@ export default function StudioPage() {
                             )}
 
                             {selectedMode === "image" && (
-                                <div className="space-y-2">
-                                    <label className="text-xs font-medium text-white/50">Batch Size</label>
-                                    <div className="flex gap-2">
-                                        {[1, 4].map((batch) => (
-                                            <button
-                                                key={batch}
-                                                onClick={() => setImageBatch(batch)}
-                                                className={cn(
-                                                    "flex-1 py-2.5 rounded-xl text-sm font-medium transition-all",
-                                                    imageBatch === batch
-                                                        ? "bg-primary/20 border border-primary text-primary"
-                                                        : "bg-white/5 border border-white/10 text-white/60"
-                                                )}
-                                            >
-                                                {batch} {batch === 1 ? "Image" : "Images"}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
+                                <BatchSizeSelector
+                                    value={imageBatch}
+                                    onChange={setImageBatch}
+                                    baseCost={20} // Flux Pro base cost
+                                />
                             )}
                         </CollapsibleSection>
                     </>

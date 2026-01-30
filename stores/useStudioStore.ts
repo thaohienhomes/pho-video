@@ -13,6 +13,7 @@ export interface Generation {
     cost: number
     createdAt: string
     type?: 'image' | 'video'  // Type of generation
+    seed?: number | null
 }
 
 interface StudioState {
@@ -162,7 +163,8 @@ export const useStudioStore = create<StudioState>((set, get) => ({
                     status,
                     cost: g.cost || 0,
                     createdAt: g.createdAt || new Date().toISOString(),
-                    type
+                    type,
+                    seed: g.seed
                 }
             })
 

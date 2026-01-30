@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils"
 import { getLastFrameAsBase64 } from "@/lib/video-utils"
 import { VideoComparison } from "./VideoComparison"
 import { Generation } from "@/stores/useStudioStore"
+import { BatchResultsGrid } from "@/components/BatchResultsGrid"
+import { VideoExtendButton } from "@/components/VideoExtendButton"
 
 interface WorkspacePanelProps {
     videoUrl: string | null
@@ -115,23 +117,7 @@ export function WorkspacePanel({
         }
     }
 
-    const handleExtend = async () => {
-        const videoToExtend = displayUpscaledUrl || displayVideoUrl
-        if (!videoToExtend) return
 
-        try {
-            setIsExtending(true)
-            const frameBase64 = await getLastFrameAsBase64(videoToExtend)
-            const originalPrompt = selectedGeneration?.prompt || ""
-            if (onExtendVideo) {
-                onExtendVideo(frameBase64, originalPrompt)
-            }
-        } catch (error) {
-            console.error("[Extend] Failed to extract frame:", error)
-        } finally {
-            setIsExtending(false)
-        }
-    }
 
     const handleGenerateAudio = async () => {
         if (!currentGenerationId || !selectedGeneration || isGeneratingAudio) return
@@ -201,26 +187,20 @@ export function WorkspacePanel({
                         <div className="w-full h-full flex items-center justify-center p-4">
                             {selectedGeneration.imageUrls && selectedGeneration.imageUrls.length > 1 && selectedSubImageIndex === null ? (
                                 /* 2x2 Grid View for Batch */
-                                <div className="grid grid-cols-2 gap-4 w-full h-full">
-                                    {selectedGeneration.imageUrls.map((url, idx) => (
-                                        <div
-                                            key={idx}
-                                            onClick={() => setSelectedSubImageIndex(idx)}
-                                            className="group relative cursor-pointer rounded-xl overflow-hidden border border-white/10 hover:border-primary/50 transition-all bg-white/5"
-                                        >
-                                            <img
-                                                src={url}
-                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                                alt={`${selectedGeneration.prompt} - ${idx + 1}`}
-                                            />
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                <div className="w-10 h-10 rounded-full bg-primary/20 backdrop-blur-md flex items-center justify-center border border-primary/30">
-                                                    <Sparkles className="w-5 h-5 text-primary" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+                                <BatchResultsGrid
+                                    results={selectedGeneration.imageUrls.map((url, idx) => ({
+                                        id: `${selectedGeneration.id}-${idx}`,
+                                        imageUrl: url,
+                                        status: 'completed',
+                                        seed: selectedGeneration.seed ? selectedGeneration.seed + idx : undefined
+                                    }))}
+                                    type="image"
+                                    onSelect={(result) => {
+                                        const idx = parseInt(result.id.split('-').pop()!)
+                                        setSelectedSubImageIndex(idx)
+                                    }}
+                                    className="w-full h-full"
+                                />
                             ) : (
                                 /* Hero View (Single or Selected from Batch) */
                                 <div className="relative w-full h-full flex items-center justify-center group">
@@ -350,21 +330,14 @@ export function WorkspacePanel({
                                 Phở 4K Developing...
                             </Button>
                         )}
-                        {canExtend && !isExtending && (
-                            <Button
-                                onClick={handleExtend}
-                                variant="outline"
+                        {canExtend && (
+                            <VideoExtendButton
+                                videoUrl={displayVideoUrl}
+                                onExtend={(newUrl) => {
+                                    if (onUpscaleComplete) onUpscaleComplete(newUrl) // Refresh generations
+                                }}
                                 className="h-10 px-6 border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 font-bold"
-                            >
-                                <Wand2 className="w-4 h-4 mr-2" />
-                                Extend
-                            </Button>
-                        )}
-                        {isExtending && (
-                            <Button disabled variant="outline" className="h-10 px-6 border-cyan-500/30 bg-cyan-500/10 text-cyan-300 font-bold">
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Preparing...
-                            </Button>
+                            />
                         )}
                         <Button
                             onClick={handleGenerateAudio}

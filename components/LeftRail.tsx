@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Lightbulb, Film, History, User, CreditCard, HelpCircle } from "lucide-react"
+import { Home, Lightbulb, Film, History, User, CreditCard, HelpCircle, Workflow } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PhoPointsBalance } from "@/components/PhoPointsBalance"
 
@@ -19,6 +19,7 @@ export function LeftRail() {
         { icon: <Home className="w-5 h-5" />, label: "Home", href: "/" },
         { icon: <Lightbulb className="w-5 h-5" />, label: "Ideas", href: "/ideas" },
         { icon: <Film className="w-5 h-5" />, label: "Studio", href: "/studio" },
+        { icon: <Workflow className="w-5 h-5" />, label: "Workflow", href: "/workflow" },
         { icon: <History className="w-5 h-5" />, label: "History", href: "/studio?tab=history" },
         { icon: <CreditCard className="w-5 h-5" />, label: "Pricing", href: "/pricing" },
         { icon: <User className="w-5 h-5" />, label: "Account", href: "/account" },
@@ -27,6 +28,7 @@ export function LeftRail() {
 
     const isActive = (href: string) => {
         if (href === "/studio") return pathname?.includes("/studio")
+        if (href === "/workflow") return pathname?.includes("/workflow")
         if (href === "/ideas") return pathname?.includes("/ideas")
         if (href === "/pricing") return pathname?.includes("/pricing")
         if (href === "/account") return pathname?.includes("/account")

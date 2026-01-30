@@ -22,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import { RemixButton } from "@/components/RemixButton"
 
 interface CommunityVideo {
     id: string
@@ -385,15 +386,15 @@ function VideoCard({
                         </button>
                     </div>
 
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => { e.stopPropagation(); onRemix(); }}
-                        className="h-7 px-2 text-xs text-primary hover:bg-primary/10"
-                    >
-                        <Sparkles className="w-3 h-3 mr-1" />
-                        Remix
-                    </Button>
+                    <div onClick={(e) => e.stopPropagation()}>
+                        <RemixButton
+                            prompt={video.prompt}
+                            authorId={video.authorId}
+                            videoId={video.id}
+                            variant="compact"
+                            className="h-7 px-2"
+                        />
+                    </div>
                 </div>
             </div>
         </div>

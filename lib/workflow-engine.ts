@@ -52,6 +52,7 @@ export const NODE_CREDIT_COSTS: Record<string, number | ((data: Record<string, u
         return costs[scale] || 20
     },
     music: 30,
+    lipsync: 50,
     merge: 5,
 }
 
@@ -261,6 +262,39 @@ export async function executeNode(
                 audioUrl: data.audioUrl,
                 // Pass through video if connected
                 videoUrl: videoInput?.videoUrl
+            }
+        }
+
+        case "lipsync": {
+            const imageInput = inputs.image as { imageUrl?: string } | undefined
+            const audioInput = inputs.audio as { audioUrl?: string } | undefined
+
+            const imageUrl = imageInput?.imageUrl || node.data.imageUrl
+            const audioUrl = audioInput?.audioUrl || node.data.audioUrl
+
+            if (!imageUrl) throw new Error("Lip Sync requires an image input")
+            if (!audioUrl) throw new Error("Lip Sync requires an audio input")
+
+            const response = await fetch("/api/ai/lip-sync", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    sourceImageUrl: imageUrl,
+                    drivenAudioUrl: audioUrl,
+                    expressionScale: node.data.expressionScale || 1.0,
+                    preprocess: node.data.preprocess || "crop",
+                }),
+            })
+
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.message || "Failed to generate lip sync video")
+            }
+
+            const data = await response.json()
+            return {
+                videoUrl: data.videoUrl,
+                thumbnailUrl: imageUrl
             }
         }
 
