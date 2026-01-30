@@ -2017,6 +2017,8 @@ export async function generateVirtualTryOn(
                 model_image: options.modelImageUrl,
                 garment_image: options.garmentImageUrl,
                 category: options.garmentType || "auto",
+                mode: "balanced",
+                garment_photo_type: "auto",
             },
             logs: true,
             onQueueUpdate: (update) => {
@@ -2026,9 +2028,12 @@ export async function generateVirtualTryOn(
             },
         })
 
-        const imageUrl = (result.data as { image?: { url: string } })?.image?.url
+        // API v1.5 returns images array, not image object
+        const images = (result.data as { images?: Array<{ url: string }> })?.images
+        const imageUrl = images?.[0]?.url
 
         if (!imageUrl) {
+            console.error(`❌ [Virtual Try-on] Response data:`, JSON.stringify(result.data))
             throw new Error("No image URL in FASHN VTON response")
         }
 
