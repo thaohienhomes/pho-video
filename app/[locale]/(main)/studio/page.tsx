@@ -618,7 +618,10 @@ export default function StudioPage() {
             {/* Main Layout */}
             <div className="flex flex-1 overflow-hidden bg-[#080808]">
                 {/* Left Panel - Control */}
-                <div className="w-[380px] border-r border-white/5 flex flex-col bg-[#0A0A0A]">
+                <div className={cn(
+                    "border-r border-white/5 flex flex-col bg-[#0A0A0A] transition-all duration-300",
+                    selectedMode === "tryon" ? "flex-1" : "w-[380px]"
+                )}>
                     {/* Mode Selector */}
                     <div className="p-4 border-b border-white/5">
                         <ModeSelector
@@ -638,19 +641,21 @@ export default function StudioPage() {
                                 transition={{ duration: 0.15 }}
                                 className="space-y-4"
                             >
-                                {/* Mode Header */}
-                                <div className="flex items-center gap-2">
-                                    <div className={cn(
-                                        "w-8 h-8 rounded-lg flex items-center justify-center",
-                                        `bg-gradient-to-br ${currentMode.gradient}`
-                                    )}>
-                                        <currentMode.icon className="w-4 h-4 text-white" />
+                                {/* Mode Header - Hide for tryon since it has its own */}
+                                {selectedMode !== "tryon" && (
+                                    <div className="flex items-center gap-2">
+                                        <div className={cn(
+                                            "w-8 h-8 rounded-lg flex items-center justify-center",
+                                            `bg-gradient-to-br ${currentMode.gradient}`
+                                        )}>
+                                            <currentMode.icon className="w-4 h-4 text-white" />
+                                        </div>
+                                        <div>
+                                            <h2 className="font-semibold text-white">{currentMode.label}</h2>
+                                            <p className="text-xs text-white/40">{currentMode.description}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h2 className="font-semibold text-white">{currentMode.label}</h2>
-                                        <p className="text-xs text-white/40">{currentMode.description}</p>
-                                    </div>
-                                </div>
+                                )}
 
                                 {renderModeContent()}
                             </motion.div>
@@ -689,17 +694,19 @@ export default function StudioPage() {
                     )}
                 </div>
 
-                {/* Right Panel - Workspace */}
-                <WorkspacePanel
-                    videoUrl={activeItem?.videoUrl || null}
-                    isGenerating={isGenerating}
-                    selectedGeneration={activeItem}
-                    sessionGenerations={generations}
-                    onGenerationSelect={setActiveItem}
-                    onUpscaleComplete={fetchGenerations}
-                    onExtendVideo={() => { }}
-                    onAnimateImage={() => { }}
-                />
+                {/* Right Panel - Workspace (hidden for tryon) */}
+                {selectedMode !== "tryon" && (
+                    <WorkspacePanel
+                        videoUrl={activeItem?.videoUrl || null}
+                        isGenerating={isGenerating}
+                        selectedGeneration={activeItem}
+                        sessionGenerations={generations}
+                        onGenerationSelect={setActiveItem}
+                        onUpscaleComplete={fetchGenerations}
+                        onExtendVideo={() => { }}
+                        onAnimateImage={() => { }}
+                    />
+                )}
             </div>
         </div>
     )

@@ -28,6 +28,7 @@ import {
     Lock,
     ChevronLeft,
     ChevronRight,
+    Settings2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -110,8 +111,9 @@ export function TryOnStudio({ className }: TryOnStudioProps) {
     const [isDraggingModel, setIsDraggingModel] = useState(false)
     const [isDraggingGarment, setIsDraggingGarment] = useState(false)
     const [saved, setSaved] = useState(false)
-    const [comparePosition, setComparePosition] = useState(50) // For before/after slider
+    const [comparePosition, setComparePosition] = useState(50)
     const [showCompare, setShowCompare] = useState(false)
+    const [showSettings, setShowSettings] = useState(false)
     const compareRef = useRef<HTMLDivElement>(null)
 
     const totalCost = BASE_COST * numSamples
@@ -192,7 +194,6 @@ export function TryOnStudio({ className }: TryOnStudioProps) {
         setSaved(false)
         setShowCompare(false)
 
-        // Simulate loading steps
         const stepInterval = setInterval(() => {
             setLoadingStep((prev) => Math.min(prev + 1, LOADING_STEPS.length - 1))
         }, 5000)
@@ -220,11 +221,6 @@ export function TryOnStudio({ className }: TryOnStudioProps) {
 
             setResultImages(data.imageUrls || [])
             setSelectedResultIndex(0)
-
-            // Save the seed for reproducibility
-            if (!useSeed && data.requestId) {
-                setSeed(Date.now()) // Use timestamp as pseudo-seed for UI
-            }
 
             confetti({
                 particleCount: 80,
@@ -295,7 +291,7 @@ export function TryOnStudio({ className }: TryOnStudioProps) {
     return (
         <div className={cn("h-full flex flex-col", className)}>
             {/* Header */}
-            <div className="p-6 border-b border-white/10">
+            <div className="p-4 border-b border-white/10 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <motion.div
                         className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-lg shadow-pink-500/20"
@@ -305,224 +301,207 @@ export function TryOnStudio({ className }: TryOnStudioProps) {
                     </motion.div>
                     <div>
                         <h2 className="text-lg font-bold text-white">Virtual Try-on</h2>
-                        <p className="text-sm text-white/50">
-                            See how clothes look on you with AI
-                        </p>
+                        <p className="text-sm text-white/50">See how clothes look on you with AI</p>
+                    </div>
+                </div>
+                {/* Cost Badge */}
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-primary/10 to-rose-500/10 border border-primary/30">
+                        <Coins className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-bold text-primary">{totalCost}K Points</span>
+                        {numSamples > 1 && (
+                            <span className="text-xs text-white/40">({BASE_COST}K × {numSamples})</span>
+                        )}
                     </div>
                 </div>
             </div>
 
-            {/* Main Content */}
-            <div className="flex-1 overflow-y-auto p-6">
-                <div className="max-w-4xl mx-auto space-y-6">
-
-                    {/* Tips Section */}
-                    <div>
-                        <button
-                            onClick={() => setTipsOpen(!tipsOpen)}
-                            className="w-full flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 hover:border-amber-500/40 transition-colors"
-                        >
-                            <div className="flex items-center gap-3">
-                                <Lightbulb className="w-5 h-5 text-amber-400" />
-                                <span className="text-sm font-medium text-amber-200">Tips for Best Results</span>
-                            </div>
-                            <motion.div animate={{ rotate: tipsOpen ? 180 : 0 }}>
-                                <ChevronDown className="w-4 h-4 text-amber-400" />
-                            </motion.div>
-                        </button>
-                        <AnimatePresence>
-                            {tipsOpen && (
+            {/* Main Content - 3 Column Layout */}
+            <div className="flex-1 overflow-hidden flex">
+                {/* Column 1: Model Photo */}
+                <div className="w-1/3 p-4 border-r border-white/10 flex flex-col">
+                    <Label className="text-sm text-white/60 flex items-center gap-2 mb-3">
+                        <User className="w-4 h-4" />
+                        Your Photo (Full Body)
+                    </Label>
+                    <motion.div
+                        onDragOver={(e) => { e.preventDefault(); setIsDraggingModel(true) }}
+                        onDragLeave={() => setIsDraggingModel(false)}
+                        onDrop={handleDrop("model")}
+                        whileHover={{ scale: 1.01 }}
+                        className={cn(
+                            "relative flex-1 min-h-[300px] rounded-2xl border-2 border-dashed transition-all cursor-pointer overflow-hidden backdrop-blur-sm",
+                            modelImage
+                                ? "border-primary/50 bg-primary/5"
+                                : isDraggingModel
+                                    ? "border-primary bg-primary/20 scale-[1.02]"
+                                    : "border-white/20 bg-gradient-to-br from-white/10 to-white/5 hover:border-white/40"
+                        )}
+                    >
+                        {modelImage ? (
+                            <img src={modelImage} alt="Model" className="w-full h-full object-cover" />
+                        ) : (
+                            <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer">
                                 <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: "auto" }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    className="overflow-hidden"
+                                    animate={{ y: isDraggingModel ? -5 : 0 }}
+                                    className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-orange-500/20 flex items-center justify-center mb-3"
                                 >
-                                    <div className="mt-3 p-4 rounded-xl bg-white/5 border border-white/10 space-y-3">
-                                        {TIPS.map((tip, i) => (
-                                            <div key={i} className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                                                    <tip.icon className="w-4 h-4 text-amber-400" />
-                                                </div>
-                                                <span className="text-sm text-white/70">{tip.text}</span>
-                                            </div>
-                                        ))}
-                                    </div>
+                                    <Upload className="w-7 h-7 text-primary" />
                                 </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </div>
-
-                    {/* Upload Zones */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Model Image Upload */}
-                        <div className="space-y-3">
-                            <Label className="text-sm text-white/60 flex items-center gap-2">
-                                <User className="w-4 h-4" />
-                                Your Photo (Full Body)
-                            </Label>
-                            <motion.div
-                                onDragOver={(e) => { e.preventDefault(); setIsDraggingModel(true) }}
-                                onDragLeave={() => setIsDraggingModel(false)}
-                                onDrop={handleDrop("model")}
-                                whileHover={{ scale: 1.01 }}
-                                className={cn(
-                                    "relative aspect-[3/4] rounded-2xl border-2 border-dashed transition-all cursor-pointer overflow-hidden backdrop-blur-sm",
-                                    modelImage
-                                        ? "border-primary/50 bg-primary/5"
-                                        : isDraggingModel
-                                            ? "border-primary bg-primary/20 scale-[1.02]"
-                                            : "border-white/20 bg-gradient-to-br from-white/10 to-white/5 hover:border-white/40"
-                                )}
+                                <span className="text-sm font-medium text-white/60">Drop or click to upload</span>
+                                <span className="text-xs text-white/40 mt-1">Full body photo works best</span>
+                                <input type="file" accept="image/*" onChange={handleFileUpload("model")} className="hidden" />
+                            </label>
+                        )}
+                        {modelImage && (
+                            <motion.button
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                onClick={() => setModelImage(null)}
+                                className="absolute top-3 right-3 p-2 rounded-full bg-black/60 backdrop-blur-sm text-white/60 hover:text-white hover:bg-black/80 transition-colors"
                             >
-                                {modelImage ? (
-                                    <img
-                                        src={modelImage}
-                                        alt="Model"
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer">
-                                        <motion.div
-                                            animate={{ y: isDraggingModel ? -5 : 0 }}
-                                            className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-orange-500/20 flex items-center justify-center mb-3"
-                                        >
-                                            <Upload className="w-7 h-7 text-primary" />
-                                        </motion.div>
-                                        <span className="text-sm font-medium text-white/60">
-                                            Drop or click to upload
-                                        </span>
-                                        <span className="text-xs text-white/40 mt-1">
-                                            Full body photo works best
-                                        </span>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleFileUpload("model")}
-                                            className="hidden"
-                                        />
-                                    </label>
-                                )}
-                                {modelImage && (
-                                    <motion.button
-                                        initial={{ opacity: 0, scale: 0.8 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        onClick={() => setModelImage(null)}
-                                        className="absolute top-3 right-3 p-2 rounded-full bg-black/60 backdrop-blur-sm text-white/60 hover:text-white hover:bg-black/80 transition-colors"
-                                    >
-                                        ✕
-                                    </motion.button>
-                                )}
-                            </motion.div>
-                            {/* Sample Models */}
-                            <div className="flex gap-2">
-                                {SAMPLE_MODELS.map((sample) => (
-                                    <motion.button
-                                        key={sample.id}
-                                        onClick={() => handleSampleClick("model", sample)}
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        className={cn(
-                                            "w-12 h-14 rounded-lg overflow-hidden border-2 transition-all",
-                                            modelImage === sample.url
-                                                ? "border-primary ring-2 ring-primary/30"
-                                                : "border-white/10 hover:border-white/30"
-                                        )}
-                                    >
-                                        <img src={sample.url} alt={sample.name} className="w-full h-full object-cover" />
-                                    </motion.button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Garment Image Upload */}
-                        <div className="space-y-3">
-                            <Label className="text-sm text-white/60 flex items-center gap-2">
-                                <Shirt className="w-4 h-4" />
-                                Garment Photo
-                            </Label>
-                            <motion.div
-                                onDragOver={(e) => { e.preventDefault(); setIsDraggingGarment(true) }}
-                                onDragLeave={() => setIsDraggingGarment(false)}
-                                onDrop={handleDrop("garment")}
-                                whileHover={{ scale: 1.01 }}
-                                className={cn(
-                                    "relative aspect-[3/4] rounded-2xl border-2 border-dashed transition-all cursor-pointer overflow-hidden backdrop-blur-sm",
-                                    garmentImage
-                                        ? "border-pink-500/50 bg-pink-500/5"
-                                        : isDraggingGarment
-                                            ? "border-pink-500 bg-pink-500/20 scale-[1.02]"
-                                            : "border-white/20 bg-gradient-to-br from-white/10 to-white/5 hover:border-white/40"
-                                )}
-                            >
-                                {garmentImage ? (
-                                    <img
-                                        src={garmentImage}
-                                        alt="Garment"
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer">
-                                        <motion.div
-                                            animate={{ y: isDraggingGarment ? -5 : 0 }}
-                                            className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center mb-3"
-                                        >
-                                            <ImageIcon className="w-7 h-7 text-pink-400" />
-                                        </motion.div>
-                                        <span className="text-sm font-medium text-white/60">
-                                            Drop or click to upload
-                                        </span>
-                                        <span className="text-xs text-white/40 mt-1">
-                                            Flat-lay or on-model photo
-                                        </span>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleFileUpload("garment")}
-                                            className="hidden"
-                                        />
-                                    </label>
-                                )}
-                                {garmentImage && (
-                                    <motion.button
-                                        initial={{ opacity: 0, scale: 0.8 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        onClick={() => setGarmentImage(null)}
-                                        className="absolute top-3 right-3 p-2 rounded-full bg-black/60 backdrop-blur-sm text-white/60 hover:text-white hover:bg-black/80 transition-colors"
-                                    >
-                                        ✕
-                                    </motion.button>
-                                )}
-                            </motion.div>
-                            {/* Sample Garments */}
-                            <div className="flex gap-2">
-                                {SAMPLE_GARMENTS.map((sample) => (
-                                    <motion.button
-                                        key={sample.id}
-                                        onClick={() => handleSampleClick("garment", sample)}
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        className={cn(
-                                            "w-12 h-14 rounded-lg overflow-hidden border-2 transition-all",
-                                            garmentImage === sample.url
-                                                ? "border-pink-500 ring-2 ring-pink-500/30"
-                                                : "border-white/10 hover:border-white/30"
-                                        )}
-                                    >
-                                        <img src={sample.url} alt={sample.name} className="w-full h-full object-cover" />
-                                    </motion.button>
-                                ))}
-                            </div>
+                                ✕
+                            </motion.button>
+                        )}
+                    </motion.div>
+                    {/* Sample Models */}
+                    <div className="mt-3">
+                        <Label className="text-xs text-white/40 mb-2 block">Or try samples:</Label>
+                        <div className="flex gap-2">
+                            {SAMPLE_MODELS.map((sample) => (
+                                <motion.button
+                                    key={sample.id}
+                                    onClick={() => handleSampleClick("model", sample)}
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className={cn(
+                                        "flex-1 aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all",
+                                        modelImage === sample.url
+                                            ? "border-primary ring-2 ring-primary/30"
+                                            : "border-white/10 hover:border-white/30"
+                                    )}
+                                >
+                                    <img src={sample.url} alt={sample.name} className="w-full h-full object-cover" />
+                                </motion.button>
+                            ))}
                         </div>
                     </div>
+                </div>
 
-                    {/* Settings Row */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Column 2: Garment Photo */}
+                <div className="w-1/3 p-4 border-r border-white/10 flex flex-col">
+                    <Label className="text-sm text-white/60 flex items-center gap-2 mb-3">
+                        <Shirt className="w-4 h-4" />
+                        Garment Photo
+                    </Label>
+                    <motion.div
+                        onDragOver={(e) => { e.preventDefault(); setIsDraggingGarment(true) }}
+                        onDragLeave={() => setIsDraggingGarment(false)}
+                        onDrop={handleDrop("garment")}
+                        whileHover={{ scale: 1.01 }}
+                        className={cn(
+                            "relative flex-1 min-h-[300px] rounded-2xl border-2 border-dashed transition-all cursor-pointer overflow-hidden backdrop-blur-sm",
+                            garmentImage
+                                ? "border-pink-500/50 bg-pink-500/5"
+                                : isDraggingGarment
+                                    ? "border-pink-500 bg-pink-500/20 scale-[1.02]"
+                                    : "border-white/20 bg-gradient-to-br from-white/10 to-white/5 hover:border-white/40"
+                        )}
+                    >
+                        {garmentImage ? (
+                            <img src={garmentImage} alt="Garment" className="w-full h-full object-cover" />
+                        ) : (
+                            <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer">
+                                <motion.div
+                                    animate={{ y: isDraggingGarment ? -5 : 0 }}
+                                    className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center mb-3"
+                                >
+                                    <ImageIcon className="w-7 h-7 text-pink-400" />
+                                </motion.div>
+                                <span className="text-sm font-medium text-white/60">Drop or click to upload</span>
+                                <span className="text-xs text-white/40 mt-1">Flat-lay or on-model photo</span>
+                                <input type="file" accept="image/*" onChange={handleFileUpload("garment")} className="hidden" />
+                            </label>
+                        )}
+                        {garmentImage && (
+                            <motion.button
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                onClick={() => setGarmentImage(null)}
+                                className="absolute top-3 right-3 p-2 rounded-full bg-black/60 backdrop-blur-sm text-white/60 hover:text-white hover:bg-black/80 transition-colors"
+                            >
+                                ✕
+                            </motion.button>
+                        )}
+                    </motion.div>
+                    {/* Sample Garments */}
+                    <div className="mt-3">
+                        <Label className="text-xs text-white/40 mb-2 block">Or try samples:</Label>
+                        <div className="flex gap-2">
+                            {SAMPLE_GARMENTS.map((sample) => (
+                                <motion.button
+                                    key={sample.id}
+                                    onClick={() => handleSampleClick("garment", sample)}
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className={cn(
+                                        "flex-1 aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all",
+                                        garmentImage === sample.url
+                                            ? "border-pink-500 ring-2 ring-pink-500/30"
+                                            : "border-white/10 hover:border-white/30"
+                                    )}
+                                >
+                                    <img src={sample.url} alt={sample.name} className="w-full h-full object-cover" />
+                                </motion.button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Column 3: Settings + Result */}
+                <div className="w-1/3 p-4 flex flex-col overflow-y-auto">
+                    {/* Tips Section */}
+                    <button
+                        onClick={() => setTipsOpen(!tipsOpen)}
+                        className="w-full flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 hover:border-amber-500/40 transition-colors mb-4"
+                    >
+                        <div className="flex items-center gap-2">
+                            <Lightbulb className="w-4 h-4 text-amber-400" />
+                            <span className="text-xs font-medium text-amber-200">Tips for Best Results</span>
+                        </div>
+                        <motion.div animate={{ rotate: tipsOpen ? 180 : 0 }}>
+                            <ChevronDown className="w-4 h-4 text-amber-400" />
+                        </motion.div>
+                    </button>
+                    <AnimatePresence>
+                        {tipsOpen && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="overflow-hidden mb-4"
+                            >
+                                <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                                    {TIPS.map((tip, i) => (
+                                        <div key={i} className="flex items-center gap-2">
+                                            <div className="w-6 h-6 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                                                <tip.icon className="w-3 h-3 text-amber-400" />
+                                            </div>
+                                            <span className="text-xs text-white/70">{tip.text}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* Settings */}
+                    <div className="space-y-4">
                         {/* Garment Type */}
                         <div className="space-y-2">
-                            <Label className="text-sm text-white/60">Garment Type</Label>
+                            <Label className="text-xs text-white/60">Garment Type</Label>
                             <Select value={garmentType} onValueChange={(v) => setGarmentType(v as GarmentType)}>
-                                <SelectTrigger className="bg-white/5 border-white/10 backdrop-blur-sm">
+                                <SelectTrigger className="bg-white/5 border-white/10 backdrop-blur-sm h-9 text-sm">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -540,8 +519,8 @@ export function TryOnStudio({ className }: TryOnStudioProps) {
 
                         {/* Quality Mode */}
                         <div className="space-y-2">
-                            <Label className="text-sm text-white/60">Quality Mode</Label>
-                            <div className="flex gap-2">
+                            <Label className="text-xs text-white/60">Quality Mode</Label>
+                            <div className="grid grid-cols-3 gap-2">
                                 {QUALITY_MODES.map((mode) => (
                                     <motion.button
                                         key={mode.value}
@@ -549,7 +528,7 @@ export function TryOnStudio({ className }: TryOnStudioProps) {
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                         className={cn(
-                                            "flex-1 p-3 rounded-xl border transition-all text-center",
+                                            "p-2 rounded-xl border transition-all text-center",
                                             qualityMode === mode.value
                                                 ? "bg-primary/20 border-primary/50 text-white"
                                                 : "bg-white/5 border-white/10 text-white/60 hover:border-white/30"
@@ -565,80 +544,55 @@ export function TryOnStudio({ className }: TryOnStudioProps) {
                                 ))}
                             </div>
                         </div>
-                    </div>
 
-                    {/* Number of Samples */}
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                            <Label className="text-sm text-white/60">Number of Results</Label>
-                            <span className="text-sm font-medium text-primary">{numSamples}x</span>
-                        </div>
-                        <Slider
-                            value={[numSamples]}
-                            onValueChange={([v]) => setNumSamples(v)}
-                            min={1}
-                            max={4}
-                            step={1}
-                            className="py-2"
-                        />
-                        <div className="flex justify-between text-xs text-white/40">
-                            <span>1 result</span>
-                            <span>4 results</span>
-                        </div>
-                    </div>
-
-                    {/* Seed Control */}
-                    <div className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
-                        <button
-                            onClick={() => setUseSeed(!useSeed)}
-                            className={cn(
-                                "w-10 h-10 rounded-xl flex items-center justify-center transition-all",
-                                useSeed
-                                    ? "bg-primary/20 border border-primary/50"
-                                    : "bg-white/10 border border-white/10"
-                            )}
-                        >
-                            <Lock className={cn("w-4 h-4", useSeed ? "text-primary" : "text-white/40")} />
-                        </button>
-                        <div className="flex-1">
-                            <div className="text-sm font-medium text-white/80">Reproducible Results</div>
-                            <div className="text-xs text-white/40">Use seed to get same result with same input</div>
-                        </div>
-                        {useSeed && (
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="number"
-                                    value={seed || ""}
-                                    onChange={(e) => setSeed(parseInt(e.target.value) || null)}
-                                    placeholder="Seed"
-                                    className="w-24 px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-sm text-white placeholder:text-white/30"
-                                />
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={handleRandomSeed}
-                                    className="text-white/60 hover:text-white"
-                                >
-                                    <Shuffle className="w-4 h-4" />
-                                </Button>
+                        {/* Number of Samples */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label className="text-xs text-white/60">Results</Label>
+                                <span className="text-xs font-medium text-primary">{numSamples}x</span>
                             </div>
-                        )}
-                    </div>
+                            <Slider
+                                value={[numSamples]}
+                                onValueChange={([v]) => setNumSamples(v)}
+                                min={1}
+                                max={4}
+                                step={1}
+                                className="py-1"
+                            />
+                        </div>
 
-                    {/* Cost Badge */}
-                    <motion.div
-                        className="flex items-center justify-center gap-2 p-4 rounded-xl bg-gradient-to-r from-primary/10 to-rose-500/10 border border-primary/30"
-                        whileHover={{ scale: 1.02 }}
-                    >
-                        <Coins className="w-5 h-5 text-primary" />
-                        <span className="text-sm text-white/60">Cost:</span>
-                        <span className="text-xl font-bold bg-gradient-to-r from-primary to-rose-500 bg-clip-text text-transparent">
-                            {totalCost}K Points
-                        </span>
-                        {numSamples > 1 && (
-                            <span className="text-xs text-white/40">({BASE_COST}K × {numSamples})</span>
-                        )}
-                    </motion.div>
+                        {/* Seed Control */}
+                        <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                            <button
+                                onClick={() => setUseSeed(!useSeed)}
+                                className={cn(
+                                    "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
+                                    useSeed
+                                        ? "bg-primary/20 border border-primary/50"
+                                        : "bg-white/10 border border-white/10"
+                                )}
+                            >
+                                <Lock className={cn("w-3 h-3", useSeed ? "text-primary" : "text-white/40")} />
+                            </button>
+                            <div className="flex-1 min-w-0">
+                                <div className="text-xs font-medium text-white/80">Seed</div>
+                            </div>
+                            {useSeed && (
+                                <div className="flex items-center gap-1">
+                                    <input
+                                        type="number"
+                                        value={seed || ""}
+                                        onChange={(e) => setSeed(parseInt(e.target.value) || null)}
+                                        placeholder="Auto"
+                                        className="w-16 px-2 py-1 rounded-lg bg-white/10 border border-white/20 text-xs text-white placeholder:text-white/30"
+                                    />
+                                    <Button variant="ghost" size="icon" onClick={handleRandomSeed} className="h-7 w-7 text-white/60 hover:text-white">
+                                        <Shuffle className="w-3 h-3" />
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
 
                     {/* Error Display */}
                     <AnimatePresence>
@@ -647,42 +601,31 @@ export function TryOnStudio({ className }: TryOnStudioProps) {
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
-                                className="flex items-center gap-2 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400"
+                                className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 mt-4"
                             >
-                                <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                                <span className="text-sm">{error}</span>
+                                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                                <span className="text-xs">{error}</span>
                             </motion.div>
                         )}
                     </AnimatePresence>
 
                     {/* Generate Button */}
-                    <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+                    <motion.div className="mt-4" whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
                         <Button
                             onClick={handleGenerate}
                             disabled={!modelImage || !garmentImage || isGenerating}
-                            className="w-full h-14 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-400 hover:to-rose-500 text-lg font-bold shadow-lg shadow-pink-500/20 disabled:shadow-none"
+                            className="w-full h-12 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-400 hover:to-rose-500 text-base font-bold shadow-lg shadow-pink-500/20 disabled:shadow-none"
                         >
                             {isGenerating ? (
                                 <div className="flex flex-col items-center">
                                     <div className="flex items-center gap-2">
-                                        <Loader2 className="w-5 h-5 animate-spin" />
-                                        <span>{LOADING_STEPS[loadingStep]}</span>
-                                    </div>
-                                    <div className="flex gap-1 mt-1">
-                                        {LOADING_STEPS.map((_, i) => (
-                                            <div
-                                                key={i}
-                                                className={cn(
-                                                    "w-2 h-2 rounded-full transition-colors",
-                                                    i <= loadingStep ? "bg-white" : "bg-white/30"
-                                                )}
-                                            />
-                                        ))}
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        <span className="text-sm">{LOADING_STEPS[loadingStep]}</span>
                                     </div>
                                 </div>
                             ) : (
                                 <>
-                                    <Sparkles className="w-5 h-5 mr-2" />
+                                    <Sparkles className="w-4 h-4 mr-2" />
                                     Generate Try-on
                                 </>
                             )}
@@ -693,40 +636,32 @@ export function TryOnStudio({ className }: TryOnStudioProps) {
                     <AnimatePresence>
                         {resultImages.length > 0 && (
                             <motion.div
-                                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                                className="space-y-4"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 20 }}
+                                className="mt-4 space-y-3"
                             >
                                 {/* Result Header */}
                                 <div className="flex items-center justify-between">
-                                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                                        <Check className="w-5 h-5 text-green-400" />
-                                        {resultImages.length > 1 ? `${resultImages.length} Results Ready!` : "Result Ready!"}
+                                    <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                                        <Check className="w-4 h-4 text-green-400" />
+                                        {resultImages.length > 1 ? `${resultImages.length} Results` : "Result Ready!"}
                                     </h3>
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-1">
                                         {modelImage && (
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={() => setShowCompare(!showCompare)}
-                                                className={cn(
-                                                    "text-white/60 hover:text-white",
-                                                    showCompare && "bg-white/10"
-                                                )}
+                                                className={cn("h-7 text-xs text-white/60 hover:text-white", showCompare && "bg-white/10")}
                                             >
-                                                <Scale className="w-4 h-4 mr-1" />
+                                                <Scale className="w-3 h-3 mr-1" />
                                                 Compare
                                             </Button>
                                         )}
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={handleReset}
-                                            className="text-white/60 hover:text-white"
-                                        >
-                                            <RefreshCw className="w-4 h-4 mr-1" />
-                                            Try Another
+                                        <Button variant="ghost" size="sm" onClick={handleReset} className="h-7 text-xs text-white/60 hover:text-white">
+                                            <RefreshCw className="w-3 h-3 mr-1" />
+                                            Reset
                                         </Button>
                                     </div>
                                 </div>
@@ -741,7 +676,7 @@ export function TryOnStudio({ className }: TryOnStudioProps) {
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}
                                                 className={cn(
-                                                    "w-16 h-20 rounded-lg overflow-hidden border-2 transition-all",
+                                                    "w-12 h-16 rounded-lg overflow-hidden border-2 transition-all",
                                                     selectedResultIndex === i
                                                         ? "border-primary ring-2 ring-primary/30"
                                                         : "border-white/20 hover:border-white/40"
@@ -762,72 +697,53 @@ export function TryOnStudio({ className }: TryOnStudioProps) {
                                 >
                                     {showCompare && modelImage ? (
                                         <>
-                                            {/* Before (Model) */}
                                             <div className="absolute inset-0">
                                                 <img src={modelImage} alt="Before" className="w-full h-full object-cover" />
-                                                <div className="absolute bottom-4 left-4 px-2 py-1 rounded bg-black/60 text-xs text-white/80">Before</div>
+                                                <div className="absolute bottom-3 left-3 px-2 py-1 rounded bg-black/60 text-[10px] text-white/80">Before</div>
                                             </div>
-                                            {/* After (Result) - clipped */}
                                             <div
                                                 className="absolute inset-0 overflow-hidden"
                                                 style={{ clipPath: `inset(0 ${100 - comparePosition}% 0 0)` }}
                                             >
                                                 <img src={currentResult} alt="After" className="w-full h-full object-cover" />
-                                                <div className="absolute bottom-4 right-4 px-2 py-1 rounded bg-black/60 text-xs text-white/80">After</div>
+                                                <div className="absolute bottom-3 right-3 px-2 py-1 rounded bg-black/60 text-[10px] text-white/80">After</div>
                                             </div>
-                                            {/* Slider line */}
                                             <div
                                                 className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg"
                                                 style={{ left: `${comparePosition}%` }}
                                             >
-                                                <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center">
-                                                    <ChevronLeft className="w-3 h-3 text-black" />
-                                                    <ChevronRight className="w-3 h-3 text-black" />
+                                                <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-white shadow-lg flex items-center justify-center">
+                                                    <ChevronLeft className="w-2 h-2 text-black" />
+                                                    <ChevronRight className="w-2 h-2 text-black" />
                                                 </div>
                                             </div>
                                         </>
                                     ) : (
-                                        <img
-                                            src={currentResult}
-                                            alt="Try-on Result"
-                                            className="w-full h-full object-cover"
-                                        />
+                                        <img src={currentResult} alt="Try-on Result" className="w-full h-full object-cover" />
                                     )}
-                                    {/* Overlay gradient */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
                                 </motion.div>
 
                                 {/* Action Buttons */}
-                                <div className="grid grid-cols-3 gap-3">
-                                    <Button
-                                        onClick={() => handleDownload()}
-                                        className="bg-primary hover:bg-primary/90"
-                                    >
-                                        <Download className="w-4 h-4 mr-2" />
+                                <div className="grid grid-cols-3 gap-2">
+                                    <Button onClick={() => handleDownload()} size="sm" className="bg-primary hover:bg-primary/90 h-8 text-xs">
+                                        <Download className="w-3 h-3 mr-1" />
                                         Download
                                     </Button>
-                                    <Button
-                                        variant="outline"
-                                        onClick={handleShare}
-                                        className="border-white/20 hover:bg-white/10"
-                                    >
-                                        <Share2 className="w-4 h-4 mr-2" />
+                                    <Button variant="outline" size="sm" onClick={handleShare} className="border-white/20 hover:bg-white/10 h-8 text-xs">
+                                        <Share2 className="w-3 h-3 mr-1" />
                                         Share
                                     </Button>
                                     <Button
                                         variant="outline"
+                                        size="sm"
                                         onClick={handleSave}
                                         disabled={saved}
                                         className={cn(
-                                            "border-white/20",
+                                            "h-8 text-xs border-white/20",
                                             saved ? "bg-green-500/20 border-green-500/50 text-green-400" : "hover:bg-white/10"
                                         )}
                                     >
-                                        {saved ? (
-                                            <><Check className="w-4 h-4 mr-2" /> Saved</>
-                                        ) : (
-                                            <><BookmarkPlus className="w-4 h-4 mr-2" /> Save</>
-                                        )}
+                                        {saved ? <><Check className="w-3 h-3 mr-1" /> Saved</> : <><BookmarkPlus className="w-3 h-3 mr-1" /> Save</>}
                                     </Button>
                                 </div>
                             </motion.div>
