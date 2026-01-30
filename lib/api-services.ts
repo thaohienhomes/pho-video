@@ -1985,7 +1985,6 @@ export interface VirtualTryOnOptions {
     modelImageUrl: string       // Full body photo of person
     garmentImageUrl: string     // Photo of clothing item
     garmentType?: "auto" | "tops" | "bottoms" | "one-pieces"  // Garment category
-    nsfw_filter?: boolean       // Filter NSFW content
 }
 
 export interface VirtualTryOnResult {
@@ -2013,12 +2012,11 @@ export async function generateVirtualTryOn(
         console.log(`   Garment Image: ${options.garmentImageUrl.substring(0, 50)}...`)
         console.log(`   Garment Type: ${options.garmentType || "auto"}`)
 
-        const result = await fal.subscribe("fal-ai/fashn/tryon", {
+        const result = await fal.subscribe("fal-ai/fashn/tryon/v1.5", {
             input: {
                 model_image: options.modelImageUrl,
                 garment_image: options.garmentImageUrl,
                 category: options.garmentType || "auto",
-                nsfw_filter: options.nsfw_filter ?? true,
             },
             logs: true,
             onQueueUpdate: (update) => {
