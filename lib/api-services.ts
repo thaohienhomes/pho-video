@@ -2012,10 +2012,34 @@ export async function generateVirtualTryOn(
         console.log(`   Garment Image: ${options.garmentImageUrl.substring(0, 50)}...`)
         console.log(`   Garment Type: ${options.garmentType || "auto"}`)
 
+
+        // Helper to handle base64 upload if needed
+        const ensureUrl = async (input: string): Promise<string> => {
+            if (input.startsWith("data:image")) {
+                console.log(`   📤 Uploading base64 image to Fal storage...`)
+                try {
+                    // Convert base64 to blob
+                    const response = await fetch(input)
+                    const blob = await response.blob()
+                    // Upload to Fal storage
+                    const url = await fal.storage.upload(blob)
+                    return url
+                } catch (e) {
+                    console.error("Failed to upload base64 to Fal storage", e)
+                    // Fallback: try sending base64 directly (some endpoints accept it)
+                    return input
+                }
+            }
+            return input
+        }
+
+        const modelImageUrl = await ensureUrl(options.modelImageUrl)
+        const garmentImageUrl = await ensureUrl(options.garmentImageUrl)
+
         const result = await fal.subscribe("fal-ai/fashn/tryon/v1.5", {
             input: {
-                model_image: options.modelImageUrl,
-                garment_image: options.garmentImageUrl,
+                model_image: modelImageUrl,
+                garment_image: garmentImageUrl,
                 category: options.garmentType || "auto",
                 mode: "balanced",
                 garment_photo_type: "auto",
