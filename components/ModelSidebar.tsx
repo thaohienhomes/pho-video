@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl"
 import { VideoModel } from "@/types"
-import { Sparkles, Zap, Star, Film, Crown, Flame, Settings2, Clock, Monitor, Hash, Smartphone, Square } from "lucide-react"
+import { Sparkles, Zap, Star, Film, Crown, Flame, Settings2, Clock, Monitor, Hash, Smartphone, Square, Music } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Slider } from "@/components/ui/slider"
 import { Input } from "@/components/ui/input"
@@ -77,6 +77,17 @@ export function ModelSidebar({
             costTier: "low",
             creditCostPerSecond: 2,
         },
+        {
+            id: "pho-grok",
+            name: "Grok Audio",
+            description: t("grok_desc"),
+            isAvailable: true,
+            provider: "fal",
+            tag: t("tag_audio"),
+            tagKey: "Audio",
+            costTier: "high",
+            creditCostPerSecond: 25,
+        },
     ]
 
     const tagStyles: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
@@ -94,6 +105,11 @@ export function ModelSidebar({
             bg: "bg-green-500/20",
             text: "text-green-400",
             icon: <Zap className="w-3 h-3" />,
+        },
+        Audio: {
+            bg: "bg-purple-500/20",
+            text: "text-purple-400",
+            icon: <Music className="w-3 h-3" />,
         },
     }
 

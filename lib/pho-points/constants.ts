@@ -30,6 +30,10 @@ export const COST_PHO_POINTS = {
     I2V_5S_1080P: 55000,             // $0.225 COGS → 55K points (59% margin)
     I2V_10S_1080P: 110000,           // $0.45 COGS → 110K points (59% margin)
 
+    // Grok Imagine Video (with Audio)
+    GROK_VIDEO_6S: 150000,           // $0.30 COGS → 150K points (60% margin)
+    GROK_I2V_6S: 155000,             // $0.302 COGS → 155K points (60% margin)
+
     // Enhancements
     UPSCALE_4K: 25000,               // $0.10 COGS → 25K points (60% margin)
     EXTEND_VIDEO_5S: 50000,          // $0.20 COGS → 50K points (future)

@@ -328,6 +328,11 @@ const FAL_VIDEO_MODELS = {
     // Minimax Hailuo 02 Pro - Higher quality (NEW!)
     "pho-motion-pro": "fal-ai/minimax/hailuo-02/pro/text-to-video",
 
+    // === GROK TIER (Audio-Enabled) ===
+    // xAI Grok Imagine Video - Built-in audio generation
+    "pho-grok": "xai/grok-imagine-video/text-to-video",
+    "pho-grok-i2v": "xai/grok-imagine-video/image-to-video",
+
     // === PREMIUM TIER (Enterprise quality) ===
     // Veo 3.1 - Google's flagship (Enterprise only)
     "pho-ultra": "fal-ai/veo3.1",
@@ -519,6 +524,8 @@ export async function generateFalVideoUnified(
             effectiveModelId = "pho-cinematic-i2v"
         } else if (modelId === "pho-motion" || modelId === "wan-2.6") {
             effectiveModelId = "pho-motion-i2v"
+        } else if (modelId === "pho-grok") {
+            effectiveModelId = "pho-grok-i2v"
         }
     }
 
@@ -554,6 +561,15 @@ export async function generateFalVideoUnified(
         if (effectiveModelId.includes("ltx") || effectiveModelId.includes("pho-instant")) {
             input.num_inference_steps = 50
             input.guidance_scale = 4
+        }
+        // Grok Imagine Video specific parameters
+        if (effectiveModelId.includes("pho-grok")) {
+            // Grok only supports 480p/720p, cap resolution
+            input.resolution = "720p"
+            // Grok default duration is 6s
+            input.duration = options.duration || 6
+            // Remove negative prompt (not supported by Grok)
+            delete input.negative_prompt
         }
 
         // Add image for I2V mode
@@ -1528,6 +1544,7 @@ export interface MusicGenerationOptions {
     duration?: number                 // Duration in seconds (default: 30)
     model?: "minimax" | "elevenlabs" | "lyria2" | "ace-step"
     referenceAudioUrl?: string        // Optional reference audio for style
+    lyrics?: string                   // Lyrics for ACE-Step model
 }
 
 export interface MusicGenerationResult {
@@ -1573,6 +1590,14 @@ export async function generateMusic(
         // Add reference audio if provided (for style transfer)
         if (options.referenceAudioUrl) {
             input.reference_audio_url = options.referenceAudioUrl
+        }
+
+        // ACE-Step specific: use tags + lyrics format
+        if (modelId === "ace-step") {
+            input.tags = options.prompt  // prompt becomes style tags
+            input.lyrics = options.lyrics || "[inst]"  // instrumental if no lyrics
+            delete input.prompt
+            console.log(`   Lyrics: ${(options.lyrics || "[inst]").substring(0, 50)}...`)
         }
 
         // Use fal.subscribe for queue handling
@@ -2018,22 +2043,45 @@ export async function generateVirtualTryOn(
 
         // Helper to handle base64 upload if needed
         const ensureUrl = async (input: string): Promise<string> => {
-            if (input.startsWith("data:image")) {
+            // Strip any surrounding quotes (can happen from JSON parsing issues)
+            let cleanInput = input.trim()
+            if (cleanInput.startsWith('"') && cleanInput.endsWith('"')) {
+                cleanInput = cleanInput.slice(1, -1)
+            }
+            if (cleanInput.startsWith("'") && cleanInput.endsWith("'")) {
+                cleanInput = cleanInput.slice(1, -1)
+            }
+            // Also strip single leading quote
+            if (cleanInput.startsWith('"')) {
+                cleanInput = cleanInput.slice(1)
+            }
+
+            if (cleanInput.startsWith("data:image")) {
                 console.log(`   📤 Uploading base64 image to Fal storage...`)
                 try {
-                    // Convert base64 to blob
-                    const response = await fetch(input)
-                    const blob = await response.blob()
+                    // Extract base64 data and content type
+                    const matches = cleanInput.match(/^data:(.+);base64,(.+)$/)
+                    if (!matches) {
+                        console.error("Invalid base64 format:", cleanInput.substring(0, 50))
+                        return cleanInput
+                    }
+                    const [, mimeType, base64Data] = matches
+
+                    // Convert base64 to Buffer then to Blob (Node.js compatible)
+                    const buffer = Buffer.from(base64Data, 'base64')
+                    const blob = new Blob([buffer], { type: mimeType })
+
                     // Upload to Fal storage
                     const url = await fal.storage.upload(blob)
+                    console.log(`   ✅ Uploaded to Fal storage: ${url.substring(0, 60)}...`)
                     return url
                 } catch (e) {
                     console.error("Failed to upload base64 to Fal storage", e)
                     // Fallback: try sending base64 directly (some endpoints accept it)
-                    return input
+                    return cleanInput
                 }
             }
-            return input
+            return cleanInput
         }
 
         const modelImageUrl = await ensureUrl(options.modelImageUrl)

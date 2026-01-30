@@ -46,6 +46,8 @@ model User {
   phoPointsTransactions   PhoPointsTransaction[]
   phoPointsAllocations    PhoPointsAllocation[]
   avatars                 Avatar[]
+  garments                Garment[]
+  challengeSubmissions    ChallengeSubmission[]
 }
 
 // Generation history model
@@ -140,4 +142,54 @@ enum AvatarStatus {
   TRAINING
   READY
   FAILED
+}
+
+// Digital Wardrobe - User uploaded garments
+model Garment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  imageUrl  String
+  type      String   // 'tops' | 'bottoms' | 'one-pieces' | 'auto'
+  name      String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// Outfit Battle - Community Challenges
+model Challenge {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  imageUrl    String?  // Cover image for challenge
+  
+  startDate   DateTime
+  endDate     DateTime
+  status      String   @default("active") // active | ended
+  
+  submissions ChallengeSubmission[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ChallengeSubmission {
+  id          String   @id @default(cuid())
+  challengeId String
+  challenge   Challenge @relation(fields: [challengeId], references: [id])
+  
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  
+  imageUrl    String    // The Try-On result
+  votes       Int       @default(0)
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([challengeId])
+  @@index([userId])
 }

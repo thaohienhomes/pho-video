@@ -106,8 +106,23 @@ export async function POST(req: NextRequest) {
         })
     } catch (error) {
         console.error("❌ [Try-on API] Error:", error)
+
+        // Extract detailed validation errors from Fal.ai
+        let errorMessage = "Internal server error"
+        if (error && typeof error === 'object') {
+            // Check for Fal.ai validation error structure
+            const falError = error as { body?: { detail?: Array<{ msg?: string }> }, message?: string }
+            if (falError.body?.detail?.[0]?.msg) {
+                errorMessage = falError.body.detail[0].msg
+            } else if (falError.message) {
+                errorMessage = falError.message
+            } else if (error instanceof Error) {
+                errorMessage = error.message
+            }
+        }
+
         return NextResponse.json(
-            { error: error instanceof Error ? error.message : "Internal server error" },
+            { error: errorMessage },
             { status: 500 }
         )
     }

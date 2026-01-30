@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json()
-        const { prompt, duration = 30, model = "minimax", referenceAudioUrl } = body
+        const { prompt, duration = 30, model = "minimax", referenceAudioUrl, lyrics } = body
 
         if (!prompt) {
             return NextResponse.json({ error: "Prompt is required" }, { status: 400 })
@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
 
         console.log(`🎵 [Music API] Generating ${duration}s music with ${model}...`)
         console.log(`   Cost: ${cost} Phở Points`)
+        if (lyrics) console.log(`   With lyrics: ${lyrics.substring(0, 50)}...`)
 
         // Generate music
         const result = await generateMusic({
@@ -47,12 +48,31 @@ export async function POST(request: NextRequest) {
             duration,
             model: model as MusicGenerationOptions["model"],
             referenceAudioUrl,
+            lyrics,
         })
 
         if (result.status === "failed") {
-            return NextResponse.json({
-                error: result.error || "Music generation failed",
-            }, { status: 500 })
+            // Sanitize error - don't expose provider details
+            let userError = "Music generation failed. Please try again."
+            let statusCode = 500
+
+            // Map internal errors to user-friendly messages
+            const errorLower = (result.error || "").toLowerCase()
+
+            if (errorLower.includes("forbidden") || errorLower.includes("exhausted") || errorLower.includes("locked")) {
+                // Provider quota/access issue - don't expose to user
+                userError = "This model is temporarily unavailable. Please try another model."
+                statusCode = 503
+                console.warn(`⚠️ [Music API] Provider access issue for ${model} - suggesting alternative`)
+            } else if (errorLower.includes("rate limit") || errorLower.includes("too many")) {
+                userError = "Too many requests. Please wait a moment and try again."
+                statusCode = 429
+            } else if (errorLower.includes("invalid") || errorLower.includes("bad request")) {
+                userError = "Invalid request. Please check your input and try again."
+                statusCode = 400
+            }
+
+            return NextResponse.json({ error: userError }, { status: statusCode })
         }
 
         // Deduct points on success
@@ -69,8 +89,19 @@ export async function POST(request: NextRequest) {
 
     } catch (error) {
         console.error("❌ [Music API] Error:", error)
-        return NextResponse.json({
-            error: error instanceof Error ? error.message : "Internal server error",
-        }, { status: 500 })
+
+        // Sanitize catch-all errors
+        let userError = "Generation failed. Please try again."
+
+        if (error instanceof Error) {
+            const msg = error.message.toLowerCase()
+            if (msg.includes("forbidden") || msg.includes("403")) {
+                userError = "This model is temporarily unavailable. Please try another model."
+            } else if (msg.includes("timeout")) {
+                userError = "Request timed out. Please try again."
+            }
+        }
+
+        return NextResponse.json({ error: userError }, { status: 500 })
     }
 }

@@ -253,6 +253,7 @@ export function StoryboardWizard({ onComplete }: StoryboardWizardProps) {
     // Story input
     const [story, setStory] = useState("")
     const [sceneCount, setSceneCount] = useState(3)
+    const [isEnhancing, setIsEnhancing] = useState(false)
 
     // Scenes (parsed and editable)
     const [scenes, setScenes] = useState<Scene[]>([])
@@ -475,12 +476,47 @@ export function StoryboardWizard({ onComplete }: StoryboardWizardProps) {
                                     <FileText className="w-4 h-4" />
                                     Your Story
                                 </label>
-                                <Textarea
-                                    value={story}
-                                    onChange={(e) => setStory(e.target.value)}
-                                    placeholder="Once upon a time in a futuristic city, a young inventor discovered a secret that would change the world..."
-                                    className="min-h-[160px] bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-none"
-                                />
+                                <div className="relative">
+                                    <Textarea
+                                        value={story}
+                                        onChange={(e) => setStory(e.target.value)}
+                                        placeholder="Once upon a time in a futuristic city, a young inventor discovered a secret that would change the world..."
+                                        className="min-h-[160px] bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-none pr-12"
+                                    />
+                                    <button
+                                        onClick={async () => {
+                                            if (!story.trim() || isEnhancing) return
+                                            setIsEnhancing(true)
+                                            try {
+                                                const res = await fetch("/api/ai/enhance", {
+                                                    method: "POST",
+                                                    headers: { "Content-Type": "application/json" },
+                                                    body: JSON.stringify({ prompt: story })
+                                                })
+                                                const data = await res.json()
+                                                if (data.enhancedPrompt) setStory(data.enhancedPrompt)
+                                            } catch (err) {
+                                                console.error("Enhance failed:", err)
+                                            } finally {
+                                                setIsEnhancing(false)
+                                            }
+                                        }}
+                                        disabled={!story.trim() || isEnhancing}
+                                        className={cn(
+                                            "absolute top-2 right-2 p-2 rounded-lg transition-all",
+                                            "bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30",
+                                            "border border-purple-500/30 hover:border-purple-500/50",
+                                            "disabled:opacity-50 disabled:cursor-not-allowed"
+                                        )}
+                                        title="Enhance Story with AI"
+                                    >
+                                        {isEnhancing ? (
+                                            <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
+                                        ) : (
+                                            <Wand2 className="w-4 h-4 text-purple-400" />
+                                        )}
+                                    </button>
+                                </div>
                                 <p className="text-xs text-white/40">
                                     {story.length} characters • Tip: Write 2-3 sentences per scene for best results
                                 </p>

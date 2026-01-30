@@ -64,13 +64,15 @@ const VIDEO_MODELS = [
     { id: "pho-instant", name: "Phở Instant", cost: 50, description: "Fast & balanced", tag: "Popular" },
     { id: "pho-cinematic", name: "Phở Cinematic", cost: 75, description: "Best quality", tag: "Pro" },
     { id: "pho-fast", name: "Phở Fast", cost: 40, description: "Budget-friendly", tag: "" },
-    { id: "pho-motion", name: "Phở Motion", cost: 60, description: "Best for I2V", tag: "I2V" },
+    { id: "pho-motion", name: "Phở Motion", cost: 60, description: "Best for I2V", tag: "I2V", isNew: true },
+    { id: "pho-grok", name: "Grok Audio", cost: 150, description: "Video with AI audio", tag: "Audio", isNew: true },
 ]
 
 // Image models  
 const IMAGE_MODELS = [
-    { id: "flux-pro-v1.1", name: "Flux Pro", cost: 20, description: "Photorealistic" },
-    { id: "recraft-v3", name: "Recraft V3", cost: 25, description: "Artistic styles" },
+    { id: "flux-pro-v1.1", name: "Flux Pro", cost: 20, description: "Photorealistic", tag: "" },
+    { id: "recraft-v3", name: "Recraft V3", cost: 25, description: "Artistic styles", tag: "" },
+    { id: "nano-banana-pro", name: "Banana Pro", cost: 15, description: "Fast & cheap", tag: "Budget", isNew: true },
 ]
 
 // Magic presets with actions
@@ -124,6 +126,7 @@ export default function StudioPage() {
     const [selectedMode, setSelectedMode] = useState<CreationMode>("video")
     const [prompt, setPrompt] = useState("")
     const [isGenerating, setIsGenerating] = useState(false)
+    const [isEnhancing, setIsEnhancing] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
     // Video settings
@@ -273,6 +276,22 @@ export default function StudioPage() {
         }
     }
 
+    // Handle deep link from Try-On to Video
+    const handleNavigateToVideo = (imageUrl: string) => {
+        setSelectedMode("video")
+        setIsImageToVideo(true)
+        setUploadedImage(imageUrl)
+        // Select "Phở Motion" or standard model optimized for I2V
+        setVideoModel("pho-motion")
+        setPrompt("Fashion runway walk, cinematic lighting, 4k, confident strut, high fashion, photorealistic 8k, slow motion")
+
+        // Add minimal delay to ensure state updates before scroll/render
+        setTimeout(() => {
+            const textarea = document.querySelector('textarea')
+            if (textarea) textarea.focus()
+        }, 100)
+    }
+
     // Render mode-specific content
     const renderModeContent = () => {
         switch (selectedMode) {
@@ -344,18 +363,54 @@ export default function StudioPage() {
 
                         {/* Prompt Input */}
                         <div className="space-y-2">
-                            <Textarea
-                                value={prompt}
-                                onChange={(e) => setPrompt(e.target.value)}
-                                placeholder={
-                                    selectedMode === "video"
-                                        ? isImageToVideo
-                                            ? "Describe how the image should animate..."
-                                            : "Describe the video you want to create..."
-                                        : "Describe the image you want to generate..."
-                                }
-                                className="min-h-[100px] bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-none text-base focus:border-primary/50 focus:ring-1 focus:ring-primary/20"
-                            />
+                            <div className="relative">
+                                <Textarea
+                                    value={prompt}
+                                    onChange={(e) => setPrompt(e.target.value)}
+                                    placeholder={
+                                        selectedMode === "video"
+                                            ? isImageToVideo
+                                                ? "Describe how the image should animate..."
+                                                : "Describe the video you want to create..."
+                                            : "Describe the image you want to generate..."
+                                    }
+                                    className="min-h-[100px] bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-none text-base focus:border-primary/50 focus:ring-1 focus:ring-primary/20 pr-12"
+                                />
+                                {/* Enhance Button */}
+                                <button
+                                    onClick={async () => {
+                                        if (!prompt.trim() || isEnhancing) return
+                                        setIsEnhancing(true)
+                                        try {
+                                            const res = await fetch("/api/ai/enhance", {
+                                                method: "POST",
+                                                headers: { "Content-Type": "application/json" },
+                                                body: JSON.stringify({ prompt })
+                                            })
+                                            const data = await res.json()
+                                            if (data.enhancedPrompt) setPrompt(data.enhancedPrompt)
+                                        } catch (err) {
+                                            console.error("Enhance failed:", err)
+                                        } finally {
+                                            setIsEnhancing(false)
+                                        }
+                                    }}
+                                    disabled={!prompt.trim() || isEnhancing}
+                                    className={cn(
+                                        "absolute top-2 right-2 p-2 rounded-lg transition-all",
+                                        "bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30",
+                                        "border border-purple-500/30 hover:border-purple-500/50",
+                                        "disabled:opacity-50 disabled:cursor-not-allowed"
+                                    )}
+                                    title="Enhance Prompt with AI"
+                                >
+                                    {isEnhancing ? (
+                                        <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
+                                    ) : (
+                                        <Wand2 className="w-4 h-4 text-purple-400" />
+                                    )}
+                                </button>
+                            </div>
                             <div className="flex justify-between items-center">
                                 <span className="text-xs text-white/30">{prompt.length} characters</span>
                                 <span className="text-xs text-white/30 flex items-center gap-1">
@@ -386,13 +441,20 @@ export default function StudioPage() {
                                                     : "bg-white/5 border-white/10 hover:border-white/20"
                                             )}
                                         >
-                                            {'tag' in model && (model as { tag?: string }).tag && (
-                                                <span className="absolute top-2 right-2 px-1.5 py-0.5 text-[10px] font-medium rounded bg-primary/20 text-primary">
-                                                    {(model as { tag?: string }).tag}
-                                                </span>
-                                            )}
-                                            <p className="text-sm font-medium text-white">{model.name}</p>
-                                            <p className="text-xs text-white/40 mt-0.5">{model.cost}K • {model.description}</p>
+                                            <p className="text-sm font-medium text-white truncate">{model.name}</p>
+                                            <div className="flex items-center gap-1 mt-1">
+                                                {'isNew' in model && model.isNew && (
+                                                    <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-emerald-500/20 text-emerald-400">
+                                                        NEW
+                                                    </span>
+                                                )}
+                                                {'tag' in model && model.tag && (
+                                                    <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-primary/20 text-primary">
+                                                        {model.tag}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-white/40 mt-1">{model.cost}K • {model.description}</p>
                                         </button>
                                     ))}
                                 </div>
@@ -488,7 +550,10 @@ export default function StudioPage() {
                 return <LipSyncStudio />
 
             case "tryon":
-                return <TryOnStudio onBackToModes={() => setSelectedMode("video")} />
+                return <TryOnStudio
+                    onBackToModes={() => setSelectedMode("video")}
+                    onNavigateToVideo={handleNavigateToVideo}
+                />
 
             case "upscale":
                 return (

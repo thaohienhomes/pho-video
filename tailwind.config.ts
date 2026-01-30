@@ -55,6 +55,19 @@ const config: Config = {
                 lg: 'var(--radius)',
                 md: 'calc(var(--radius) - 2px)',
                 sm: 'calc(var(--radius) - 4px)'
+            },
+            animation: {
+                'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite',
+            },
+            keyframes: {
+                'pulse-subtle': {
+                    '0%, 100%': {
+                        boxShadow: '0 0 50px rgba(255,90,90,0.5), 0 0 80px rgba(255,158,90,0.25)'
+                    },
+                    '50%': {
+                        boxShadow: '0 0 60px rgba(255,90,90,0.7), 0 0 100px rgba(255,158,90,0.4)'
+                    },
+                }
             }
         }
     },

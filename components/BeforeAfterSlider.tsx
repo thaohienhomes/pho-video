@@ -121,7 +121,7 @@ export function BeforeAfterSlider({
             onTouchEnd={handleMouseUp}
         >
             {/* After (Background - Full) */}
-            <div className="absolute inset-0">
+            <div className="absolute inset-0 flex items-center justify-center bg-black">
                 {type === "video" ? (
                     <video
                         ref={afterVideoRef}
@@ -136,7 +136,7 @@ export function BeforeAfterSlider({
                     <img
                         src={afterSrc}
                         alt={afterLabel}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                     />
                 )}
             </div>
@@ -146,23 +146,25 @@ export function BeforeAfterSlider({
                 className="absolute inset-0 overflow-hidden"
                 style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
             >
-                {type === "video" ? (
-                    <video
-                        ref={beforeVideoRef}
-                        src={beforeSrc}
-                        className="w-full h-full object-cover"
-                        loop
-                        muted
-                        playsInline
-                        autoPlay
-                    />
-                ) : (
-                    <img
-                        src={beforeSrc}
-                        alt={beforeLabel}
-                        className="w-full h-full object-cover"
-                    />
-                )}
+                <div className="absolute inset-0 flex items-center justify-center bg-black">
+                    {type === "video" ? (
+                        <video
+                            ref={beforeVideoRef}
+                            src={beforeSrc}
+                            className="w-full h-full object-cover"
+                            loop
+                            muted
+                            playsInline
+                            autoPlay
+                        />
+                    ) : (
+                        <img
+                            src={beforeSrc}
+                            alt={beforeLabel}
+                            className="w-full h-full object-contain"
+                        />
+                    )}
+                </div>
             </div>
 
             {/* Slider Line */}

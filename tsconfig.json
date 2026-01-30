@@ -36,6 +36,7 @@
   "exclude": [
     "node_modules",
     "pho-video-mobile",
+    "pho-video-extension",
     "remotion"
   ]
 }
