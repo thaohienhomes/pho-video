@@ -364,19 +364,19 @@ export function TryOnStudio({ className, onBackToModes }: TryOnStudioProps) {
                             )}
                         </motion.div>
                         {/* Sample Models */}
-                        <div className="mt-4">
-                            <Label className="text-xs text-white/40 mb-2 block">Or try samples:</Label>
-                            <div className="flex gap-3">
+                        <div className="mt-3 flex items-center gap-2">
+                            <Label className="text-xs text-white/40 whitespace-nowrap">Or try:</Label>
+                            <div className="flex gap-2">
                                 {SAMPLE_MODELS.map((sample) => (
                                     <motion.button
                                         key={sample.id}
                                         onClick={() => handleSampleClick("model", sample)}
-                                        whileHover={{ scale: 1.05, y: -2 }}
+                                        whileHover={{ scale: 1.08 }}
                                         whileTap={{ scale: 0.95 }}
                                         className={cn(
-                                            "flex-1 aspect-[3/4] rounded-xl overflow-hidden border-2 transition-all shadow-lg",
+                                            "w-12 h-16 rounded-lg overflow-hidden border-2 transition-all",
                                             modelImage === sample.url
-                                                ? "border-pink-500 ring-2 ring-pink-500/30 shadow-pink-500/20"
+                                                ? "border-pink-500 ring-2 ring-pink-500/30"
                                                 : "border-white/10 hover:border-white/30"
                                         )}
                                     >
@@ -434,19 +434,19 @@ export function TryOnStudio({ className, onBackToModes }: TryOnStudioProps) {
                             )}
                         </motion.div>
                         {/* Sample Garments */}
-                        <div className="mt-4">
-                            <Label className="text-xs text-white/40 mb-2 block">Or try samples:</Label>
-                            <div className="flex gap-3">
+                        <div className="mt-3 flex items-center gap-2">
+                            <Label className="text-xs text-white/40 whitespace-nowrap">Or try:</Label>
+                            <div className="flex gap-2">
                                 {SAMPLE_GARMENTS.map((sample) => (
                                     <motion.button
                                         key={sample.id}
                                         onClick={() => handleSampleClick("garment", sample)}
-                                        whileHover={{ scale: 1.05, y: -2 }}
+                                        whileHover={{ scale: 1.08 }}
                                         whileTap={{ scale: 0.95 }}
                                         className={cn(
-                                            "flex-1 aspect-[3/4] rounded-xl overflow-hidden border-2 transition-all shadow-lg",
+                                            "w-12 h-16 rounded-lg overflow-hidden border-2 transition-all",
                                             garmentImage === sample.url
-                                                ? "border-orange-500 ring-2 ring-orange-500/30 shadow-orange-500/20"
+                                                ? "border-orange-500 ring-2 ring-orange-500/30"
                                                 : "border-white/10 hover:border-white/30"
                                         )}
                                     >

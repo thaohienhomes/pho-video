@@ -622,16 +622,21 @@ export default function StudioPage() {
                     "border-r border-white/5 flex flex-col bg-[#0A0A0A] transition-all duration-300",
                     selectedMode === "tryon" ? "flex-1" : "w-[380px]"
                 )}>
-                    {/* Mode Selector */}
-                    <div className="p-4 border-b border-white/5">
-                        <ModeSelector
-                            selectedMode={selectedMode}
-                            onModeChange={setSelectedMode}
-                        />
-                    </div>
+                    {/* Mode Selector - Hidden for tryon full-width mode */}
+                    {selectedMode !== "tryon" && (
+                        <div className="p-4 border-b border-white/5">
+                            <ModeSelector
+                                selectedMode={selectedMode}
+                                onModeChange={setSelectedMode}
+                            />
+                        </div>
+                    )}
 
                     {/* Mode Content */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10">
+                    <div className={cn(
+                        "flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10",
+                        selectedMode === "tryon" ? "p-0" : "p-4 space-y-4"
+                    )}>
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={selectedMode}
