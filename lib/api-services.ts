@@ -2013,7 +2013,7 @@ export async function generateVirtualTryOn(
         console.log(`   Garment Image: ${options.garmentImageUrl.substring(0, 50)}...`)
         console.log(`   Garment Type: ${options.garmentType || "auto"}`)
 
-        const result = await fal.subscribe("fashn-ai/tryon", {
+        const result = await fal.subscribe("fal-ai/fashn/tryon", {
             input: {
                 model_image: options.modelImageUrl,
                 garment_image: options.garmentImageUrl,

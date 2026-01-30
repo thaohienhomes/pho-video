@@ -31,11 +31,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from "@/components/ui/collapsible"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import confetti from "canvas-confetti"
@@ -258,35 +253,41 @@ export function TryOnStudio({ className }: TryOnStudioProps) {
                 <div className="max-w-4xl mx-auto space-y-6">
 
                     {/* Tips Section */}
-                    <Collapsible open={tipsOpen} onOpenChange={setTipsOpen}>
-                        <CollapsibleTrigger className="w-full">
-                            <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 hover:border-amber-500/40 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <Lightbulb className="w-5 h-5 text-amber-400" />
-                                    <span className="text-sm font-medium text-amber-200">Tips for Best Results</span>
-                                </div>
-                                <motion.div animate={{ rotate: tipsOpen ? 180 : 0 }}>
-                                    <ChevronDown className="w-4 h-4 text-amber-400" />
-                                </motion.div>
+                    <div>
+                        <button
+                            onClick={() => setTipsOpen(!tipsOpen)}
+                            className="w-full flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 hover:border-amber-500/40 transition-colors"
+                        >
+                            <div className="flex items-center gap-3">
+                                <Lightbulb className="w-5 h-5 text-amber-400" />
+                                <span className="text-sm font-medium text-amber-200">Tips for Best Results</span>
                             </div>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="mt-3 p-4 rounded-xl bg-white/5 border border-white/10 space-y-3"
-                            >
-                                {TIPS.map((tip, i) => (
-                                    <div key={i} className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                                            <tip.icon className="w-4 h-4 text-amber-400" />
-                                        </div>
-                                        <span className="text-sm text-white/70">{tip.text}</span>
-                                    </div>
-                                ))}
+                            <motion.div animate={{ rotate: tipsOpen ? 180 : 0 }}>
+                                <ChevronDown className="w-4 h-4 text-amber-400" />
                             </motion.div>
-                        </CollapsibleContent>
-                    </Collapsible>
+                        </button>
+                        <AnimatePresence>
+                            {tipsOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="overflow-hidden"
+                                >
+                                    <div className="mt-3 p-4 rounded-xl bg-white/5 border border-white/10 space-y-3">
+                                        {TIPS.map((tip, i) => (
+                                            <div key={i} className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                                                    <tip.icon className="w-4 h-4 text-amber-400" />
+                                                </div>
+                                                <span className="text-sm text-white/70">{tip.text}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
 
                     {/* Upload Zones */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
