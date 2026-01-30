@@ -35,6 +35,7 @@ import { SoundStudio } from "@/components/SoundStudio"
 import { VideoUpscaler } from "@/components/VideoUpscaler"
 import { StoryboardWizard } from "@/components/StoryboardWizard"
 import { LipSyncStudio } from "@/components/LipSyncStudio"
+import { TryOnStudio } from "@/components/TryOnStudio"
 import { BatchSizeSelector } from "@/components/BatchSizeSelector"
 import { useStudioStore } from "@/stores/useStudioStore"
 import {
@@ -52,6 +53,7 @@ const MODE_DEFAULTS = {
     image: { model: "flux-pro-v1.1", aspectRatio: "1:1", batch: 1 },
     audio: { musicModel: "minimax", duration: 30 },
     lipsync: { expressionScale: 1.0, preprocess: "crop" },
+    tryon: { garmentType: "auto" },
     upscale: { model: "standard", scale: 2 },
     story: { scenes: 3, duration: 5 },
     magic: {},
@@ -484,6 +486,9 @@ export default function StudioPage() {
 
             case "lipsync":
                 return <LipSyncStudio />
+
+            case "tryon":
+                return <TryOnStudio />
 
             case "upscale":
                 return (

@@ -9,11 +9,12 @@ import {
     BookOpen,
     Sparkles,
     Mic,
+    Shirt,
     LucideIcon
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-export type CreationMode = "video" | "image" | "audio" | "upscale" | "story" | "magic" | "lipsync"
+export type CreationMode = "video" | "image" | "audio" | "upscale" | "story" | "magic" | "lipsync" | "tryon"
 
 interface ModeConfig {
     id: CreationMode
@@ -80,6 +81,14 @@ export const CREATION_MODES: ModeConfig[] = [
         description: "One-click Presets",
         color: "text-emerald-400",
         gradient: "from-emerald-500/20 to-teal-500/10",
+    },
+    {
+        id: "tryon",
+        label: "Try-on",
+        icon: Shirt,
+        description: "Virtual Clothing Try-on",
+        color: "text-rose-400",
+        gradient: "from-rose-500/20 to-pink-500/10",
     },
 ]
 

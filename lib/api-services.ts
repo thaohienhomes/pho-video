@@ -1977,3 +1977,76 @@ export async function generateTalkingHead(
     }
 }
 
+// ============================================================================
+// Virtual Try-on (FASHN VTON)
+// ============================================================================
+
+export interface VirtualTryOnOptions {
+    modelImageUrl: string       // Full body photo of person
+    garmentImageUrl: string     // Photo of clothing item
+    garmentType?: "auto" | "tops" | "bottoms" | "one-pieces"  // Garment category
+    nsfw_filter?: boolean       // Filter NSFW content
+}
+
+export interface VirtualTryOnResult {
+    imageUrl: string
+    requestId: string
+    status: "completed" | "failed"
+    error?: string
+}
+
+/**
+ * Generate Virtual Try-on using FASHN VTON v1.6
+ * Model: fashn-ai/tryon/v1.6
+ * Cost: ~$0.075 per generation
+ */
+export async function generateVirtualTryOn(
+    options: VirtualTryOnOptions
+): Promise<VirtualTryOnResult> {
+    try {
+        if (!FAL_KEY) {
+            throw new Error("FAL_KEY not configured")
+        }
+
+        console.log(`👕 [Virtual Try-on] Starting FASHN VTON...`)
+        console.log(`   Model Image: ${options.modelImageUrl.substring(0, 50)}...`)
+        console.log(`   Garment Image: ${options.garmentImageUrl.substring(0, 50)}...`)
+        console.log(`   Garment Type: ${options.garmentType || "auto"}`)
+
+        const result = await fal.subscribe("fashn-ai/tryon", {
+            input: {
+                model_image: options.modelImageUrl,
+                garment_image: options.garmentImageUrl,
+                category: options.garmentType || "auto",
+                nsfw_filter: options.nsfw_filter ?? true,
+            },
+            logs: true,
+            onQueueUpdate: (update) => {
+                if (update.status === "IN_PROGRESS") {
+                    console.log(`   ⏳ Processing VTON...`)
+                }
+            },
+        })
+
+        const imageUrl = (result.data as { image?: { url: string } })?.image?.url
+
+        if (!imageUrl) {
+            throw new Error("No image URL in FASHN VTON response")
+        }
+
+        console.log(`✅ [Virtual Try-on] Image generated successfully!`)
+        return {
+            imageUrl,
+            requestId: result.requestId,
+            status: "completed",
+        }
+    } catch (error) {
+        console.error(`❌ [Virtual Try-on] Error:`, error)
+        return {
+            imageUrl: "",
+            requestId: "",
+            status: "failed",
+            error: error instanceof Error ? error.message : "Virtual try-on failed",
+        }
+    }
+}
