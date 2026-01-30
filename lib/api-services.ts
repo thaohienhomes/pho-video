@@ -2069,6 +2069,13 @@ export async function generateVirtualTryOn(
         }
     } catch (error) {
         console.error(`❌ [Virtual Try-on] Error:`, error)
+        // Log detailed validation error info
+        if (error && typeof error === 'object' && 'body' in error) {
+            const body = (error as { body?: { detail?: unknown[] } }).body
+            if (body?.detail) {
+                console.error(`❌ [Virtual Try-on] Validation details:`, JSON.stringify(body.detail, null, 2))
+            }
+        }
         return {
             imageUrl: "",
             requestId: "",
