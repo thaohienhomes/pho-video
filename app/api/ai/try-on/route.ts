@@ -10,8 +10,8 @@ import {
     deductPhoPoints,
 } from "@/lib/pho-points/transactions"
 
-// Cost: 75K points = ~$0.075
-const TRYON_COST = 75000
+// Base cost: 75K points per sample
+const BASE_COST = 75000
 
 export async function POST(req: NextRequest) {
     try {
@@ -25,10 +25,16 @@ export async function POST(req: NextRequest) {
             modelImageUrl,
             garmentImageUrl,
             garmentType = "auto",
+            mode = "balanced",
+            numSamples = 1,
+            seed,
         } = body as {
             modelImageUrl: string
             garmentImageUrl: string
             garmentType?: VirtualTryOnOptions["garmentType"]
+            mode?: VirtualTryOnOptions["mode"]
+            numSamples?: number
+            seed?: number
         }
 
         // Validate required fields
@@ -45,15 +51,19 @@ export async function POST(req: NextRequest) {
             )
         }
 
+        // Calculate cost based on numSamples
+        const clampedSamples = Math.min(Math.max(numSamples, 1), 4)
+        const totalCost = BASE_COST * clampedSamples
+
         // Get user and check balance
         const dbUser = await getOrCreateUser(userId)
-        const hasSufficientPoints = await checkSufficientPhoPoints(dbUser.id, TRYON_COST)
+        const hasSufficientPoints = await checkSufficientPhoPoints(dbUser.id, totalCost)
 
         if (!hasSufficientPoints) {
             return NextResponse.json(
                 {
                     error: "Insufficient Phở Points",
-                    required: TRYON_COST,
+                    required: totalCost,
                     balance: dbUser.phoPointsBalance,
                 },
                 { status: 402 }
@@ -61,13 +71,17 @@ export async function POST(req: NextRequest) {
         }
 
         console.log(`👕 [Try-on API] Generating for user ${userId}...`)
-        console.log(`   Cost: ${TRYON_COST / 1000}K Phở Points`)
+        console.log(`   Mode: ${mode}, Samples: ${clampedSamples}`)
+        console.log(`   Cost: ${totalCost / 1000}K Phở Points`)
 
         // Generate virtual try-on
         const result = await generateVirtualTryOn({
             modelImageUrl,
             garmentImageUrl,
             garmentType,
+            mode,
+            numSamples: clampedSamples,
+            seed,
         })
 
         if (result.status === "failed") {
@@ -80,14 +94,14 @@ export async function POST(req: NextRequest) {
         // Deduct points on success
         await deductPhoPoints(
             dbUser.id,
-            TRYON_COST,
-            `Virtual Try-on (${garmentType})`
+            totalCost,
+            `Virtual Try-on (${mode}, ${clampedSamples}x)`
         )
 
         return NextResponse.json({
             success: true,
-            imageUrl: result.imageUrl,
-            cost: TRYON_COST,
+            imageUrls: result.imageUrls,
+            cost: totalCost,
             requestId: result.requestId,
         })
     } catch (error) {

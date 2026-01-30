@@ -1985,10 +1985,13 @@ export interface VirtualTryOnOptions {
     modelImageUrl: string       // Full body photo of person
     garmentImageUrl: string     // Photo of clothing item
     garmentType?: "auto" | "tops" | "bottoms" | "one-pieces"  // Garment category
+    mode?: "performance" | "balanced" | "quality"  // Quality vs speed tradeoff
+    numSamples?: number         // Number of results (1-4)
+    seed?: number               // Reproducibility seed
 }
 
 export interface VirtualTryOnResult {
-    imageUrl: string
+    imageUrls: string[]         // Array of generated images
     requestId: string
     status: "completed" | "failed"
     error?: string
@@ -2041,8 +2044,10 @@ export async function generateVirtualTryOn(
                 model_image: modelImageUrl,
                 garment_image: garmentImageUrl,
                 category: options.garmentType || "auto",
-                mode: "balanced",
+                mode: options.mode || "balanced",
                 garment_photo_type: "auto",
+                num_samples: Math.min(Math.max(options.numSamples || 1, 1), 4), // Clamp 1-4
+                ...(options.seed !== undefined && { seed: options.seed }),
             },
             logs: true,
             onQueueUpdate: (update) => {
@@ -2052,18 +2057,18 @@ export async function generateVirtualTryOn(
             },
         })
 
-        // API v1.5 returns images array, not image object
+        // API v1.5 returns images array
         const images = (result.data as { images?: Array<{ url: string }> })?.images
-        const imageUrl = images?.[0]?.url
+        const imageUrls = images?.map(img => img.url) || []
 
-        if (!imageUrl) {
+        if (imageUrls.length === 0) {
             console.error(`❌ [Virtual Try-on] Response data:`, JSON.stringify(result.data))
             throw new Error("No image URL in FASHN VTON response")
         }
 
-        console.log(`✅ [Virtual Try-on] Image generated successfully!`)
+        console.log(`✅ [Virtual Try-on] Generated ${imageUrls.length} image(s) successfully!`)
         return {
-            imageUrl,
+            imageUrls,
             requestId: result.requestId,
             status: "completed",
         }
@@ -2077,7 +2082,7 @@ export async function generateVirtualTryOn(
             }
         }
         return {
-            imageUrl: "",
+            imageUrls: [],
             requestId: "",
             status: "failed",
             error: error instanceof Error ? error.message : "Virtual try-on failed",
