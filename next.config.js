@@ -2,10 +2,6 @@ const withNextIntl = require('next-intl/plugin')('./i18n/request.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    // Deploy under /studio path for pho.chat/studio integration
-    basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
-    assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH || '',
-
     images: {
         remotePatterns: [
             {
