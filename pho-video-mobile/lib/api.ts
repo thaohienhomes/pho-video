@@ -11,7 +11,7 @@ const USE_LOCAL_API = false;
 
 export const API_BASE_URL = USE_LOCAL_API
     ? `http://${LOCAL_IP}:3000/api`
-    : "https://pho-video.vercel.app/api";
+    : "https://studio.pho.chat/api";
 
 console.log("[API] Using base URL:", API_BASE_URL);
 
