@@ -31,7 +31,7 @@ const STEPS = [
     {
         id: "welcome",
         icon: Sparkles,
-        title: "Welcome to Phở Video",
+        title: "Welcome to Phở Studio",
         subtitle: "AI-powered video creation at your fingertips",
         description: "Create stunning videos, images, and audio with the power of AI. From text to cinematic masterpieces in seconds.",
         gradient: "from-primary via-orange-500 to-amber-500",

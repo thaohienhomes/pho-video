@@ -11,7 +11,7 @@ const FAQ_ITEMS = [
     },
     {
         question: "Can I use the videos commercially?",
-        answer: "Absolutely. You own 100% of the rights to your creations on Pro plans. For free tier users, we request attribution to Phở Video."
+        answer: "Absolutely. You own 100% of the rights to your creations on Pro plans. For free tier users, we request attribution to Phở Studio."
     },
     {
         question: "How long does generation take?",
@@ -80,7 +80,7 @@ export function FAQ() {
                         Frequently Asked Questions
                     </h2>
                     <p className="text-white/40 font-light">
-                        Everything you need to know about Phở Video.
+                        Everything you need to know about Phở Studio.
                     </p>
                 </motion.div>
 

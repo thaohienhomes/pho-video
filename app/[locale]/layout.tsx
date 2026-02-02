@@ -20,19 +20,19 @@ const outfit = Outfit({
 })
 
 export const metadata: Metadata = {
-    title: "Pho Video - Premium AI Video Generation",
+    title: "Phở Studio - Premium AI Video Generation",
     description: "Turn ideas into cinematic masterpieces with AI. Powered by Kling 2.6, Wan 2.6 and LTX-Video.",
-    keywords: ["AI video", "video generation", "text to video", "Kling", "Wan", "LTX-Video", "Pho Video"],
-    authors: [{ name: "Pho Video Team" }],
+    keywords: ["AI video", "video generation", "text to video", "Kling", "Wan", "LTX-Video", "Phở Studio"],
+    authors: [{ name: "Phở Studio Team" }],
     openGraph: {
-        title: "Pho Video - AI Video Generation",
+        title: "Phở Studio - AI Video Generation",
         description: "Turn ideas into cinematic masterpieces with AI",
         type: "website",
         locale: "en_US",
     },
     twitter: {
         card: "summary_large_image",
-        title: "Pho Video - AI Video Generation",
+        title: "Phở Studio - AI Video Generation",
         description: "Turn ideas into cinematic masterpieces with AI",
     },
 }

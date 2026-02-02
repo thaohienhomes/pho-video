@@ -354,7 +354,7 @@ export function TryOnStudio({ className, onBackToModes, onNavigateToVideo }: Try
             try {
                 await navigator.share({
                     title: 'My Virtual Try-on Fit',
-                    text: 'Check out this AI-generated outfit from Phở Video!',
+                    text: 'Check out this AI-generated outfit from Phở Studio!',
                     url: imageUrl,
                 })
             } catch (err) {

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Phở Video",
+    "name": "Phở Studio",
     "slug": "pho-video-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -21,9 +21,9 @@
       "bundleIdentifier": "com.phovideo.app",
       "buildNumber": "1",
       "infoPlist": {
-        "NSCameraUsageDescription": "Phở Video needs camera access to capture images for video generation.",
-        "NSPhotoLibraryUsageDescription": "Phở Video needs photo library access to select images for video generation.",
-        "NSPhotoLibraryAddUsageDescription": "Phở Video needs permission to save generated videos to your photo library.",
+        "NSCameraUsageDescription": "Phở Studio needs camera access to capture images for video generation.",
+        "NSPhotoLibraryUsageDescription": "Phở Studio needs photo library access to select images for video generation.",
+        "NSPhotoLibraryAddUsageDescription": "Phở Studio needs permission to save generated videos to your photo library.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -52,8 +52,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow Phở Video to access your photos for Image-to-Video generation.",
-          "cameraPermission": "Allow Phở Video to access your camera to capture images."
+          "photosPermission": "Allow Phở Studio to access your photos for Image-to-Video generation.",
+          "cameraPermission": "Allow Phở Studio to access your camera to capture images."
         }
       ],
       [
