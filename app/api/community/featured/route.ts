@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@clerk/nextjs/server"
 
+// Force dynamic rendering (uses request.url)
+export const dynamic = 'force-dynamic'
+
 // Mock data for community videos
 const MOCK_VIDEOS = [
     {

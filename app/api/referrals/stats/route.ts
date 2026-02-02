@@ -3,6 +3,9 @@ import { auth } from '@clerk/nextjs/server'
 import { db } from '@/lib/db'
 import { TRANSACTION_TYPES } from '@/lib/pho-points/constants'
 
+// Force dynamic rendering (uses auth headers)
+export const dynamic = 'force-dynamic'
+
 /**
  * GET /api/referrals/stats
  * 
