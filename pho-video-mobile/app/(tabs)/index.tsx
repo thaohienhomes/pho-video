@@ -13,9 +13,11 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
+import * as DocumentPicker from "expo-document-picker";
 import { Settings2, Sparkles, Loader2, User } from "lucide-react-native";
 import { AdvancedSettingsSheet, AdvancedSettingsSheetRef, CameraMotionType } from "../../components/AdvancedSettingsSheet";
 import { PaywallSheet, PaywallSheetRef } from "../../components/PaywallSheet";
+import { COLORS } from "../../constants/Colors";
 import { BlurView } from "expo-blur";
 import { StatusBar } from "expo-status-bar";
 import { useQuery } from "@tanstack/react-query";
@@ -32,15 +34,7 @@ import { Image as RNImage } from "react-native";
 
 const { width } = Dimensions.get("window");
 
-const COLORS = {
-    primary: "#F0421C",
-    background: "#0A0A0A",
-    surface: "#1A1A1A",
-    text: "#FFFFFF",
-    textMuted: "#A3A3A3",
-    textDim: "#525252",
-    border: "rgba(255,255,255,0.1)",
-};
+
 
 const STYLE_PRESETS = [
     { id: 'none', name: 'None', emoji: '✨', color: '#525252' },
@@ -89,7 +83,10 @@ export default function HomeScreen() {
     const [selectedStyleId, setSelectedStyleId] = useState("none");
     const [magicPrompt, setMagicPrompt] = useState(false);
     const [isEnhancing, setIsEnhancing] = useState(false);
-    const [generationMode, setGenerationMode] = useState<'text' | 'image' | 'avatar'>('text');
+    const [generationMode, setGenerationMode] = useState<'text' | 'image' | 'avatar' | 'sound' | 'lipsync' | 'upscale'>('text');
+    const [lipsyncVideo, setLipsyncVideo] = useState<string | null>(null);
+    const [lipsyncAudio, setLipsyncAudio] = useState<string | null>(null);
+    const [upscaleVideo, setUpscaleVideo] = useState<string | null>(null);
     const [controlImage, setControlImage] = useState<string | null>(null);
     const [controlType, setControlType] = useState<'none' | 'pose' | 'depth'>('none');
     const [cameraMotion, setCameraMotion] = useState<CameraMotionType>('static');
@@ -183,8 +180,26 @@ export default function HomeScreen() {
     };
 
     const handleGenerate = () => {
-        if (!prompt.trim() && !selectedImage && !controlImage) {
-            Alert.alert("Missing Input", "Please enter a prompt or select a reference image.");
+        // Validation Logic
+        let isValid = false;
+        let errorMsg = "Please verify your inputs.";
+
+        if (generationMode === 'text' || generationMode === 'sound' || generationMode === 'avatar') {
+            isValid = !!prompt.trim();
+            errorMsg = "Please enter a prompt.";
+        } else if (generationMode === 'image') {
+            isValid = !!(prompt.trim() || selectedImage);
+            errorMsg = "Please enter a prompt or select an image.";
+        } else if (generationMode === 'lipsync') {
+            isValid = !!(lipsyncVideo && lipsyncAudio);
+            errorMsg = "Please select both a video and an audio file.";
+        } else if (generationMode === 'upscale') {
+            isValid = !!upscaleVideo;
+            errorMsg = "Please select a video to upscale.";
+        }
+
+        if (!isValid) {
+            Alert.alert("Missing Input", errorMsg);
             return;
         }
 
@@ -207,11 +222,18 @@ export default function HomeScreen() {
             controlType: controlType !== 'none' ? controlType : undefined,
             duration,
             style: selectedStyleId,
+            generationMode,
+            lipsyncVideo: generationMode === 'lipsync' ? lipsyncVideo! : undefined,
+            lipsyncAudio: generationMode === 'lipsync' ? lipsyncAudio! : undefined,
+            upscaleVideo: generationMode === 'upscale' ? upscaleVideo! : undefined,
         }, {
             onSuccess: () => {
                 setPrompt("");
                 setSelectedImage(null);
                 setControlImage(null);
+                setLipsyncVideo(null);
+                setLipsyncAudio(null);
+                setUpscaleVideo(null);
                 Alert.alert("Queued!", "Video is being developed.");
             },
             onError: (err) => {
@@ -240,54 +262,214 @@ export default function HomeScreen() {
                     />
                 }
             >
-                {/* Mode Toggle */}
                 <View style={styles.modeToggle}>
-                    <Pressable
-                        style={[
-                            styles.modeButton,
-                            generationMode === 'text' && styles.modeButtonActive
-                        ]}
-                        onPress={() => {
-                            setGenerationMode('text');
-                            setSelectedImage(null);
-                        }}
-                    >
-                        <Text style={[
-                            styles.modeButtonText,
-                            generationMode === 'text' && styles.modeButtonTextActive
-                        ]}>
-                            Text-to-Video
-                        </Text>
-                    </Pressable>
-                    <Pressable
-                        style={[
-                            styles.modeButton,
-                            generationMode === 'image' && styles.modeButtonActive
-                        ]}
-                        onPress={() => setGenerationMode('image')}
-                    >
-                        <Text style={[
-                            styles.modeButtonText,
-                            generationMode === 'image' && styles.modeButtonTextActive
-                        ]}>
-                            Image-to-Video
-                        </Text>
-                    </Pressable>
-                    <Pressable
-                        style={[
-                            styles.modeButton,
-                            generationMode === 'avatar' && styles.modeButtonActive
-                        ]}
-                        onPress={() => setGenerationMode('avatar')}
-                    >
-                        <Text style={[
-                            styles.modeButtonText,
-                            generationMode === 'avatar' && styles.modeButtonTextActive
-                        ]}>
-                            My Avatar
-                        </Text>
-                    </Pressable>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+                        <Pressable
+                            style={[
+                                styles.modeButton,
+                                generationMode === 'text' && styles.modeButtonActive
+                            ]}
+                            onPress={() => {
+                                setGenerationMode('text');
+                                setSelectedImage(null);
+                            }}
+                        >
+                            <Text style={[
+                                styles.modeButtonText,
+                                generationMode === 'text' && styles.modeButtonTextActive
+                            ]}>
+                                Text-to-Video
+                            </Text>
+                        </Pressable>
+                        <Pressable
+                            style={[
+                                styles.modeButton,
+                                generationMode === 'image' && styles.modeButtonActive
+                            ]}
+                            onPress={() => setGenerationMode('image')}
+                        >
+                            <Text style={[
+                                styles.modeButtonText,
+                                generationMode === 'image' && styles.modeButtonTextActive
+                            ]}>
+                                Image-to-Video
+                            </Text>
+                        </Pressable>
+                        <Pressable
+                            style={[
+                                styles.modeButton,
+                                generationMode === 'avatar' && styles.modeButtonActive
+                            ]}
+                            onPress={() => setGenerationMode('avatar')}
+                        >
+                            <Text style={[
+                                styles.modeButtonText,
+                                generationMode === 'avatar' && styles.modeButtonTextActive
+                            ]}>
+                                My Avatar
+                            </Text>
+                        </Pressable>
+                        <Pressable
+                            style={[
+                                styles.modeButton,
+                                generationMode === 'sound' && styles.modeButtonActive
+                            ]}
+                            onPress={() => setGenerationMode('sound')}
+                        >
+                            <Text style={[
+                                styles.modeButtonText,
+                                generationMode === 'sound' && styles.modeButtonTextActive
+                            ]}>
+                                Sound FX
+                            </Text>
+                        </Pressable>
+                        <Pressable
+                            style={[
+                                styles.modeButton,
+                                generationMode === 'lipsync' && styles.modeButtonActive
+                            ]}
+                            onPress={() => setGenerationMode('lipsync')}
+                        >
+                            <Text style={[
+                                styles.modeButtonText,
+                                generationMode === 'lipsync' && styles.modeButtonTextActive
+                            ]}>
+                                Lip Sync
+                            </Text>
+                        </Pressable>
+                        <Pressable
+                            style={[
+                                styles.modeButton,
+                                generationMode === 'upscale' && styles.modeButtonActive
+                            ]}
+                            onPress={() => setGenerationMode('upscale')}
+                        >
+                            <Text style={[
+                                styles.modeButtonText,
+                                generationMode === 'upscale' && styles.modeButtonTextActive
+                            ]}>
+                                Upscale 4K
+                            </Text>
+                        </Pressable>
+                    </ScrollView>
                 </View>
+
+                {/* Upscale Selection */}
+                {generationMode === 'upscale' && (
+                    <View style={{ marginBottom: 16 }}>
+                        <Pressable
+                            style={[
+                                styles.inputDock,
+                                {
+                                    height: 120,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    backgroundColor: COLORS.surface,
+                                    borderStyle: upscaleVideo ? 'solid' : 'dashed'
+                                }
+                            ]}
+                            onPress={async () => {
+                                const result = await ImagePicker.launchImageLibraryAsync({
+                                    mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+                                    allowsEditing: true,
+                                    quality: 1,
+                                });
+                                if (!result.canceled && result.assets[0].uri) {
+                                    setUpscaleVideo(result.assets[0].uri);
+                                }
+                            }}
+                        >
+                            {upscaleVideo ? (
+                                <View style={{ alignItems: 'center', gap: 8 }}>
+                                    <Text style={{ color: COLORS.accent.green, fontSize: 32 }}>✨</Text>
+                                    <Text style={{ color: COLORS.text, fontWeight: '600' }}>Video Ready for 4K</Text>
+                                    <Text style={{ color: COLORS.textMuted, fontSize: 10 }}>Tap to change</Text>
+                                </View>
+                            ) : (
+                                <View style={{ alignItems: 'center', gap: 8 }}>
+                                    <Text style={{ color: COLORS.textMuted }}>Select Video to Upscale</Text>
+                                    <View style={{ paddingHorizontal: 12, paddingVertical: 4, backgroundColor: COLORS.primaryGlow, borderRadius: 12 }}>
+                                        <Text style={{ color: COLORS.primary, fontSize: 10, fontWeight: 'bold' }}>MAX 720p INPUT</Text>
+                                    </View>
+                                </View>
+                            )}
+                        </Pressable>
+                    </View>
+                )}
+
+                {/* Lip Sync Selection */}
+                {generationMode === 'lipsync' && (
+                    <View style={{ gap: 12, marginBottom: 16 }}>
+                        <Pressable
+                            style={[
+                                styles.inputDock,
+                                {
+                                    height: 100,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    backgroundColor: COLORS.surface,
+                                    borderStyle: lipsyncVideo ? 'solid' : 'dashed'
+                                }
+                            ]}
+                            onPress={async () => {
+                                const result = await ImagePicker.launchImageLibraryAsync({
+                                    mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+                                    allowsEditing: true,
+                                    quality: 1,
+                                });
+                                if (!result.canceled && result.assets[0].uri) {
+                                    setLipsyncVideo(result.assets[0].uri);
+                                }
+                            }}
+                        >
+                            {lipsyncVideo ? (
+                                <View style={{ alignItems: 'center', gap: 8 }}>
+                                    <Text style={{ color: COLORS.primary, fontSize: 24 }}>🎬</Text>
+                                    <Text style={{ color: COLORS.text, fontWeight: '600' }}>Video Selected</Text>
+                                    <Text style={{ color: COLORS.textMuted, fontSize: 10 }}>Tap to change</Text>
+                                </View>
+                            ) : (
+                                <View style={{ alignItems: 'center', gap: 8 }}>
+                                    <Text style={{ color: COLORS.textMuted }}>Select Source Video (Face)</Text>
+                                </View>
+                            )}
+                        </Pressable>
+
+                        <Pressable
+                            style={[
+                                styles.inputDock,
+                                {
+                                    height: 100,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    backgroundColor: COLORS.surface,
+                                    borderStyle: lipsyncAudio ? 'solid' : 'dashed'
+                                }
+                            ]}
+                            onPress={async () => {
+                                const result = await DocumentPicker.getDocumentAsync({
+                                    type: 'audio/*',
+                                    copyToCacheDirectory: true
+                                });
+                                if (!result.canceled && result.assets[0].uri) {
+                                    setLipsyncAudio(result.assets[0].uri);
+                                }
+                            }}
+                        >
+                            {lipsyncAudio ? (
+                                <View style={{ alignItems: 'center', gap: 8 }}>
+                                    <Text style={{ color: COLORS.primary, fontSize: 24 }}>🎵</Text>
+                                    <Text style={{ color: COLORS.text, fontWeight: '600' }}>Audio Selected</Text>
+                                    <Text style={{ color: COLORS.textMuted, fontSize: 10 }}>Tap to change</Text>
+                                </View>
+                            ) : (
+                                <View style={{ alignItems: 'center', gap: 8 }}>
+                                    <Text style={{ color: COLORS.textMuted }}>Select Voice Audio</Text>
+                                </View>
+                            )}
+                        </Pressable>
+                    </View>
+                )}
 
                 {/* Avatar Selection - Only show in avatar mode */}
                 {generationMode === 'avatar' && (
@@ -348,33 +530,40 @@ export default function HomeScreen() {
                     </Animated.View>
                 )}
 
-                <View style={styles.inputDock}>
-                    <TextInput
-                        placeholder={generationMode === 'text'
-                            ? "Describe your dream video..."
-                            : "Describe how to animate this image..."
-                        }
-                        placeholderTextColor={COLORS.textDim}
-                        multiline
-                        style={styles.textInput}
-                        value={prompt}
-                        onChangeText={(text) => {
-                            setPrompt(text);
-                            generatePreview(text);
-                        }}
-                    />
-                    <Pressable
-                        style={[styles.enhanceButton, (!prompt.trim() || isEnhancing) && styles.enhanceButtonDisabled]}
-                        onPress={handleEnhancePrompt}
-                        disabled={!prompt.trim() || isEnhancing}
-                    >
-                        {isEnhancing ? (
-                            <Loader2 size={16} color={COLORS.primary} />
-                        ) : (
-                            <Sparkles size={16} color={COLORS.primary} />
-                        )}
-                    </Pressable>
-                </View>
+                {(generationMode !== 'lipsync' && generationMode !== 'upscale') && (
+                    <View style={styles.inputDock}>
+                        <TextInput
+                            placeholder={
+                                generationMode === 'sound'
+                                    ? "Describe the sound effect or music..."
+                                    : generationMode === 'avatar'
+                                        ? "Describe what your avatar should do/say..."
+                                        : generationMode === 'image'
+                                            ? "Describe how to animate this image..."
+                                            : "Describe your dream video..."
+                            }
+                            placeholderTextColor={COLORS.textMuted}
+                            multiline
+                            style={styles.textInput}
+                            value={prompt}
+                            onChangeText={(text) => {
+                                setPrompt(text);
+                                generatePreview(text);
+                            }}
+                        />
+                        <Pressable
+                            style={[styles.enhanceButton, (!prompt.trim() || isEnhancing) && styles.enhanceButtonDisabled]}
+                            onPress={handleEnhancePrompt}
+                            disabled={!prompt.trim() || isEnhancing}
+                        >
+                            {isEnhancing ? (
+                                <Loader2 size={16} color={COLORS.primary} />
+                            ) : (
+                                <Sparkles size={16} color={COLORS.primary} />
+                            )}
+                        </Pressable>
+                    </View>
+                )}
 
                 <Pressable
                     style={styles.settingsToggle}
@@ -554,10 +743,10 @@ const styles = StyleSheet.create({
     logoContainer: { flexDirection: "row", alignItems: "center" },
     logo: { color: COLORS.text, fontSize: 28, fontWeight: "bold", letterSpacing: -1 },
     logoAccent: { color: COLORS.primary, fontSize: 28, fontWeight: "bold", letterSpacing: -1 },
-    creditPill: { borderWidth: 1, borderColor: COLORS.border, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 6, backgroundColor: "rgba(255,255,255,0.05)" },
-    creditText: { color: COLORS.textMuted, fontSize: 14, fontWeight: "500" },
-    inputDock: { width: "100%", backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 20, borderWidth: 1, borderColor: COLORS.border, padding: 16, marginBottom: 12, position: "relative" },
-    textInput: { color: COLORS.text, fontSize: 16, lineHeight: 24, minHeight: 80, textAlignVertical: "top", paddingRight: 40 },
+    creditPill: { borderWidth: 1, borderColor: COLORS.border, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 6, backgroundColor: COLORS.glass },
+    creditText: { color: COLORS.textSecondary, fontSize: 14, fontWeight: "500" },
+    inputDock: { width: "100%", backgroundColor: COLORS.glass, borderRadius: 20, borderWidth: 1, borderColor: COLORS.border, padding: 16, marginBottom: 16, position: "relative" },
+    textInput: { color: COLORS.text, fontSize: 16, lineHeight: 24, minHeight: 88, textAlignVertical: "top", paddingRight: 40, fontFamily: "System" },
     enhanceButton: { position: "absolute", bottom: 12, right: 12, width: 32, height: 32, borderRadius: 16, backgroundColor: "rgba(240, 66, 28, 0.1)", justifyContent: "center", alignItems: "center", borderWidth: 1, borderColor: "rgba(240, 66, 28, 0.2)" },
     enhanceButtonDisabled: { opacity: 0.5 },
     settingsToggle: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 12, marginBottom: 8 },
@@ -568,7 +757,7 @@ const styles = StyleSheet.create({
     pillGroup: { flexDirection: "row", gap: 8 },
     pill: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: COLORS.border },
     pillActive: { backgroundColor: "rgba(240, 66, 28, 0.15)", borderColor: COLORS.primary },
-    pillText: { color: COLORS.textDim, fontSize: 13, fontWeight: "500" },
+    pillText: { color: COLORS.textMuted, fontSize: 13, fontWeight: "500" },
     pillTextActive: { color: COLORS.primary },
     feedSection: { marginBottom: 16 },
     feedHeader: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
@@ -603,7 +792,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     categoryChipText: {
-        color: COLORS.textMuted,
+        color: COLORS.textSecondary,
         fontSize: 13,
         fontWeight: "600",
     },
@@ -764,7 +953,7 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
     },
     avatarTip: {
-        color: COLORS.textDim,
+        color: COLORS.textMuted,
         fontSize: 12,
         textAlign: "center",
     },

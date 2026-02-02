@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import Image from "next/image"
 import { formatPhoPoints } from "@/lib/pho-points"
 
 // Tier configurations
@@ -141,7 +142,13 @@ export default function AccountOverviewPage() {
                     {/* Avatar */}
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#F0421C] to-orange-500 flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
                         {user?.imageUrl ? (
-                            <img src={user.imageUrl} alt="" className="w-full h-full object-cover" />
+                            <Image
+                                src={user.imageUrl}
+                                alt="User Avatar"
+                                fill
+                                className="object-cover"
+                                unoptimized
+                            />
                         ) : (
                             user?.firstName?.[0] || "U"
                         )}

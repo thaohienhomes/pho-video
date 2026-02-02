@@ -59,6 +59,8 @@
     "next": "^14.2.18",
     "next-intl": "^4.7.0",
     "pg": "^8.17.1",
+    "posthog-js": "^1.336.4",
+    "posthog-node": "^5.24.7",
     "prisma": "^7.2.0",
     "puppeteer": "^23.11.1",
     "react": "^18.3.1",

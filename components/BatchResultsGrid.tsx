@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { Download, Play, Pause, Check, Share2 } from "lucide-react"
@@ -76,10 +77,12 @@ export function BatchResultsGrid({
                                         onMouseLeave={() => setPlayingId(null)}
                                     />
                                 ) : result.imageUrl ? (
-                                    <img
+                                    <Image
                                         src={result.imageUrl}
                                         alt={`Result ${index + 1}`}
-                                        className="w-full h-full object-cover"
+                                        fill
+                                        className="object-cover"
+                                        unoptimized
                                     />
                                 ) : null
                             )}

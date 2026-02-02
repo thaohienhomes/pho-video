@@ -87,7 +87,7 @@ export function CameraControls({
     disabled,
     showIntensity = true
 }: CameraControlsProps) {
-    const t = useTranslations("studio.camera")
+    const t = useTranslations("studio_meta.camera")
     const [hoveredId, setHoveredId] = useState<CameraMovement | null>(null)
 
     return (
@@ -162,7 +162,7 @@ export function CameraControls({
                     >
                         <div className="flex justify-between items-center">
                             <label className="text-xs font-medium text-white/50">
-                                Motion Intensity
+                                {t("intensity_label")}
                             </label>
                             <span className="text-xs font-semibold text-primary">
                                 {Math.round(intensity * 100)}%
@@ -178,9 +178,9 @@ export function CameraControls({
                             className="py-2"
                         />
                         <div className="flex justify-between text-[10px] text-white/30">
-                            <span>Subtle</span>
-                            <span>Moderate</span>
-                            <span>Dramatic</span>
+                            <span>{t("intensity_subtle")}</span>
+                            <span>{t("intensity_moderate")}</span>
+                            <span>{t("intensity_dramatic")}</span>
                         </div>
                     </motion.div>
                 )}
@@ -192,9 +192,11 @@ export function CameraControls({
 // Compact horizontal version
 export function CameraControlsCompact({
     value,
-    onValueChange,
+    onChange,
     disabled,
-}: Pick<CameraControlsProps, 'value' | 'onValueChange' | 'disabled'>) {
+}: Pick<CameraControlsProps, 'value' | 'onValueChange' | 'disabled'> & { onChange?: (v: CameraMovement) => void }) {
+    const t = useTranslations("studio_meta.camera")
+    const onModeChange = onChange || (() => { })
     return (
         <div className="flex gap-1 p-1 bg-white/5 rounded-xl">
             {CAMERA_PRESETS.map((preset) => {
@@ -204,9 +206,9 @@ export function CameraControlsCompact({
                 return (
                     <button
                         key={preset.id}
-                        onClick={() => onValueChange(preset.id)}
+                        onClick={() => onModeChange(preset.id)}
                         disabled={disabled}
-                        title={preset.id}
+                        title={t(preset.id)}
                         className={cn(
                             "p-2 rounded-lg transition-all",
                             disabled && "opacity-50 cursor-not-allowed",

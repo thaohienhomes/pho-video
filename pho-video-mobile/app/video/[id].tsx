@@ -43,11 +43,15 @@ const { width, height } = Dimensions.get("window");
 
 const COLORS = {
     primary: '#F0421C',
-    background: '#000000',
+    primaryGlow: 'rgba(240, 66, 28, 0.4)',
+    background: '#050505',
+    surface: '#121212',
     text: '#FFFFFF',
-    textSecondary: '#A3A3A3',
-    overlay: 'rgba(0,0,0,0.4)',
-    glass: 'rgba(255,255,255,0.1)',
+    textSecondary: 'rgba(255, 255, 255, 0.70)',
+    textMuted: 'rgba(255, 255, 255, 0.40)',
+    overlay: 'rgba(0,0,0,0.6)',
+    glass: 'rgba(255,255,255,0.05)',
+    border: 'rgba(255,255,255,0.1)',
 };
 
 interface VideoItem {
@@ -466,21 +470,22 @@ const styles = StyleSheet.create({
         gap: 10,
     },
     metaBadge: {
-        backgroundColor: 'rgba(240, 66, 28, 0.2)',
+        backgroundColor: 'rgba(240, 66, 28, 0.1)',
         paddingHorizontal: 10,
         paddingVertical: 4,
-        borderRadius: 12,
+        borderRadius: 8,
         borderWidth: 1,
-        borderColor: 'rgba(240, 66, 28, 0.3)',
+        borderColor: 'rgba(240, 66, 28, 0.2)',
     },
     metaBadgeText: {
         color: COLORS.primary,
         fontSize: 12,
         fontWeight: '600',
-        textTransform: 'capitalize',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
     },
     metaText: {
-        color: COLORS.textSecondary,
+        color: COLORS.textMuted,
         fontSize: 13,
     },
     swipeHint: {
@@ -491,7 +496,7 @@ const styles = StyleSheet.create({
         marginTop: 8,
     },
     swipeHintText: {
-        color: COLORS.textSecondary,
+        color: COLORS.textMuted,
         fontSize: 12,
     },
     watermark: {

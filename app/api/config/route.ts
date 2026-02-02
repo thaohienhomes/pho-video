@@ -7,6 +7,26 @@ export async function GET() {
     const config = {
         models: [
             {
+                id: "wan_2_1",
+                name: "Wan 2.1",
+                description: "Next-gen photorealism",
+                isPro: true,
+                badge: "New"
+            },
+            {
+                id: "luma_ray_2",
+                name: "Luma Ray 2",
+                description: "Advanced physics & lighting",
+                isPro: true,
+                badge: "Hot"
+            },
+            {
+                id: "sana",
+                name: "Sana",
+                description: "Efficient & artistic control",
+                isPro: false
+            },
+            {
                 id: "kling",
                 name: "Kling AI",
                 description: "Best for consistency & human motion",

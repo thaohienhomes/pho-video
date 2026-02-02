@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import { motion, AnimatePresence } from "framer-motion"
 import {
     Maximize2,
@@ -76,6 +77,9 @@ type ScaleFactor = 2 | 4
 type CompareMode = "slider" | "side"
 
 export function VideoUpscaler({ videoUrl, onUpscaleComplete }: VideoUpscalerProps) {
+    const t = useTranslations("upscaler")
+    const tCommon = useTranslations("common")
+
     const [selectedModel, setSelectedModel] = useState("standard")
     const [scale, setScale] = useState<ScaleFactor>(2)
     const [isUpscaling, setIsUpscaling] = useState(false)
@@ -139,8 +143,8 @@ export function VideoUpscaler({ videoUrl, onUpscaleComplete }: VideoUpscalerProp
                         <Maximize2 className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                        <h3 className="font-semibold text-white">Premium Video Upscaler</h3>
-                        <p className="text-sm text-white/50">Enhance video resolution up to 4K</p>
+                        <h3 className="font-semibold text-white">{t("title")}</h3>
+                        <p className="text-sm text-white/50">{t("subtitle")}</p>
                     </div>
                 </div>
 
@@ -188,16 +192,16 @@ export function VideoUpscaler({ videoUrl, onUpscaleComplete }: VideoUpscalerProp
                                 <BeforeAfterSlider
                                     beforeSrc={videoUrl}
                                     afterSrc={upscaledUrl}
-                                    beforeLabel="Original"
-                                    afterLabel={`${scale}x Enhanced`}
+                                    beforeLabel={t("original")}
+                                    afterLabel={t("enhanced")}
                                     type="video"
                                 />
                             ) : (
                                 <SideBySideComparison
                                     beforeSrc={videoUrl}
                                     afterSrc={upscaledUrl}
-                                    beforeLabel="Original"
-                                    afterLabel={`${scale}x Enhanced`}
+                                    beforeLabel={t("original")}
+                                    afterLabel={t("enhanced")}
                                     type="video"
                                 />
                             )}
@@ -210,13 +214,13 @@ export function VideoUpscaler({ videoUrl, onUpscaleComplete }: VideoUpscalerProp
                                     className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-green-500 text-white font-medium hover:bg-green-600 transition-colors"
                                 >
                                     <Download className="w-4 h-4" />
-                                    Download Enhanced
+                                    {t("download_enhanced")}
                                 </a>
                                 <button
                                     onClick={handleReset}
                                     className="px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white/70 hover:bg-white/20 transition-colors"
                                 >
-                                    Upscale Another
+                                    {t("upscale_another")}
                                 </button>
                             </div>
                         </motion.div>
@@ -229,7 +233,7 @@ export function VideoUpscaler({ videoUrl, onUpscaleComplete }: VideoUpscalerProp
                         {/* Scale Selection */}
                         <div className="space-y-3">
                             <label className="text-sm font-medium text-white/70">
-                                Scale Factor
+                                {t("scale_factor")}
                             </label>
                             <div className="flex gap-3">
                                 {([2, 4] as ScaleFactor[]).map((s) => (
@@ -255,7 +259,7 @@ export function VideoUpscaler({ videoUrl, onUpscaleComplete }: VideoUpscalerProp
                         {/* Model Selection Grid */}
                         <div className="space-y-3">
                             <label className="text-sm font-medium text-white/70">
-                                Quality Tier
+                                {t("quality_tier")}
                             </label>
                             <div className="grid grid-cols-2 gap-3">
                                 {UPSCALE_MODELS.map((model) => {
@@ -288,8 +292,8 @@ export function VideoUpscaler({ videoUrl, onUpscaleComplete }: VideoUpscalerProp
                                                 <Icon className="w-4 h-4 text-white" />
                                             </div>
 
-                                            <h4 className="font-medium text-white">{model.name}</h4>
-                                            <p className="text-xs text-white/50 mt-1">{model.description}</p>
+                                            <h4 className="font-medium text-white">{t(`models.${model.id}_name`)}</h4>
+                                            <p className="text-xs text-white/50 mt-1">{t(`models.${model.id}_desc`)}</p>
 
                                             <div className="mt-3 pt-2 border-t border-white/10">
                                                 <span className="text-sm font-medium text-white/70">
@@ -363,6 +367,6 @@ export function VideoUpscaler({ videoUrl, onUpscaleComplete }: VideoUpscalerProp
                     </>
                 )}
             </div>
-        </div>
+        </div >
     )
 }

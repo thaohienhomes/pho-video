@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useState, useMemo, useEffect } from "react"
+import { useCallback, useState, useMemo, useEffect, useRef } from "react"
 import ReactFlow, {
     Node,
     Edge,
@@ -127,6 +127,12 @@ export default function WorkflowPage() {
     // Calculate estimated credit cost
     const estimatedCost = useMemo(() => calculateWorkflowCreditCost(nodes), [nodes])
 
+    // Keep latest handler in ref to avoid re-binding effect
+    const handleExecuteWorkflowRef = useRef<() => Promise<void>>(async () => { })
+    useEffect(() => {
+        handleExecuteWorkflowRef.current = handleExecuteWorkflow
+    })
+
     // Keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -139,7 +145,7 @@ export default function WorkflowPage() {
             if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
                 e.preventDefault()
                 if (!isExecuting) {
-                    handleExecuteWorkflow()
+                    handleExecuteWorkflowRef.current()
                 }
             }
         }

@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react"
 import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
-import { Film, Download, Share2, Clapperboard, Play, CheckCircle, Loader2, Wand2, Music, Sparkles, Zap } from "lucide-react"
+import { Film, Download, Share2, Clapperboard, Play, CheckCircle, Loader2, Wand2, Music, Sparkles, Zap, LayoutGrid, Clapperboard as CinemaIcon, Rows4 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getLastFrameAsBase64 } from "@/lib/video-utils"
 import { VideoComparison } from "./VideoComparison"
 import { Generation } from "@/stores/useStudioStore"
 import { BatchResultsGrid } from "@/components/BatchResultsGrid"
 import { VideoExtendButton } from "@/components/VideoExtendButton"
+import { CinemaCardsSlider } from "@/components/CinemaCardsSlider"
 
 interface WorkspacePanelProps {
     videoUrl: string | null
@@ -39,6 +40,8 @@ export function WorkspacePanel({
     onAnimateImage
 }: WorkspacePanelProps) {
     const t = useTranslations("studio.preview")
+    const tWs = useTranslations("workspace")
+    const tCommon = useTranslations("common")
 
     // Upscale state
     const [isUpscaling, setIsUpscaling] = useState(false)
@@ -50,6 +53,9 @@ export function WorkspacePanel({
     const [isExtending, setIsExtending] = useState(false)
     const [isGeneratingAudio, setIsGeneratingAudio] = useState(false)
     const [selectedSubImageIndex, setSelectedSubImageIndex] = useState<number | null>(null)
+
+    // View mode: 'dock' (compact thumbnail strip) or 'cinema' (full carousel slider)
+    const [viewMode, setViewMode] = useState<'dock' | 'cinema'>('dock')
 
     // Reset sub-image selection when active generation changes
     useEffect(() => {
@@ -217,7 +223,7 @@ export function WorkspacePanel({
                                             className="absolute top-4 left-4 bg-black/60 backdrop-blur-md border border-white/10 hover:bg-black/80"
                                         >
                                             <Clapperboard className="w-4 h-4 mr-2" />
-                                            Trở về Lưới (Grid)
+                                            {tWs("back_to_grid")}
                                         </Button>
                                     )}
                                 </div>
@@ -267,7 +273,7 @@ export function WorkspacePanel({
                             {/* Subtle CTA Hint */}
                             <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs text-white/40 hover:bg-white/10 transition-colors cursor-default">
                                 <Sparkles className="w-3.5 h-3.5 text-primary/60" />
-                                <span className="font-medium">Enter a prompt on the left to begin your journey</span>
+                                <span className="font-medium">{t("empty_prompt_hint")}</span>
                             </div>
                         </div>
                     )}
@@ -294,7 +300,7 @@ export function WorkspacePanel({
                                     className="h-10 px-6 border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary animate-pulse font-bold"
                                 >
                                     <Wand2 className="w-4 h-4 mr-2" />
-                                    ✨ Dùng làm Video (Animate)
+                                    ✨ {tWs("animate_image")}
                                 </Button>
                             </>
                         )}
@@ -321,13 +327,13 @@ export function WorkspacePanel({
                                 className="h-10 px-6 border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-bold shadow-[0_0_15px_rgba(245,158,11,0.1)] active:scale-95 transition-all"
                             >
                                 <Zap className="w-4 h-4 mr-2" />
-                                Phở 4K Cinematic
+                                {tWs("upscale_4k")}
                             </Button>
                         )}
                         {isUpscaling && (
                             <Button disabled variant="outline" className="h-10 px-6 border-amber-500/30 bg-amber-500/10 text-amber-300 font-bold animate-pulse">
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Phở 4K Developing...
+                                {tWs("upscale_processing")}
                             </Button>
                         )}
                         {canExtend && (
@@ -346,7 +352,7 @@ export function WorkspacePanel({
                             className="h-10 px-6 border-pink-500/30 bg-pink-500/10 hover:bg-pink-500/20 text-pink-300 font-bold"
                         >
                             {isGeneratingAudio ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Music className="w-4 h-4 mr-2" />}
-                            {selectedGeneration?.audioUrl ? "Sound Added" : "Add Phở Sound"}
+                            {selectedGeneration?.audioUrl ? tWs("sound_added") : tWs("add_sound")}
                         </Button>
                     </div>
                     {upscaleError && (
@@ -355,128 +361,176 @@ export function WorkspacePanel({
                     {displayUpscaledUrl && (
                         <div className="flex items-center justify-center gap-2 mt-3 py-2 px-4 rounded-lg bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 w-fit mx-auto">
                             <Sparkles className="w-4 h-4 text-purple-400" />
-                            <span className="text-sm font-medium text-purple-300">✨ 4K Ready</span>
+                            <span className="text-sm font-medium text-purple-300">✨ {tWs("upscale_ready")}</span>
                         </div>
                     )}
                 </div>
             )}
 
             {/* Storyboard Dock - Film Strip Style */}
-            <div className="relative flex-shrink-0">
-                {/* Film Perforation Pattern - Left */}
-                <div className="absolute left-0 top-0 bottom-0 w-6 flex flex-col justify-around items-center py-2 pointer-events-none z-10">
-                    {[...Array(5)].map((_, i) => (
-                        <div key={`left-${i}`} className="w-2 h-3 rounded-sm bg-white/5 border border-white/10" />
-                    ))}
-                </div>
+            {viewMode === 'dock' ? (
+                <div className="relative flex-shrink-0">
+                    {/* Film Perforation Pattern - Left */}
+                    <div className="absolute left-0 top-0 bottom-0 w-6 flex flex-col justify-around items-center py-2 pointer-events-none z-10">
+                        {[...Array(5)].map((_, i) => (
+                            <div key={`left-${i}`} className="w-2 h-3 rounded-sm bg-white/5 border border-white/10" />
+                        ))}
+                    </div>
 
-                {/* Film Perforation Pattern - Right */}
-                <div className="absolute right-0 top-0 bottom-0 w-6 flex flex-col justify-around items-center py-2 pointer-events-none z-10">
-                    {[...Array(5)].map((_, i) => (
-                        <div key={`right-${i}`} className="w-2 h-3 rounded-sm bg-white/5 border border-white/10" />
-                    ))}
-                </div>
+                    {/* Film Perforation Pattern - Right */}
+                    <div className="absolute right-0 top-0 bottom-0 w-6 flex flex-col justify-around items-center py-2 pointer-events-none z-10">
+                        {[...Array(5)].map((_, i) => (
+                            <div key={`right-${i}`} className="w-2 h-3 rounded-sm bg-white/5 border border-white/10" />
+                        ))}
+                    </div>
 
-                {/* Dock Container */}
-                <div className="bg-black/50 backdrop-blur-xl border-t border-white/10 px-10 py-3">
-                    <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-thin">
-                        {sessionGenerations.length === 0 ? (
-                            /* Enhanced Empty State */
-                            <div className="flex items-center justify-center gap-4 w-full py-2">
-                                <div className="flex items-center gap-3 px-5 py-2.5 rounded-xl bg-white/5 border border-white/10">
-                                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                                        <Film className="w-4 h-4 text-primary/60" />
+                    {/* Dock Container */}
+                    <div className="relative bg-black/50 backdrop-blur-xl border-t border-white/10 px-10 py-3">
+                        {/* View Toggle Button */}
+                        <button
+                            onClick={() => setViewMode('cinema')}
+                            className="absolute top-1/2 -translate-y-1/2 right-2 p-2 rounded-lg bg-primary/20 hover:bg-primary/30 border border-primary/30 text-primary hover:text-white transition-all z-20"
+                            title="Switch to Cinema View"
+                        >
+                            <LayoutGrid className="w-5 h-5" />
+                        </button>
+
+
+                        <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-thin">
+                            {sessionGenerations.length === 0 ? (
+                                /* Enhanced Empty State */
+                                <div className="flex items-center justify-center gap-4 w-full py-2">
+                                    <div className="flex items-center gap-3 px-5 py-2.5 rounded-xl bg-white/5 border border-white/10">
+                                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                                            <Film className="w-4 h-4 text-primary/60" />
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-medium text-white/60">{tWs("storyboard")}</span>
+                                            <span className="text-[11px] text-white/40">{tWs("storyboard_empty")}</span>
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-xs font-medium text-white/60">Storyboard</span>
-                                        <span className="text-[11px] text-white/40">Your creations will appear here</span>
-                                    </div>
+                                    {/* Placeholder Slots */}
+                                    {[1, 2, 3].map((i) => (
+                                        <div
+                                            key={i}
+                                            className="w-20 h-14 rounded-lg border-2 border-dashed border-white/10 flex items-center justify-center flex-shrink-0"
+                                        >
+                                            <span className="text-white/20 text-xs">{i}</span>
+                                        </div>
+                                    ))}
                                 </div>
-                                {/* Placeholder Slots */}
-                                {[1, 2, 3].map((i) => (
-                                    <div
-                                        key={i}
-                                        className="w-20 h-14 rounded-lg border-2 border-dashed border-white/10 flex items-center justify-center flex-shrink-0"
+                            ) : (
+                                sessionGenerations.map((gen) => (
+                                    <button
+                                        key={gen.id}
+                                        onClick={() => onGenerationSelect?.(gen)}
+                                        className={cn(
+                                            "storyboard-item group",
+                                            selectedGeneration?.id === gen.id && "active",
+                                            gen.status === 'failed' && "border-red-500/50 bg-red-500/5"
+                                        )}
                                     >
-                                        <span className="text-white/20 text-xs">{i}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            sessionGenerations.map((gen) => (
-                                <button
-                                    key={gen.id}
-                                    onClick={() => onGenerationSelect?.(gen)}
-                                    className={cn(
-                                        "storyboard-item group",
-                                        selectedGeneration?.id === gen.id && "active",
-                                        gen.status === 'failed' && "border-red-500/50 bg-red-500/5"
-                                    )}
-                                >
-                                    {gen.videoUrl ? (
-                                        <video
-                                            src={gen.videoUrl}
-                                            className="w-full h-full object-cover"
-                                            muted
-                                            playsInline
-                                        />
-                                    ) : gen.imageUrl ? (
-                                        <img
-                                            src={gen.imageUrl}
-                                            className={cn("w-full h-full object-cover", gen.status === 'generating' && "opacity-60")}
-                                            alt={gen.prompt}
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full bg-white/10 flex items-center justify-center">
-                                            {gen.status === 'failed' ? (
-                                                <div className="flex flex-col items-center gap-1">
-                                                    <Loader2 className="w-4 h-4 text-red-500/40" />
-                                                    <span className="text-[6px] text-red-500/50 uppercase font-black">Error</span>
-                                                </div>
-                                            ) : (
-                                                <div className="relative">
-                                                    <Loader2 className="w-5 h-5 text-primary/40 animate-spin" />
-                                                    <div className="absolute inset-0 flex items-center justify-center">
-                                                        <div className="w-1 h-1 bg-primary rounded-full animate-pulse" />
+                                        {gen.videoUrl ? (
+                                            <video
+                                                src={gen.videoUrl}
+                                                className="w-full h-full object-cover"
+                                                muted
+                                                playsInline
+                                            />
+                                        ) : gen.imageUrl ? (
+                                            <img
+                                                src={gen.imageUrl}
+                                                className={cn("w-full h-full object-cover", gen.status === 'generating' && "opacity-60")}
+                                                alt={gen.prompt}
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full bg-white/10 flex items-center justify-center">
+                                                {gen.status === 'failed' ? (
+                                                    <div className="flex flex-col items-center gap-1">
+                                                        <Loader2 className="w-4 h-4 text-red-500/40" />
+                                                        <span className="text-[6px] text-red-500/50 uppercase font-black">Error</span>
                                                     </div>
+                                                ) : (
+                                                    <div className="relative">
+                                                        <Loader2 className="w-5 h-5 text-primary/40 animate-spin" />
+                                                        <div className="absolute inset-0 flex items-center justify-center">
+                                                            <div className="w-1 h-1 bg-primary rounded-full animate-pulse" />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Processing Overlay for generating items */}
+                                        {gen.status === 'generating' && (
+                                            <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-1.5 overflow-hidden">
+                                                <div className="relative h-1 w-12 bg-white/10 rounded-full overflow-hidden">
+                                                    <div className="absolute inset-0 bg-primary animate-progress-loading" />
                                                 </div>
+                                                <span className="text-[8px] font-black uppercase text-primary tracking-widest animate-pulse">
+                                                    {tCommon("processing")}
+                                                </span>
+                                            </div>
+                                        )}
+
+                                        {/* Hover Overlay */}
+                                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            {gen.status === 'completed' ? (
+                                                gen.videoUrl ? <Play className="w-4 h-4 text-white" /> : <Sparkles className="w-4 h-4 text-white" />
+                                            ) : gen.status === 'generating' ? (
+                                                <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                                            ) : (
+                                                <Clapperboard className="w-4 h-4 text-red-500/60" />
                                             )}
                                         </div>
-                                    )}
 
-                                    {/* Processing Overlay for generating items */}
-                                    {gen.status === 'generating' && (
-                                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-1.5 overflow-hidden">
-                                            <div className="relative h-1 w-12 bg-white/10 rounded-full overflow-hidden">
-                                                <div className="absolute inset-0 bg-primary animate-progress-loading" />
-                                            </div>
-                                            <span className="text-[8px] font-black uppercase text-primary tracking-widest animate-pulse">
-                                                Processing
-                                            </span>
+                                        {/* Model Badge */}
+                                        <div className="absolute bottom-0.5 right-0.5 px-1 py-0.5 text-[8px] font-bold bg-black/70 rounded text-white/70 border border-white/5">
+                                            {MODEL_DISPLAY_NAMES[gen.model] || gen.model}
                                         </div>
-                                    )}
-
-                                    {/* Hover Overlay */}
-                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        {gen.status === 'completed' ? (
-                                            gen.videoUrl ? <Play className="w-4 h-4 text-white" /> : <Sparkles className="w-4 h-4 text-white" />
-                                        ) : gen.status === 'generating' ? (
-                                            <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                                        ) : (
-                                            <Clapperboard className="w-4 h-4 text-red-500/60" />
-                                        )}
-                                    </div>
-
-                                    {/* Model Badge */}
-                                    <div className="absolute bottom-0.5 right-0.5 px-1 py-0.5 text-[8px] font-bold bg-black/70 rounded text-white/70 border border-white/5">
-                                        {MODEL_DISPLAY_NAMES[gen.model] || gen.model}
-                                    </div>
-                                </button>
-                            ))
-                        )}
+                                    </button>
+                                ))
+                            )}
+                        </div>
                     </div>
                 </div>
-            </div>
+            ) : (
+                /* Cinema Cards Slider View */
+                <div className="relative flex-shrink-0 bg-[var(--bg-deepest)]">
+                    {/* Back to Dock Toggle */}
+                    <button
+                        onClick={() => setViewMode('dock')}
+                        className="absolute top-4 right-4 p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/50 hover:text-white transition-all z-20"
+                        title="Back to Compact View"
+                    >
+                        <Rows4 className="w-5 h-5" />
+                    </button>
+
+                    <CinemaCardsSlider
+                        videos={sessionGenerations
+                            .filter(gen => gen.status === 'completed' && (gen.videoUrl || gen.imageUrl))
+                            .map(gen => ({
+                                id: gen.id,
+                                thumbnailUrl: gen.imageUrl || gen.videoUrl || '/placeholder.png',
+                                videoUrl: gen.videoUrl || undefined,
+                                title: gen.prompt?.slice(0, 40) + (gen.prompt && gen.prompt.length > 40 ? '...' : ''),
+                                prompt: gen.prompt,
+                                duration: 5,
+                            }))}
+                        activeIndex={sessionGenerations.findIndex(g => g.id === selectedGeneration?.id)}
+                        onCardSelect={(index) => {
+                            const filteredGens = sessionGenerations.filter(gen => gen.status === 'completed' && (gen.videoUrl || gen.imageUrl))
+                            if (filteredGens[index]) {
+                                onGenerationSelect?.(filteredGens[index])
+                            }
+                        }}
+                        onDownload={(video) => {
+                            if (video.videoUrl) window.open(video.videoUrl, '_blank')
+                        }}
+                    />
+                </div>
+            )}
         </div>
     )
 }
+

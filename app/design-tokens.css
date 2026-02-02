@@ -1,0 +1,224 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * PHỞ VIDEO DESIGN TOKENS - PIXEL PERFECT SPECIFICATION
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * 
+ * This file contains ALL exact values extracted from the approved mockups.
+ * These tokens are the SINGLE SOURCE OF TRUTH for the entire application.
+ * 
+ * Generated: 2026-01-31
+ * Mockups Approved: 15 screens
+ */
+
+:root {
+    /* ═══════════════════════════════════════════════════════════════════════════ */
+    /* COLOR PALETTE                                                                */
+    /* ═══════════════════════════════════════════════════════════════════════════ */
+
+    /* Background Layers (Darkest to Lightest) */
+    --pho-bg-deepest: #050505;
+    /* Modal overlays, darkest areas */
+    --pho-bg-base: #0A0A0A;
+    /* Main page background */
+    --pho-bg-surface: #121212;
+    /* Cards, panels */
+    --pho-bg-elevated: #1A1A1A;
+    /* Hover states, elevated surfaces */
+    --pho-bg-interactive: #242424;
+    /* Active inputs, focused elements */
+
+    /* Primary Brand - Electric Vermilion */
+    --pho-primary: #F0421C;
+    /* Main CTA, active states */
+    --pho-primary-hover: #E53A15;
+    /* Hover state */
+    --pho-primary-active: #D63310;
+    /* Pressed state */
+    --pho-primary-muted: rgba(240, 66, 28, 0.2);
+    /* Backgrounds, badges */
+    --pho-primary-glow: rgba(240, 66, 28, 0.4);
+    /* Glow effects */
+
+    /* Sunset Gradient */
+    --pho-sunset-start: #FF5A5A;
+    --pho-sunset-end: #FF9E5A;
+    --pho-sunset-gradient: linear-gradient(135deg, #FF5A5A 0%, #FF9E5A 100%);
+
+    /* Mode-specific Accent Colors */
+    --pho-accent-pink: #EC4899;
+    /* Lip Sync, VTON */
+    --pho-accent-purple: #8B5CF6;
+    /* Audio, Sound Studio */
+    --pho-accent-green: #22C55E;
+    /* Fast/Budget badges */
+    --pho-accent-yellow: #EAB308;
+    /* NEW badges */
+    --pho-accent-cyan: #06B6D4;
+    /* Info, highlights */
+
+    /* Text Colors */
+    --pho-text-primary: #FFFFFF;
+    --pho-text-secondary: rgba(255, 255, 255, 0.70);
+    --pho-text-tertiary: rgba(255, 255, 255, 0.50);
+    --pho-text-muted: rgba(255, 255, 255, 0.40);
+    --pho-text-disabled: rgba(255, 255, 255, 0.25);
+
+    /* Border Colors */
+    --pho-border-subtle: rgba(255, 255, 255, 0.05);
+    --pho-border-default: rgba(255, 255, 255, 0.10);
+    --pho-border-strong: rgba(255, 255, 255, 0.15);
+    --pho-border-glow: rgba(240, 66, 28, 0.30);
+    --pho-border-active: rgba(240, 66, 28, 0.60);
+
+    /* ═══════════════════════════════════════════════════════════════════════════ */
+    /* TYPOGRAPHY                                                                   */
+    /* ═══════════════════════════════════════════════════════════════════════════ */
+
+    /* Font Families */
+    --pho-font-display: 'Outfit', sans-serif;
+    --pho-font-body: 'Inter', sans-serif;
+    --pho-font-mono: 'JetBrains Mono', monospace;
+
+    /* Font Sizes (1.25 scale) */
+    --pho-text-xs: 12px;
+    --pho-text-sm: 14px;
+    --pho-text-base: 16px;
+    --pho-text-lg: 18px;
+    --pho-text-xl: 20px;
+    --pho-text-2xl: 24px;
+    --pho-text-3xl: 30px;
+    --pho-text-4xl: 36px;
+    --pho-text-5xl: 48px;
+    --pho-text-6xl: 60px;
+
+    /* Line Heights */
+    --pho-leading-tight: 1.1;
+    --pho-leading-snug: 1.25;
+    --pho-leading-normal: 1.5;
+    --pho-leading-relaxed: 1.625;
+
+    /* Font Weights */
+    --pho-font-normal: 400;
+    --pho-font-medium: 500;
+    --pho-font-semibold: 600;
+    --pho-font-bold: 700;
+
+    /* ═══════════════════════════════════════════════════════════════════════════ */
+    /* SPACING (4px base grid)                                                      */
+    /* ═══════════════════════════════════════════════════════════════════════════ */
+
+    --pho-space-0: 0px;
+    --pho-space-1: 4px;
+    --pho-space-2: 8px;
+    --pho-space-3: 12px;
+    --pho-space-4: 16px;
+    --pho-space-5: 20px;
+    --pho-space-6: 24px;
+    --pho-space-8: 32px;
+    --pho-space-10: 40px;
+    --pho-space-12: 48px;
+    --pho-space-16: 64px;
+    --pho-space-20: 80px;
+    --pho-space-24: 96px;
+
+    /* ═══════════════════════════════════════════════════════════════════════════ */
+    /* BORDER RADIUS                                                                */
+    /* ═══════════════════════════════════════════════════════════════════════════ */
+
+    --pho-radius-sm: 4px;
+    --pho-radius-md: 8px;
+    --pho-radius-lg: 12px;
+    --pho-radius-xl: 16px;
+    --pho-radius-2xl: 20px;
+    --pho-radius-3xl: 24px;
+    --pho-radius-full: 9999px;
+
+    /* ═══════════════════════════════════════════════════════════════════════════ */
+    /* SHADOWS                                                                      */
+    /* ═══════════════════════════════════════════════════════════════════════════ */
+
+    /* Elevation Shadows */
+    --pho-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --pho-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+    --pho-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+    --pho-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.7);
+    --pho-shadow-2xl: 0 24px 64px rgba(0, 0, 0, 0.8);
+
+    /* Glow Shadows */
+    --pho-glow-primary: 0 0 30px rgba(240, 66, 28, 0.4);
+    --pho-glow-primary-strong: 0 0 60px rgba(240, 66, 28, 0.5);
+    --pho-glow-sunset: 0 0 50px rgba(255, 90, 90, 0.5), 0 0 80px rgba(255, 158, 90, 0.25);
+
+    /* Card Shadows */
+    --pho-shadow-card: 0 8px 24px -8px rgba(0, 0, 0, 0.6);
+    --pho-shadow-card-hover: 0 12px 32px -8px rgba(0, 0, 0, 0.7);
+    --pho-shadow-card-cinema: 0 12px 40px -10px rgba(255, 90, 90, 0.25), 0 20px 60px -15px rgba(0, 0, 0, 0.7);
+
+    /* ═══════════════════════════════════════════════════════════════════════════ */
+    /* GLASSMORPHISM                                                                */
+    /* ═══════════════════════════════════════════════════════════════════════════ */
+
+    --pho-blur-sm: 8px;
+    --pho-blur-md: 16px;
+    --pho-blur-lg: 24px;
+    --pho-blur-xl: 32px;
+    --pho-blur-2xl: 48px;
+
+    /* Glass Backgrounds */
+    --pho-glass-light: rgba(255, 255, 255, 0.05);
+    --pho-glass-medium: rgba(255, 255, 255, 0.08);
+    --pho-glass-dark: rgba(0, 0, 0, 0.40);
+
+    /* ═══════════════════════════════════════════════════════════════════════════ */
+    /* ANIMATION                                                                    */
+    /* ═══════════════════════════════════════════════════════════════════════════ */
+
+    --pho-duration-fast: 150ms;
+    --pho-duration-normal: 250ms;
+    --pho-duration-slow: 400ms;
+    --pho-duration-slower: 600ms;
+
+    --pho-ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+    --pho-ease-in: cubic-bezier(0.4, 0, 1, 1);
+    --pho-ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --pho-ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+
+    /* ═══════════════════════════════════════════════════════════════════════════ */
+    /* LAYOUT DIMENSIONS (from mockups)                                             */
+    /* ═══════════════════════════════════════════════════════════════════════════ */
+
+    /* Sidebar */
+    --pho-sidebar-width: 280px;
+    --pho-sidebar-collapsed: 72px;
+
+    /* Dock */
+    --pho-dock-height: 100px;
+    --pho-dock-thumbnail-width: 80px;
+    --pho-dock-thumbnail-height: 60px;
+
+    /* Cards */
+    --pho-card-model-width: 140px;
+    --pho-card-model-height: 100px;
+    --pho-card-template-width: 200px;
+    --pho-card-template-height: 150px;
+    --pho-card-gallery-min-width: 280px;
+
+    /* Cinema Slider */
+    --pho-cinema-card-center-width: 340px;
+    --pho-cinema-card-center-height: 480px;
+    --pho-cinema-card-side-width: 260px;
+    --pho-cinema-card-side-height: 400px;
+
+    /* Interactive Elements */
+    --pho-button-height-sm: 32px;
+    --pho-button-height-md: 40px;
+    --pho-button-height-lg: 48px;
+    --pho-input-height: 44px;
+    --pho-touch-target-min: 44px;
+
+    /* Modal Sizes */
+    --pho-modal-sm: 400px;
+    --pho-modal-md: 600px;
+    --pho-modal-lg: 800px;
+    --pho-modal-xl: 1000px;
+}

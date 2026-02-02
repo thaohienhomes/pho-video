@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect, useCallback } from "react"
+import Image from "next/image"
 import { motion } from "framer-motion"
 import { ArrowLeftRight, Maximize2, Play, Pause } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -32,15 +33,18 @@ export function BeforeAfterSlider({
 
     // Sync video playback
     useEffect(() => {
-        if (type === "video" && beforeVideoRef.current && afterVideoRef.current) {
+        const beforeEl = beforeVideoRef.current
+        const afterEl = afterVideoRef.current
+
+        if (type === "video" && beforeEl && afterEl) {
             const syncVideos = () => {
                 if (beforeVideoRef.current && afterVideoRef.current) {
                     afterVideoRef.current.currentTime = beforeVideoRef.current.currentTime
                 }
             }
-            beforeVideoRef.current.addEventListener("timeupdate", syncVideos)
+            beforeEl.addEventListener("timeupdate", syncVideos)
             return () => {
-                beforeVideoRef.current?.removeEventListener("timeupdate", syncVideos)
+                beforeEl.removeEventListener("timeupdate", syncVideos)
             }
         }
     }, [type])
@@ -256,7 +260,7 @@ export function SideBySideComparison({
                         autoPlay
                     />
                 ) : (
-                    <img src={beforeSrc} alt={beforeLabel} className="w-full h-full object-cover" />
+                    <Image src={beforeSrc} alt={beforeLabel} fill className="object-cover" unoptimized />
                 )}
                 <div className="absolute bottom-2 left-2 px-2 py-1 rounded bg-black/60 backdrop-blur-sm text-xs text-white/70">
                     {beforeLabel}
@@ -273,7 +277,7 @@ export function SideBySideComparison({
                         autoPlay
                     />
                 ) : (
-                    <img src={afterSrc} alt={afterLabel} className="w-full h-full object-cover" />
+                    <Image src={afterSrc} alt={afterLabel} fill className="object-cover" unoptimized />
                 )}
                 <div className="absolute bottom-2 left-2 px-2 py-1 rounded bg-primary/60 backdrop-blur-sm text-xs text-white font-medium">
                     {afterLabel}

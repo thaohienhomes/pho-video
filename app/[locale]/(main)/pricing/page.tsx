@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { PhoPointsBalance } from '@/components/PhoPointsBalance';
 import {
-    Check, Coins, Sparkles, Zap, Crown, Star, ArrowRight, ArrowLeft
+    Check, Coins, Sparkles, Zap, Crown, Star, ArrowRight, ArrowLeft, Building2, Rocket
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -99,6 +99,29 @@ const PRICING_TIERS = [
         color: 'from-purple-500/20 to-pink-500/20',
         borderColor: 'border-purple-500/30',
         icon: Star,
+    },
+    {
+        id: 'enterprise',
+        name: 'Enterprise',
+        description: 'For studios and agencies',
+        monthlyPrice: 99,
+        annualPrice: 950.40,
+        phoPoints: '20M',
+        phoPointsValue: 20000000,
+        features: [
+            '20,000,000 Phở Points/month',
+            'All models + priority queue',
+            'Custom AI training (LoRA)',
+            'White-label API',
+            'SSO/SAML authentication',
+            'SLA guarantee',
+            'Dedicated account manager',
+        ],
+        cta: 'Contact Sales',
+        popular: false,
+        color: 'from-amber-500/20 to-yellow-500/20',
+        borderColor: 'border-amber-500/30',
+        icon: Building2,
     },
 ];
 
@@ -196,7 +219,7 @@ export default function PricingPage() {
                 </div>
 
                 {/* Pricing Cards */}
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                     {PRICING_TIERS.map((tier) => {
                         const Icon = tier.icon;
                         const price = billingCycle === 'monthly' ? tier.monthlyPrice : tier.annualPrice / 12;
@@ -254,6 +277,14 @@ export default function PricingPage() {
                                             <span className="text-gray-400">/{billingCycle === 'monthly' ? 'mo' : 'mo'}</span>
                                         )}
                                     </div>
+                                    {/* Annual Savings Badge */}
+                                    {billingCycle === 'annual' && tier.monthlyPrice > 0 && (
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs font-semibold rounded-full">
+                                                Save ${((tier.monthlyPrice * 12) - tier.annualPrice).toFixed(0)}/year
+                                            </span>
+                                        </div>
+                                    )}
                                     {billingCycle === 'annual' && tier.annualPrice > 0 && (
                                         <p className="text-xs text-gray-500 mt-1">
                                             {t('billed_annually', { amount: tier.annualPrice.toFixed(0) })}
@@ -309,6 +340,19 @@ export default function PricingPage() {
                                             <FeatureItem text={t('features.custom_branding')} />
                                         </>
                                     )}
+                                    {tier.id === 'enterprise' && (
+                                        <>
+                                            <FeatureItem text={t('features.points_per_month', { amount: '20,000,000' })} />
+                                            <FeatureItem text={t('features.unlimited_duration')} />
+                                            <FeatureItem text={t('features.all_models')} />
+                                            <FeatureItem text={t('features.priority_queue')} />
+                                            <FeatureItem text={t('features.custom_training')} />
+                                            <FeatureItem text={t('features.white_label')} />
+                                            <FeatureItem text={t('features.sso')} />
+                                            <FeatureItem text={t('features.sla')} />
+                                            <FeatureItem text={t('features.account_manager')} />
+                                        </>
+                                    )}
                                 </ul>
 
                                 {/* CTA Button */}
@@ -339,6 +383,35 @@ export default function PricingPage() {
                             </div>
                         );
                     })}
+                </div>
+
+                {/* Testimonials Section */}
+                <div className="mt-24">
+                    <div className="text-center mb-12">
+                        <h2 className="text-2xl font-bold mb-3">Loved by Creators Worldwide</h2>
+                        <p className="text-gray-400">Join thousands of creators who&apos;ve upgraded their content game</p>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                        <TestimonialCard
+                            quote="Phở Video has completely transformed how I create content. The AI models are incredibly fast and the quality is unmatched."
+                            author="Alex Chen"
+                            role="Content Creator"
+                            avatar="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face"
+                        />
+                        <TestimonialCard
+                            quote="The Creator plan gives me everything I need. 4K upscaling and priority support have been game changers for my workflow."
+                            author="Maria Santos"
+                            role="Digital Artist"
+                            avatar="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face"
+                        />
+                        <TestimonialCard
+                            quote="Our agency switched from competitors and the cost savings have been massive. The API access is seamless to integrate."
+                            author="James Wilson"
+                            role="Agency Director"
+                            avatar="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
+                        />
+                    </div>
                 </div>
 
                 {/* FAQ Section */}
@@ -380,3 +453,23 @@ function FAQItem({ question, answer }: { question: string, answer: string }) {
         </div>
     );
 }
+
+function TestimonialCard({ quote, author, role, avatar }: { quote: string, author: string, role: string, avatar: string }) {
+    return (
+        <div className="p-6 bg-white/5 border border-white/10 rounded-2xl">
+            <div className="flex items-center gap-3 mb-4">
+                <img
+                    src={avatar}
+                    alt={author}
+                    className="w-12 h-12 rounded-full object-cover border-2 border-white/10"
+                />
+                <div>
+                    <div className="font-semibold text-white">{author}</div>
+                    <div className="text-sm text-gray-400">{role}</div>
+                </div>
+            </div>
+            <p className="text-gray-300 text-sm leading-relaxed">&ldquo;{quote}&rdquo;</p>
+        </div>
+    );
+}
+

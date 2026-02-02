@@ -3,6 +3,8 @@ import { getMessages } from 'next-intl/server';
 import type { Metadata } from "next"
 import { Inter, Outfit } from "next/font/google"
 import { ClerkProvider } from "@clerk/nextjs"
+import { AnalyticsProvider } from "@/lib/analytics"
+import { CookieConsentBanner } from "@/components/CookieConsentBanner"
 import "../globals.css"
 
 const inter = Inter({
@@ -52,10 +54,14 @@ export default async function RootLayout({
                 </head>
                 <body className={`${inter.variable} ${outfit.variable} font-sans antialiased text-foreground bg-background`}>
                     <NextIntlClientProvider messages={messages}>
-                        {children}
+                        <AnalyticsProvider>
+                            {children}
+                            <CookieConsentBanner />
+                        </AnalyticsProvider>
                     </NextIntlClientProvider>
                 </body>
             </html>
         </ClerkProvider>
     )
 }
+

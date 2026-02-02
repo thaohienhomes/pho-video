@@ -75,10 +75,6 @@ const LOADING_STEPS = ["Analyzing...", "Fitting...", "Rendering..."]
 const GradientDefs = () => (
     <svg width="0" height="0" style={{ position: 'absolute' }}>
         <defs>
-            <linearGradient id="sunset-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#FF5A5A" />
-                <stop offset="100%" stopColor="#FF9E5A" />
-            </linearGradient>
             <linearGradient id="sunset-gradient-vertical" x1="0%" y1="0%" x2="0%" y2="100%">
                 <stop offset="0%" stopColor="#FF5A5A" />
                 <stop offset="100%" stopColor="#FF9E5A" />
@@ -88,35 +84,55 @@ const GradientDefs = () => (
 )
 
 const UploadIconGradient = ({ className }: { className?: string }) => (
-    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" className={className}>
+    <svg width="72" height="72" viewBox="0 0 56 56" fill="none" className={cn(className, "drop-shadow-[0_0_20px_rgba(255,200,150,0.8)]")}>
+        <defs>
+            <linearGradient id="bright-upload-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#FFFFFF" />
+                <stop offset="50%" stopColor="#FFD4B8" />
+                <stop offset="100%" stopColor="#FF9E5A" />
+            </linearGradient>
+        </defs>
         <path
-            d="M28 38V18M28 18L20 26M28 18L36 26"
-            stroke="url(#sunset-gradient)"
-            strokeWidth="3"
+            d="M28 6L28 32"
+            stroke="url(#bright-upload-gradient)"
+            strokeWidth="5.5"
+            strokeLinecap="round"
+        />
+        <path
+            d="M18 16L28 6L38 16"
+            stroke="url(#bright-upload-gradient)"
+            strokeWidth="5.5"
             strokeLinecap="round"
             strokeLinejoin="round"
         />
         <path
             d="M10 32V42C10 44.7614 12.2386 47 15 47H41C43.7614 47 46 44.7614 46 42V32"
-            stroke="url(#sunset-gradient)"
-            strokeWidth="3"
+            stroke="url(#bright-upload-gradient)"
+            strokeWidth="5"
             strokeLinecap="round"
         />
     </svg>
 )
 
 const HangerIconGradient = ({ className }: { className?: string }) => (
-    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" className={className}>
+    <svg width="72" height="72" viewBox="0 0 56 56" fill="none" className={cn(className, "drop-shadow-[0_0_20px_rgba(255,200,150,0.8)]")}>
+        <defs>
+            <linearGradient id="bright-hanger-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#FFFFFF" />
+                <stop offset="50%" stopColor="#FFD4B8" />
+                <stop offset="100%" stopColor="#FF9E5A" />
+            </linearGradient>
+        </defs>
         <path
             d="M28 9V14C28 16.7614 30.2386 19 33 19C35.7614 19 38 16.7614 38 14"
-            stroke="url(#sunset-gradient)"
-            strokeWidth="3"
+            stroke="url(#bright-hanger-gradient)"
+            strokeWidth="5"
             strokeLinecap="round"
         />
         <path
             d="M7 38L28 24L49 38V43C49 45.7614 46.7614 48 44 48H12C9.23858 48 7 45.7614 7 43V38Z"
-            stroke="url(#sunset-gradient)"
-            strokeWidth="3"
+            stroke="url(#bright-hanger-gradient)"
+            strokeWidth="5"
             strokeLinecap="round"
             strokeLinejoin="round"
         />
@@ -426,9 +442,17 @@ export function TryOnStudio({ className, onBackToModes, onNavigateToVideo }: Try
                     {/* ─────────────────────────────────────────────────────────────────────
                         LEFT COLUMN - Your Photo
                     ───────────────────────────────────────────────────────────────────── */}
-                    <div className="flex-1 bg-gradient-to-b from-[#151515] to-[#0d0d0d] rounded-2xl border border-white/10 flex flex-col p-6 relative overflow-hidden shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]">
-                        {/* Ambient inner glow */}
-                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,90,90,0.08)_0%,transparent_60%)] pointer-events-none" />
+                    {/* YOUR PHOTO - Glassmorphism + Outer Ambient Glow */}
+                    <div className="flex-1 rounded-2xl flex flex-col p-6 relative overflow-hidden
+                        bg-[#151515]/80 backdrop-blur-xl border border-white/10
+                        shadow-[0_0_60px_-10px_rgba(255,90,90,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)]
+                        before:absolute before:inset-0 before:rounded-2xl before:p-[1px]
+                        before:bg-gradient-to-br before:from-[#FF5A5A]/30 before:via-transparent before:to-[#FF9E5A]/20 before:-z-10
+                        hover:shadow-[0_0_80px_-5px_rgba(255,90,90,0.35),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:border-[#FF5A5A]/30 transition-all duration-500
+                    ">
+                        {/* Ambient inner glow - Enhanced */}
+                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,90,90,0.12)_0%,transparent_50%)] pointer-events-none" />
+                        <div className="absolute -top-20 -left-20 w-60 h-60 bg-gradient-to-br from-[#FF5A5A]/20 to-transparent rounded-full blur-[80px] pointer-events-none" />
 
                         <div className="flex items-center justify-between mb-4 relative z-10 w-full">
                             <h2 className="text-lg font-bold text-white">Your Photo</h2>
@@ -454,9 +478,13 @@ export function TryOnStudio({ className, onBackToModes, onNavigateToVideo }: Try
                                     : "bg-[radial-gradient(closest-side,rgba(255,90,90,0.1)_0%,transparent_80%)]"
                             )}
                             style={{
-                                backgroundImage: isDraggingModel
-                                    ? `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='16' ry='16' stroke='%23FF5A5A' stroke-width='2.5' stroke-dasharray='10%2c 6' stroke-dashoffset='0' stroke-linecap='round'/%3e%3c/svg%3e")`
-                                    : `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='16' ry='16' stroke='%23FF5A5A66' stroke-width='2' stroke-dasharray='10%2c 6' stroke-dashoffset='0' stroke-linecap='round'/%3e%3c/svg%3e")`
+                                background: isDraggingModel
+                                    ? `linear-gradient(135deg, rgba(255,90,90,0.1) 0%, rgba(255,158,90,0.05) 100%)`
+                                    : `radial-gradient(circle at center, rgba(255,90,90,0.08) 0%, transparent 70%)`,
+                                boxShadow: isDraggingModel
+                                    ? `0 0 0 2px rgba(255,90,90,0.6), 0 0 40px rgba(255,90,90,0.3), inset 0 0 30px rgba(255,90,90,0.1)`
+                                    : `0 0 0 1px rgba(255,90,90,0.2), inset 0 0 20px rgba(255,90,90,0.05)`,
+                                border: isDraggingModel ? '2px solid transparent' : '1px solid rgba(255,90,90,0.15)'
                             }}
                         >
                             {modelImage ? (
@@ -471,10 +499,10 @@ export function TryOnStudio({ className, onBackToModes, onNavigateToVideo }: Try
                                     <div className="relative mb-4">
                                         <UploadIconGradient />
                                     </div>
-                                    <p className="text-white/60 font-medium text-center text-sm relative z-10">
+                                    <p className="text-white/90 font-semibold text-center text-base relative z-10 drop-shadow-[0_0_8px_rgba(255,158,90,0.4)]">
                                         Drop or click<br />to upload
                                     </p>
-                                    <p className="text-white/30 text-center text-[10px] mt-2 relative z-10">
+                                    <p className="text-white/50 text-center text-xs mt-2 relative z-10 font-medium">
                                         📷 Full-body photo required
                                     </p>
                                     <input
@@ -499,10 +527,11 @@ export function TryOnStudio({ className, onBackToModes, onNavigateToVideo }: Try
                                         key={sample.id}
                                         onClick={() => setModelImage(sample.url)}
                                         className={cn(
-                                            "w-[72px] h-[96px] flex-shrink-0 rounded-xl cursor-pointer transition-all overflow-hidden relative",
+                                            "w-[72px] h-[96px] flex-shrink-0 rounded-xl cursor-pointer overflow-hidden relative",
+                                            "transition-all duration-300 ease-out",
                                             modelImage === sample.url
-                                                ? "ring-2 ring-[#FF5A5A] ring-offset-2 ring-offset-[#0a0a0a] shadow-[0_0_20px_rgba(255,90,90,0.5)] scale-105 z-10"
-                                                : "border border-white/10 opacity-70 hover:opacity-100 hover:scale-105"
+                                                ? "ring-2 ring-[#FF5A5A] ring-offset-2 ring-offset-[#0a0a0a] shadow-[0_0_25px_rgba(255,90,90,0.6)] scale-110 z-20 brightness-110"
+                                                : "border border-white/20 opacity-80 hover:opacity-100 hover:scale-110 hover:z-10 hover:shadow-[0_0_20px_rgba(255,158,90,0.4)] hover:border-[#FF9E5A]/50 hover:brightness-110"
                                         )}
                                     >
                                         <img src={sample.url} className="w-full h-full object-cover" alt={sample.name} />
@@ -515,9 +544,17 @@ export function TryOnStudio({ className, onBackToModes, onNavigateToVideo }: Try
                     {/* ─────────────────────────────────────────────────────────────────────
                         RIGHT COLUMN - Garment Photo
                     ───────────────────────────────────────────────────────────────────── */}
-                    <div className="flex-1 bg-gradient-to-b from-[#151515] to-[#0d0d0d] rounded-2xl border border-white/10 flex flex-col p-6 relative overflow-hidden shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]">
-                        {/* Ambient inner glow - Orange tint for garment */}
-                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,158,90,0.08)_0%,transparent_60%)] pointer-events-none" />
+                    {/* GARMENT - Glassmorphism + Outer Ambient Glow (Orange/Purple) */}
+                    <div className="flex-1 rounded-2xl flex flex-col p-6 relative overflow-hidden
+                        bg-[#151515]/80 backdrop-blur-xl border border-white/10
+                        shadow-[0_0_60px_-10px_rgba(255,158,90,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)]
+                        before:absolute before:inset-0 before:rounded-2xl before:p-[1px]
+                        before:bg-gradient-to-br before:from-[#FF9E5A]/30 before:via-transparent before:to-[#A855F7]/20 before:-z-10
+                        hover:shadow-[0_0_80px_-5px_rgba(255,158,90,0.35),inset_0_1px_0_0_rgba(255,255,255,0.15)] hover:border-[#FF9E5A]/30 transition-all duration-500
+                    ">
+                        {/* Ambient inner glow - Orange/Purple Enhanced */}
+                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,158,90,0.12)_0%,transparent_50%)] pointer-events-none" />
+                        <div className="absolute -top-20 -right-20 w-60 h-60 bg-gradient-to-bl from-[#A855F7]/15 via-[#FF9E5A]/10 to-transparent rounded-full blur-[80px] pointer-events-none" />
 
                         <div className="flex items-center justify-between mb-4 relative z-10 w-full">
                             <div className="flex items-center gap-4">
@@ -577,9 +614,13 @@ export function TryOnStudio({ className, onBackToModes, onNavigateToVideo }: Try
                                             : "bg-[radial-gradient(closest-side,rgba(255,158,90,0.1)_0%,transparent_80%)]"
                                     )}
                                     style={{
-                                        backgroundImage: isDraggingGarment
-                                            ? `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='16' ry='16' stroke='%23FF9E5A' stroke-width='2.5' stroke-dasharray='10%2c 6' stroke-dashoffset='0' stroke-linecap='round'/%3e%3c/svg%3e")`
-                                            : `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='16' ry='16' stroke='%23FF9E5A66' stroke-width='2' stroke-dasharray='10%2c 6' stroke-dashoffset='0' stroke-linecap='round'/%3e%3c/svg%3e")`
+                                        background: isDraggingGarment
+                                            ? `linear-gradient(135deg, rgba(255,158,90,0.1) 0%, rgba(168,85,247,0.05) 100%)`
+                                            : `radial-gradient(circle at center, rgba(255,158,90,0.08) 0%, transparent 70%)`,
+                                        boxShadow: isDraggingGarment
+                                            ? `0 0 0 2px rgba(255,158,90,0.6), 0 0 40px rgba(255,158,90,0.3), inset 0 0 30px rgba(255,158,90,0.1)`
+                                            : `0 0 0 1px rgba(255,158,90,0.2), inset 0 0 20px rgba(255,158,90,0.05)`,
+                                        border: isDraggingGarment ? '2px solid transparent' : '1px solid rgba(255,158,90,0.15)'
                                     }}
                                 >
                                     {garmentImage ? (
@@ -594,7 +635,7 @@ export function TryOnStudio({ className, onBackToModes, onNavigateToVideo }: Try
                                             <div className="relative mb-4">
                                                 <HangerIconGradient />
                                             </div>
-                                            <p className="text-white/60 font-medium text-center text-sm relative z-10">
+                                            <p className="text-white/90 font-semibold text-center text-base relative z-10 drop-shadow-[0_0_8px_rgba(255,158,90,0.4)]">
                                                 Drop or click<br />to upload
                                             </p>
                                             <input
@@ -619,10 +660,11 @@ export function TryOnStudio({ className, onBackToModes, onNavigateToVideo }: Try
                                                 key={sample.id}
                                                 onClick={() => { setGarmentImage(sample.url); if (sample.type) setGarmentType(sample.type) }}
                                                 className={cn(
-                                                    "w-[72px] h-[96px] flex-shrink-0 rounded-xl cursor-pointer transition-all overflow-hidden relative",
+                                                    "w-[72px] h-[96px] flex-shrink-0 rounded-xl cursor-pointer overflow-hidden relative",
+                                                    "transition-all duration-300 ease-out",
                                                     garmentImage === sample.url
-                                                        ? "ring-2 ring-[#FF9E5A] ring-offset-2 ring-offset-[#0a0a0a] shadow-[0_0_20px_rgba(255,158,90,0.5)] scale-105 z-10"
-                                                        : "border border-white/10 opacity-70 hover:opacity-100 hover:scale-105"
+                                                        ? "ring-2 ring-[#FF9E5A] ring-offset-2 ring-offset-[#0a0a0a] shadow-[0_0_25px_rgba(255,158,90,0.6)] scale-110 z-20 brightness-110"
+                                                        : "border border-white/20 opacity-80 hover:opacity-100 hover:scale-110 hover:z-10 hover:shadow-[0_0_20px_rgba(255,158,90,0.4)] hover:border-[#FF9E5A]/50 hover:brightness-110"
                                                 )}
                                             >
                                                 <img src={sample.url} className="w-full h-full object-cover" alt={sample.name} />
@@ -794,11 +836,13 @@ export function TryOnStudio({ className, onBackToModes, onNavigateToVideo }: Try
                         onClick={handleGenerate}
                         disabled={isGenerating || !modelImage || !garmentImage}
                         className={cn(
-                            "h-12 px-8 rounded-xl bg-gradient-to-r from-[#FF5A5A] to-[#FF9E5A] hover:from-[#FF4040] hover:to-[#FF8530]",
-                            "text-white font-bold text-base flex items-center gap-2.5 transition-all",
-                            "border border-white/30 shadow-[0_0_50px_rgba(255,90,90,0.5),0_0_80px_rgba(255,158,90,0.25)]",
-                            "disabled:opacity-40 disabled:shadow-none disabled:cursor-not-allowed",
-                            !isGenerating && modelImage && garmentImage && "animate-pulse-subtle"
+                            "h-12 px-8 rounded-xl bg-gradient-to-r from-[#FF5A5A] to-[#FF9E5A]",
+                            "text-white font-bold text-base flex items-center gap-2.5 transition-all duration-300",
+                            "border border-white/40 shadow-[0_0_40px_rgba(255,90,90,0.5),0_0_80px_rgba(255,158,90,0.3)]",
+                            "hover:from-[#FF4040] hover:to-[#FF7520] hover:shadow-[0_0_60px_rgba(255,90,90,0.7),0_0_120px_rgba(255,158,90,0.4),0_0_180px_rgba(168,85,247,0.2)] hover:scale-105 hover:border-white/60",
+                            "active:scale-[0.98] active:shadow-[0_0_30px_rgba(255,90,90,0.4)]",
+                            "disabled:opacity-40 disabled:shadow-none disabled:cursor-not-allowed disabled:hover:scale-100",
+                            !isGenerating && modelImage && garmentImage && "animate-pulse"
                         )}
                     >
                         {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5 fill-white drop-shadow-[0_0_4px_rgba(255,255,255,0.8)]" />}

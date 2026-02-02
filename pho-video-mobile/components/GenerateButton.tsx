@@ -3,6 +3,7 @@ import { Text, Pressable, View, ActivityIndicator, StyleSheet } from "react-nati
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { Sparkles, CheckCircle2 } from "lucide-react-native";
+import { COLORS } from "../constants/Colors";
 
 export type ButtonStatus = "idle" | "loading" | "success" | "failed";
 
@@ -27,10 +28,10 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({ onPress, status 
     }));
 
     const gradientColors = status === "success"
-        ? ["#10B981", "#059669"] as const
+        ? COLORS.gradients.success
         : status === "failed"
-            ? ["#EF4444", "#991B1B"] as const
-            : ["#F0421C", "#E0320C"] as const;
+            ? COLORS.gradients.failed
+            : COLORS.gradients.primary;
 
     return (
         <Animated.View style={[styles.buttonWrapper, animatedStyle]}>
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
         height: 56,
         borderRadius: 16,
         overflow: "hidden",
-        shadowColor: "#F0421C",
+        shadowColor: COLORS.primary,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,

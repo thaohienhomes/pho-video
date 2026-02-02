@@ -76,15 +76,15 @@ export default function LandingPage() {
                             © 2026 {tc("app_name")}. {t("footer.rights")}
                         </p>
                         <div className="flex items-center gap-6">
-                            <a href="#" className="text-sm text-muted-foreground hover:text-white transition-colors">
+                            <Link href="/legal/terms" className="text-sm text-muted-foreground hover:text-white transition-colors">
                                 {t("footer.terms")}
-                            </a>
-                            <a href="#" className="text-sm text-muted-foreground hover:text-white transition-colors">
+                            </Link>
+                            <Link href="/legal/privacy" className="text-sm text-muted-foreground hover:text-white transition-colors">
                                 {t("footer.privacy")}
-                            </a>
-                            <a href="#" className="text-sm text-muted-foreground hover:text-white transition-colors">
+                            </Link>
+                            <Link href="/legal/refund" className="text-sm text-muted-foreground hover:text-white transition-colors">
                                 {t("footer.contact")}
-                            </a>
+                            </Link>
                         </div>
                     </div>
                 </div>

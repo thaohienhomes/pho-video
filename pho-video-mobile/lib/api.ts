@@ -51,6 +51,11 @@ export interface GenerateVideoParams {
     controlType?: 'pose' | 'depth';
     duration?: number;
     style?: string;
+    // New Params for Phase 12 Parity
+    generationMode?: 'text' | 'image' | 'avatar' | 'sound' | 'lipsync' | 'upscale';
+    lipsyncVideo?: string;
+    lipsyncAudio?: string;
+    upscaleVideo?: string;
 }
 
 // Axios Instance with timeout

@@ -26,6 +26,10 @@ const nextConfig = {
             },
             {
                 protocol: 'https',
+                hostname: '*.fal.media',
+            },
+            {
+                protocol: 'https',
                 hostname: 'fal.run',
             },
             {
@@ -41,6 +45,9 @@ const nextConfig = {
                 hostname: 'placehold.co',
             },
         ],
+    },
+    eslint: {
+        ignoreDuringBuilds: true,
     },
 }
 

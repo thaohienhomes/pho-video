@@ -6,6 +6,42 @@
     "error": "Something went wrong",
     "success": "Success",
     "save": "Save",
+    "mode_text_to_video": "Text to Video",
+    "mode_image_to_video": "Image to Video",
+    "upload_hint_animate": "Upload image to animate",
+    "placeholder_video_i2v": "Describe how the image should animate...",
+    "placeholder_video_t2v": "Describe the video you want to create...",
+    "placeholder_image": "Describe the image you want to generate...",
+    "enhance_tooltip": "Enhance Prompt with AI",
+    "chars_count": "characters",
+    "shortcut_generate": "Enter to generate",
+    "section_style": "Style & Quality",
+    "section_advanced": "Advanced",
+    "label_model": "Model",
+    "label_ratio": "Aspect Ratio",
+    "label_duration": "Duration",
+    "badge_new": "NEW",
+    "gen_failed": "Generation failed. Please try again.",
+    "video_failed": "Video generation failed",
+    "image_failed": "Image generation failed",
+    "models": {
+      "pho_instant_name": "Phở Instant",
+      "pho_instant_desc": "Fast & balanced",
+      "pho_cinematic_name": "Phở Cinematic",
+      "pho_cinematic_desc": "Best quality",
+      "pho_fast_name": "Phở Fast",
+      "pho_fast_desc": "Budget-friendly",
+      "pho_motion_name": "Phở Motion",
+      "pho_motion_desc": "Best for I2V",
+      "pho_grok_name": "Grok Audio",
+      "pho_grok_desc": "Video with AI audio",
+      "flux_pro_name": "Flux Pro",
+      "flux_pro_desc": "Photorealistic",
+      "recraft_v3_name": "Recraft V3",
+      "recraft_v3_desc": "Artistic styles",
+      "banana_pro_name": "Banana Pro",
+      "banana_pro_desc": "Fast & cheap"
+    },
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
@@ -17,7 +53,18 @@
     "dashboard": "Dashboard",
     "studio": "Studio",
     "gallery": "Gallery",
-    "pricing": "Pricing"
+    "pricing": "Pricing",
+    "close": "Close",
+    "download": "Download",
+    "share": "Share",
+    "generate": "Generate",
+    "generating": "Generating...",
+    "select": "Select",
+    "optional": "Optional",
+    "required": "Required",
+    "tip": "Tip",
+    "warning": "Warning",
+    "characters": "characters"
   },
   "landing": {
     "hero": {
@@ -147,6 +194,11 @@
       "credits_available": "Phở Points Available",
       "buy_more": "Buy More"
     },
+    "tag_popular": "Popular",
+    "tag_pro": "Pro",
+    "tag_i2v": "I2V",
+    "tag_audio": "Audio",
+    "tag_budget": "Budget",
     "sidebar": {
       "title": "AI Models",
       "subtitle": "Select a model for your needs",
@@ -157,10 +209,12 @@
       "tag_fast": "FAST",
       "tag_cinematic": "CINEMATIC",
       "tag_realistic": "REALISTIC",
-      "tag_audio": "AUDIO",
       "cost_low": "Low cost",
       "cost_medium": "Medium cost",
       "cost_premium": "Premium",
+      "magic_prompt_label": "Phở Magic Prompt",
+      "magic_prompt_desc": "AI enhances your prompt",
+      "camera_motion_label": "Camera Motion",
       "provider_label": "Provider",
       "tip_title": "Tip",
       "tip_desc": "Use <strong>Phở Instant</strong> for fast prototyping, then <strong>Phở Cinematic</strong> for the final version.",
@@ -182,6 +236,57 @@
       "ratio_21_9": "Cinematic (21:9)",
       "seed_label": "Seed Number",
       "seed_random": "Leave empty for random"
+    },
+    "mode_text_to_video": "Text to Video",
+    "mode_image_to_video": "Image to Video",
+    "upload_hint_animate": "Upload image to animate",
+    "placeholder_video_t2v": "Describe the video you want to create...",
+    "placeholder_video_i2v": "Describe how the image should animate...",
+    "placeholder_image": "Describe the image you want to generate...",
+    "enhance_tooltip": "Enhance Prompt with AI",
+    "chars_count": "chars",
+    "shortcut_generate": "⌘+Enter to generate",
+    "section_style": "Style & Quality",
+    "label_model": "Model",
+    "badge_new": "NEW",
+    "label_ratio": "Aspect Ratio",
+    "section_advanced": "Advanced",
+    "label_duration": "Duration",
+    "video_failed": "Video generation failed",
+    "image_failed": "Image generation failed",
+    "gen_failed": "Generation failed. Please try again.",
+    "upscale_hint": "💡 Select a video from your gallery on the right, then choose your upscale settings below.",
+    "batch_size_label": "Batch Size",
+    "magic_subtitle": "Quick presets for instant creation. Click one to auto-configure settings.",
+    "magic_presets": {
+      "cinematic_name": "Cinematic Promo",
+      "cinematic_desc": "16:9 video, best quality, 5s",
+      "product_name": "Product Shot",
+      "product_desc": "1:1 image, studio lighting",
+      "tiktok_name": "TikTok/Reel",
+      "tiktok_desc": "9:16 vertical, fast",
+      "quick_name": "Quick Test",
+      "quick_desc": "Fastest generation"
+    },
+    "models": {
+      "pho_instant_name": "Pho Instant",
+      "pho_instant_desc": "Fast iteration",
+      "pho_cinematic_name": "Pho Cinematic",
+      "pho_cinematic_desc": "Best quality",
+      "pho_fast_name": "Pho Fast",
+      "pho_fast_desc": "Speed optimized",
+      "pho_motion_name": "Pho Motion",
+      "pho_motion_desc": "High motion",
+      "flux_pro_v1_1_name": "Flux Pro 1.1",
+      "flux_pro_v1_1_desc": "Professional detail",
+      "flux_schnell_name": "Flux Schnell",
+      "flux_schnell_desc": "Fast draft",
+      "recraft_v3_name": "Recraft V3",
+      "recraft_v3_desc": "Vector/Artistic",
+      "pho_grok_name": "Grok Audio",
+      "pho_grok_desc": "Video with AI audio",
+      "nano_banana_pro_name": "Banana Pro",
+      "nano_banana_pro_desc": "Fast & Cheap"
     },
     "controls": {
       "title": "Create Video",
@@ -231,6 +336,24 @@
       "image_to_video": "Image to Video",
       "text_to_image": "Text to Image"
     },
+    "modes": {
+      "video": "Video",
+      "video_desc": "Text-to-Video, Image-to-Video",
+      "image": "Image",
+      "image_desc": "AI Image Generation",
+      "audio": "Audio",
+      "audio_desc": "Music & TTS",
+      "lipsync": "Lip Sync",
+      "lipsync_desc": "Talking Head Videos",
+      "upscale": "Upscale",
+      "upscale_desc": "Enhance Video Quality",
+      "story": "Story",
+      "story_desc": "Multi-scene Storyboard",
+      "magic": "Magic",
+      "magic_desc": "One-click Presets",
+      "tryon": "Try-on",
+      "tryon_desc": "Virtual Clothing Try-on"
+    },
     "t2i": {
       "generate_button": "Generate Image (2 Credits)",
       "generating_state": "Generating image...",
@@ -264,12 +387,197 @@
       "success_title": "Video ready!",
       "success_desc": "Your video was created successfully. Download or share now.",
       "tip_desc": "<strong>💡 Tip:</strong> Try detailed descriptions about lighting, camera angle and style for best results. E.g., \"Cinematic slow motion shot with warm golden hour lighting\"",
-      "back_to_grid": "Back to Grid"
+      "back_to_grid": "Back to Grid",
+      "empty_prompt_hint": "Enter a prompt on the left to begin your journey"
     },
     "history": {
       "title": "Recent Generations",
       "empty": "No generations yet. Create your first video!",
       "loading": "Loading history..."
+    }
+  },
+  "upscaler": {
+    "title": "Premium Video Upscaler",
+    "subtitle": "Enhance video resolution up to 4K",
+    "scale_factor": "Scale Factor",
+    "quality_tier": "Quality Tier",
+    "original": "Original",
+    "enhanced": "Enhanced",
+    "download_enhanced": "Download Enhanced",
+    "upscale_another": "Upscale Another",
+    "upscale_to": "Upscale to",
+    "enhancing_video": "Enhancing Video...",
+    "upscaling_with": "Upscaling with",
+    "time_estimate": "This may take 1-3 minutes depending on video length",
+    "slider_compare": "Slider comparison",
+    "side_by_side": "Side by side",
+    "select_video_first": "⚠️ Select a video from your gallery first",
+    "models": {
+      "topaz_name": "Topaz Premium",
+      "topaz_desc": "Hollywood-grade quality",
+      "seedvr_name": "SeedVR",
+      "seedvr_desc": "ByteDance technology",
+      "flashvsr_name": "FlashVSR",
+      "flashvsr_desc": "Real-time fast",
+      "standard_name": "Standard",
+      "standard_desc": "Basic upscaling"
+    }
+  },
+  "soundStudio": {
+    "title": "Phở Sound Studio",
+    "tabs": {
+      "music": "AI Music",
+      "tts": "Text-to-Speech"
+    },
+    "music": {
+      "pick_style": "🎵 Pick a Style",
+      "mood": "🎭 Mood",
+      "add_lyrics": "Add Lyrics",
+      "lyrics_desc": "Create songs with AI-generated vocals",
+      "lyrics_placeholder": "[verse]\nWalking down the street tonight\nCity lights are shining bright\n\n[chorus]\nThis is where I belong\nSinging my favorite song",
+      "lyrics_tip": "Tip: Leave empty for instrumental, or use control tags like [verse], [chorus], [bridge]",
+      "custom_details": "✍️ Custom Details (optional)",
+      "custom_placeholder": "Add more details like instruments, tempo, or specific requests...",
+      "model": "Model",
+      "duration": "Duration",
+      "generated_music": "Generated Music",
+      "generate_music": "Generate Music"
+    },
+    "tts": {
+      "enter_text": "Enter text to speak",
+      "text_placeholder": "Enter the text you want to convert to speech...",
+      "voice_model": "Voice Model",
+      "generated_speech": "Generated Speech",
+      "generate_speech": "Generate Speech"
+    },
+    "history": {
+      "title": "Recent Generations",
+      "empty": "No audio history yet. Generate some music!",
+      "close": "Close"
+    },
+    "quickPublish": {
+      "title": "Quick Publish Video",
+      "youtube": "YouTube",
+      "youtube_aspect": "16:9 Landscape",
+      "tiktok": "TikTok",
+      "tiktok_aspect": "9:16 Portrait",
+      "description": "Create a video with visualizer and your music"
+    },
+    "styles": {
+      "rock": "🎸 Rock",
+      "rnb": "🎤 R&B",
+      "jazz": "🎷 Jazz",
+      "edm": "🎧 EDM",
+      "classical": "🎻 Orchestra",
+      "bolero": "🎹 Bolero",
+      "lofi": "🌙 Lo-Fi",
+      "hiphop": "🔥 Hip-Hop",
+      "pop": "✨ Pop"
+    },
+    "moods": {
+      "happy": "😊 Happy",
+      "sad": "😢 Sad",
+      "energetic": "⚡ Energetic",
+      "calm": "🌙 Calm",
+      "epic": "🏆 Epic"
+    }
+  },
+  "lipSync": {
+    "title": "Lip Sync / Talking Head",
+    "subtitle": "Create talking head videos from photos and audio",
+    "upload_photo": "Upload face photo",
+    "upload_audio": "Upload audio file",
+    "audio_formats": "Supports MP3, WAV, M4A",
+    "text_input": "Or enter text to generate speech",
+    "text_placeholder": "Enter text for the character to speak...",
+    "voice_selection": "Select voice",
+    "generate_talking_head": "Generate Talking Head Video",
+    "generating": "Generating talking head video...",
+    "tips": {
+      "title": "Tips for best results",
+      "tip1": "Use a clear face photo looking straight at the camera",
+      "tip2": "Audio should be clear without background noise",
+      "tip3": "Avoid photos with multiple people or obscured faces"
+    },
+    "settings": {
+      "title": "Settings",
+      "expression_scale": "Expression Scale",
+      "preprocess_mode": "Preprocess Mode",
+      "modes": {
+        "crop": "Crop (Headshot)",
+        "extcrop": "Extended Crop",
+        "resize": "Resize",
+        "full": "Full Frame",
+        "extfull": "Extended Full"
+      },
+      "still_mode": "Still Mode",
+      "enhance_face": "Enhance Face"
+    }
+  },
+  "studio_meta": {
+    "camera": {
+      "static": "Static",
+      "pan_left": "Pan Left",
+      "pan_right": "Pan Right",
+      "zoom_in": "Zoom In",
+      "zoom_out": "Zoom Out",
+      "orbit": "Orbit",
+      "intensity_label": "Motion Intensity",
+      "intensity_subtle": "Subtle",
+      "intensity_moderate": "Moderate",
+      "intensity_dramatic": "Dramatic"
+    },
+    "batch": {
+      "label": "Batch Size",
+      "single": "Single",
+      "pair": "Pair",
+      "grid": "Grid",
+      "variations_hint": "Generate {count} variations with different seeds"
+    }
+  },
+  "tryon": {
+    "title": "Virtual Try-on",
+    "subtitle": "Try clothes on your photos using AI",
+    "upload_person": "Upload model photo",
+    "upload_garment": "Upload garment photo",
+    "person_hint": "Photo of person standing straight, clear, simple background",
+    "garment_hint": "Flat garment photo on white background or on hanger",
+    "garment_type": "Garment type",
+    "garment_types": {
+      "upper": "Upper body",
+      "lower": "Lower body",
+      "dress": "Full dress"
+    },
+    "generate_tryon": "Generate Try-on",
+    "generating": "Generating try-on image...",
+    "before_after": "Before & After",
+    "download_result": "Download Result",
+    "share_result": "Share",
+    "try_another": "Try Another",
+    "history_title": "Try-on History",
+    "back": "Back to Modes",
+    "clear": "Clear",
+    "drop_to_upload": "Drop or click\nto upload",
+    "try_samples": "Or try samples:",
+    "garment_label": "Garment",
+    "tab_upload": "Upload",
+    "tab_wardrobe": "Wardrobe",
+    "save": "Save",
+    "add_new": "Add New",
+    "select_type": "Select type",
+    "auto_detect": "Auto Detect",
+    "quality_label": "Quality",
+    "quality_fast": "Fast",
+    "quality_balanced": "Balanced",
+    "quality_quality": "Quality",
+    "results_label": "Results",
+    "seed_label": "Seed",
+    "random_seed": "Random",
+    "tips": {
+      "title": "Tips for best results",
+      "tip1": "Model photo should be high resolution and clear",
+      "tip2": "Garment should be photographed separately on white or solid background",
+      "tip3": "Standing straight posture gives best results"
     }
   },
   "auth": {
@@ -280,9 +588,14 @@
     "prompt_enhanced": "Prompt enhanced with AI magic!",
     "style_applied": "Sample style applied!",
     "generation_started": "Generation started! This may take up to 60s.",
-    "insufficient_credits": "Insufficient credits. Please top up.",
+    "insufficient_credits": "Insufficient Phở Points. Please top up.",
     "copy_link": "Link copied to clipboard.",
-    "enhancement_failed": "Failed to enhance prompt. Try again."
+    "enhancement_failed": "Failed to enhance prompt. Try again.",
+    "download_started": "Download started...",
+    "upload_success": "Upload successful!",
+    "upload_failed": "Upload failed. Please try again.",
+    "generation_complete": "Generation complete!",
+    "generation_failed": "Generation failed. Please try again."
   },
   "styles": {
     "title": "Visual Style",
@@ -359,19 +672,22 @@
     "cta_pro": "Go Pro",
     "start_creating": "Start Creating",
     "go_pro": "Go Pro",
+    "cta_enterprise": "Contact Sales",
     "processing": "Processing...",
     "faq_title": "Frequently Asked Questions",
     "tiers": {
       "free": "Free",
       "starter": "Starter",
       "creator": "Creator",
-      "pro": "Pro"
+      "pro": "Pro",
+      "enterprise": "Enterprise"
     },
     "descriptions": {
       "free": "Explore AI video generation",
       "starter": "For hobbyists and creators",
       "creator": "For serious content creators",
-      "pro": "For professionals and teams"
+      "pro": "For professionals and teams",
+      "enterprise": "For studios and agencies"
     },
     "features": {
       "points_per_month": "{amount} Phở Points/month",
@@ -389,7 +705,13 @@
       "support_dedicated": "Dedicated support",
       "upscaling": "4K upscaling included",
       "api_access": "API access",
-      "custom_branding": "Custom branding"
+      "custom_branding": "Custom branding",
+      "priority_queue": "Priority generation queue",
+      "custom_training": "Custom AI training (LoRA)",
+      "white_label": "White-label API",
+      "sso": "SSO/SAML authentication",
+      "sla": "SLA guarantee",
+      "account_manager": "Dedicated account manager"
     },
     "faq": {
       "q1": "What are Phở Points?",
@@ -421,9 +743,155 @@
         "spend_i2v": "Image-to-Video",
         "spend_upscale": "Upscale to 4K",
         "spend_audio": "Audio Generation",
+        "spend_lipsync": "Lip Sync Generation",
+        "spend_tryon": "Virtual Try-on",
+        "spend_storyboard": "Storyboard Generation",
         "refund": "Refund",
         "admin_adjustment": "Admin Adjustment"
       }
     }
+  },
+  "storyboard": {
+    "title": "Phở Storyboard",
+    "subtitle": "Transform your story into a video",
+    "steps": {
+      "story": "Story",
+      "scenes": "Scenes",
+      "settings": "Settings",
+      "generate": "Generate",
+      "complete": "Complete"
+    },
+    "step1": {
+      "label": "Your Story",
+      "placeholder": "Once upon a time in a futuristic city, a young inventor discovered a secret that would change the world...",
+      "enhance_button": "Enhance Story with AI",
+      "char_count": "{count} characters",
+      "tip": "Tip: Write 2-3 sentences per scene for best results",
+      "target_scenes": "Target Scenes: {count}",
+      "min_scenes": "2 scenes",
+      "max_scenes": "8 scenes",
+      "parse_button": "Parse into Scenes",
+      "parsing": "Parsing Story..."
+    },
+    "step2": {
+      "title": "Edit Your Scenes",
+      "subtitle": "Drag to reorder, click to edit. {count} scenes total.",
+      "reparse": "Re-parse",
+      "add_scene": "Add Scene",
+      "scene_placeholder": "Describe what happens in this scene...",
+      "save_hint": "⌘+Enter to save, Esc to cancel",
+      "cancel": "Cancel",
+      "save": "Save",
+      "click_to_add": "Click to add description...",
+      "duration_s": "{duration}s",
+      "has_thumbnail": "Has thumbnail",
+      "back": "Back",
+      "continue": "Continue to Settings"
+    },
+    "step3": {
+      "video_model": "Video Model",
+      "cost_per_5s": "{cost}K/5s",
+      "duration_per_scene": "Duration per Scene: {duration}s",
+      "add_music_title": "Add Background Music",
+      "add_music_desc": "AI-generated soundtrack (+30K Phở)",
+      "music_style": "Music Style (optional)",
+      "music_placeholder": "Epic orchestral, emotional piano, upbeat electronic...",
+      "cost_estimate": "Cost Estimate",
+      "base_cost": "Base cost",
+      "video_cost": "{count} scenes × {duration}s",
+      "music_cost": "Background music",
+      "total": "Total",
+      "generate_button": "Generate Storyboard"
+    },
+    "step4": {
+      "generating_title": "Creating Your Storyboard",
+      "generating_desc": "This may take a few minutes. We're generating {count} scenes in parallel.",
+      "scene_status": {
+        "pending": "Pending",
+        "generating": "Generating...",
+        "completed": "Completed",
+        "failed": "Failed"
+      }
+    },
+    "models": {
+      "pho_instant": "Phở Instant",
+      "pho_instant_desc": "Fast generation",
+      "pho_cinematic": "Phở Cinematic",
+      "pho_cinematic_desc": "Best quality",
+      "pho_fast": "Phở Fast",
+      "pho_fast_desc": "Budget-friendly"
+    }
+  },
+  "featureTour": {
+    "welcome_title": "Welcome to Phở Studio!",
+    "welcome_desc": "Let's explore the powerful features to create professional AI videos.",
+    "mode_selector_title": "Choose a creation mode",
+    "mode_selector_desc": "Switch between Video, Image, Audio, Upscale, Storyboard, and Magic modes.",
+    "prompt_title": "Describe your idea",
+    "prompt_desc": "Enter a detailed prompt so AI understands what you want to create.",
+    "settings_title": "Customize settings",
+    "settings_desc": "Adjust duration, resolution, camera motion and more.",
+    "generate_title": "Start generating",
+    "generate_desc": "Click the button to begin AI generation.",
+    "next": "Next",
+    "prev": "Previous",
+    "finish": "Finish",
+    "skip": "Skip tour"
+  },
+  "workspace": {
+    "storyboard": "Storyboard",
+    "storyboard_empty": "Your creations will appear here",
+    "add_sound": "Add Phở Sound",
+    "sound_added": "Sound Added",
+    "upscale_4k": "Phở 4K Cinematic",
+    "upscale_processing": "Phở 4K Processing...",
+    "upscale_ready": "4K Ready",
+    "back_to_grid": "Back to Grid",
+    "animate_image": "Use as Video (Animate)"
+  },
+  "creditPacks": {
+    "title": "Buy More Phở Points",
+    "subtitle": "More <span>Phở Points</span>,<br />More Magic.",
+    "pack_small": "Small Pack",
+    "pack_medium": "Medium Pack",
+    "pack_large": "Large Pack",
+    "pack_mega": "Mega Pack",
+    "bonus": "Bonus",
+    "buy_now": "Buy Now",
+    "best_value": "Best Value"
+  },
+  "legal": {
+    "index_title": "Legal & Policies",
+    "index_subtitle": "Important information about using Phở Video.",
+    "last_updated": "Last updated",
+    "terms_title": "Terms of Service",
+    "terms_desc": "Rules for using our platform and services.",
+    "privacy_title": "Privacy Policy",
+    "privacy_desc": "How we collect, use, and protect your data.",
+    "refund_title": "Refund Policy",
+    "refund_desc": "When and how you can request refunds.",
+    "cookie_title": "Cookie Policy",
+    "cookie_desc": "Information about cookies we use."
+  },
+  "referral": {
+    "title": "Refer Friends, Earn Rewards",
+    "subtitle": "Share your unique link and earn 100K Phở Points for every friend who signs up.",
+    "reward_title": "Earn Per Referral",
+    "reward_desc": "When your friend signs up and creates their first video",
+    "your_link": "Your Referral Link",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "share_message": "Create stunning AI videos with Phở Video! Sign up using my link and we both get bonus credits:",
+    "email_subject": "Try Phở Video - AI Video Generation",
+    "how_it_works": "How It Works",
+    "step1_title": "Share Your Link",
+    "step1_desc": "Send your unique referral link to friends",
+    "step2_title": "Friend Signs Up",
+    "step2_desc": "They create an account using your link",
+    "step3_title": "Both Get Rewards",
+    "step3_desc": "You both receive 100K Phở Points bonus",
+    "stats_referrals": "Successful Referrals",
+    "stats_earned": "Points Earned",
+    "terms": "Referral rewards are subject to our Terms of Service. Bonus is credited once the referred user completes signup."
   }
 }

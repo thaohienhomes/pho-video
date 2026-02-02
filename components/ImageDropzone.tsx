@@ -35,7 +35,7 @@ export function ImageDropzone({
         }
     }, [value])
 
-    const validateFile = (file: File): string | null => {
+    const validateFile = useCallback((file: File): string | null => {
         // Check file type
         if (!ALLOWED_TYPES.includes(file.type)) {
             return t("error_invalid_type")
@@ -46,7 +46,7 @@ export function ImageDropzone({
             return t("error_file_too_large")
         }
         return null
-    }
+    }, [t, maxSizeMB])
 
     const processFile = useCallback(async (file: File) => {
         setError(null)
@@ -69,7 +69,7 @@ export function ImageDropzone({
             setError("Failed to read file")
         }
         reader.readAsDataURL(file)
-    }, [onImageSelect, t, maxSizeMB])
+    }, [onImageSelect, validateFile])
 
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault()

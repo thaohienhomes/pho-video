@@ -5,6 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Play, Loader2 } from "lucide-react-native";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { Watermark } from "./Watermark";
+import { COLORS } from "../constants/Colors";
 
 // Default blurhash for loading placeholder (dark gray)
 const BLURHASH = "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7telephones";
@@ -135,18 +136,18 @@ export const VideoCard: React.FC<VideoCardProps> = React.memo(({ item, index, is
                 {/* Buffering Indicator */}
                 {isBuffering && isActive && videoSource && (
                     <View style={styles.bufferingOverlay}>
-                        <Loader2 size={24} color="#F0421C" />
+                        <Loader2 size={24} color={COLORS.primary} />
                     </View>
                 )}
 
                 <LinearGradient
-                    colors={['transparent', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.9)']}
+                    colors={COLORS.gradients.overlay as any}
                     locations={[0, 0.6, 1]}
                     style={styles.overlay}
                 >
                     <Watermark style={styles.watermark} />
                     <View style={styles.durationBadge}>
-                        <Play size={8} color="#F0421C" fill="#F0421C" />
+                        <Play size={8} color={COLORS.primary} fill={COLORS.primary} />
                         <Text style={styles.durationText}>{item.duration}</Text>
                     </View>
 
@@ -169,16 +170,16 @@ const styles = StyleSheet.create({
     card: {
         width: COLUMN_WIDTH,
         height: COLUMN_WIDTH * 1.6,
-        backgroundColor: "#1A1A1A",
+        backgroundColor: COLORS.card,
         borderRadius: 16,
         overflow: "hidden",
         borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.05)",
+        borderColor: COLORS.border,
     },
     image: {
         width: "100%",
         height: "100%",
-        backgroundColor: "#262626",
+        backgroundColor: COLORS.interactive,
         position: "absolute",
         top: 0,
         left: 0,

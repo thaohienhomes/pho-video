@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useTranslations } from "next-intl"
 import { motion, AnimatePresence } from "framer-motion"
 import {
     Music,
@@ -31,6 +32,7 @@ import {
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
+import { WaveformVisualizer } from "@/components/studio/WaveformVisualizer"
 
 interface SoundStudioProps {
     videoUrl?: string  // Optional video to add audio to
@@ -94,6 +96,9 @@ const TTS_MODELS = [
 type StudioMode = "music" | "tts"
 
 export function SoundStudio({ videoUrl, onMusicGenerated, onTTSGenerated }: SoundStudioProps) {
+    const t = useTranslations("soundStudio")
+    const tCommon = useTranslations("common")
+
     const [mode, setMode] = useState<StudioMode>("music")
     const [isGenerating, setIsGenerating] = useState(false)
     const [isEnhancing, setIsEnhancing] = useState(false)
@@ -252,516 +257,651 @@ export function SoundStudio({ videoUrl, onMusicGenerated, onTTSGenerated }: Soun
         : Math.max(5000, Math.ceil(ttsText.length / 1000) * (selectedTTSModel?.cost || 5) * 1000)
 
     return (
-        <div className="w-full rounded-xl bg-black/40 backdrop-blur-md border border-white/10 overflow-hidden">
-            {/* Header with Mode Tabs */}
-            <div className="flex items-center border-b border-white/10">
-                <button
-                    onClick={() => setMode("music")}
-                    className={cn(
-                        "flex-1 flex items-center justify-center gap-2 py-4 px-6 transition-all",
-                        mode === "music"
-                            ? "bg-primary/20 text-primary border-b-2 border-primary"
-                            : "text-white/60 hover:text-white hover:bg-white/5"
-                    )}
-                >
-                    <Music className="w-5 h-5" />
-                    <span className="font-medium">AI Music</span>
-                </button>
-                <button
-                    onClick={() => setMode("tts")}
-                    className={cn(
-                        "flex-1 flex items-center justify-center gap-2 py-4 px-6 transition-all",
-                        mode === "tts"
-                            ? "bg-purple-500/20 text-purple-400 border-b-2 border-purple-400"
-                            : "text-white/60 hover:text-white hover:bg-white/5"
-                    )}
-                >
-                    <Mic className="w-5 h-5" />
-                    <span className="font-medium">Text-to-Speech</span>
-                </button>
-                {/* History Button */}
-                <button
-                    onClick={() => setShowHistory(!showHistory)}
-                    className={cn(
-                        "flex items-center justify-center gap-2 py-4 px-4 transition-all relative",
-                        showHistory
-                            ? "bg-emerald-500/20 text-emerald-400"
-                            : "text-white/60 hover:text-white hover:bg-white/5"
-                    )}
-                >
-                    <History className="w-5 h-5" />
-                    {audioHistory.length > 0 && (
-                        <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-emerald-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center">
-                            {audioHistory.length}
-                        </span>
-                    )}
-                </button>
+        <div className="w-full h-full flex flex-col rounded-[var(--pho-radius-xl)] bg-[#0D0D10] backdrop-blur-[var(--pho-blur-lg)] border border-[#8B5CF6]/20 overflow-hidden">
+            {/* Header - Sound Studio X with Purple Theme */}
+            <div className="px-6 py-4 bg-gradient-to-r from-[#8B5CF6]/10 via-transparent to-[#8B5CF6]/5 border-b border-[#8B5CF6]/20">
+                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                    <span className="text-[#8B5CF6]">♪</span>
+                    SOUND STUDIO X
+                    <span className="text-xs text-white/50 font-normal ml-2">AI Music Generation</span>
+                </h2>
             </div>
 
-            {/* Content */}
-            <div className="p-6 space-y-6">
-                {/* History Panel */}
-                <AnimatePresence>
-                    {showHistory && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="mb-4 p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20"
-                        >
-                            <div className="flex items-center justify-between mb-3">
-                                <p className="text-sm font-medium text-emerald-400 flex items-center gap-2">
-                                    <History className="w-4 h-4" />
-                                    Recent Generations ({audioHistory.length})
-                                </p>
-                                <button
-                                    onClick={() => setShowHistory(false)}
-                                    className="text-xs text-white/40 hover:text-white"
-                                >
-                                    Close
-                                </button>
-                            </div>
-                            {audioHistory.length === 0 ? (
-                                <p className="text-xs text-white/40 text-center py-4">
-                                    No audio history yet. Generate some music!
-                                </p>
-                            ) : (
-                                <div className="space-y-2 max-h-[200px] overflow-y-auto">
-                                    {audioHistory.map((item) => (
-                                        <div
-                                            key={item.id}
-                                            className="flex items-center gap-3 p-2 rounded-lg bg-black/20 hover:bg-black/40 transition-colors"
-                                        >
-                                            <a
-                                                href={item.audioUrl}
-                                                target="_blank"
-                                                className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center hover:bg-emerald-500/40"
-                                            >
-                                                <Play className="w-3 h-3 text-emerald-400" />
-                                            </a>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-xs font-medium text-white truncate">
-                                                    {item.style || item.prompt.substring(0, 30) || "Generated Audio"}
-                                                </p>
-                                                <p className="text-[10px] text-white/40">
-                                                    {item.mood && `${item.mood} • `}{item.duration}s • {new Date(item.createdAt).toLocaleDateString()}
-                                                </p>
-                                            </div>
-                                            <a
-                                                href={item.audioUrl}
-                                                download
-                                                className="p-1.5 rounded-lg hover:bg-white/10"
-                                            >
-                                                <Download className="w-3 h-3 text-white/40" />
-                                            </a>
-                                            <button
-                                                onClick={() => deleteFromHistory(item.id)}
-                                                className="p-1.5 rounded-lg hover:bg-red-500/20"
-                                            >
-                                                <Trash2 className="w-3 h-3 text-red-400/60 hover:text-red-400" />
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+            {/* 3-Column Layout: Left Controls + Center Content + Right History */}
+            <div className="flex flex-1 overflow-hidden">
 
-                <AnimatePresence mode="wait">
-                    {mode === "music" ? (
-                        <motion.div
-                            key="music"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="space-y-5"
-                        >
-                            {/* Style Presets */}
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-white/70">
-                                    🎵 Pick a Style
-                                </label>
-                                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-white/10">
-                                    {MUSIC_STYLES.map((style) => (
-                                        <button
-                                            key={style.id}
-                                            onClick={() => setSelectedStyle(selectedStyle === style.id ? null : style.id)}
-                                            className={cn(
-                                                "flex-shrink-0 px-3 py-2 rounded-lg text-sm font-medium transition-all border",
-                                                selectedStyle === style.id
-                                                    ? "bg-primary/20 border-primary text-primary"
-                                                    : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white"
-                                            )}
-                                        >
-                                            {style.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
+                {/* LEFT SIDEBAR: Model Selection & Controls (Liquid Glass Style) */}
+                <aside className="w-[200px] min-w-[200px] border-r border-[#8B5CF6]/30 bg-gradient-to-b from-[#0D0D15]/95 to-[#0A0A0F]/95 backdrop-blur-xl p-4 space-y-5 overflow-y-auto shadow-[inset_0_0_30px_rgba(139,92,246,0.05)]">
+                    {/* Sound Studio X Label with Icon */}
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-[#8B5CF6]/10 border border-[#8B5CF6]/30 shadow-[0_0_15px_rgba(139,92,246,0.15)]">
+                        <div className="w-9 h-9 rounded-lg bg-[#8B5CF6]/20 flex items-center justify-center">
+                            <Music className="w-5 h-5 text-[#8B5CF6]" />
+                        </div>
+                        <span className="text-sm font-bold text-white">Sound Studio X</span>
+                    </div>
 
-                            {/* Mood Selector */}
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-white/70">
-                                    🎭 Mood
-                                </label>
-                                <div className="flex flex-wrap gap-2">
-                                    {MOOD_OPTIONS.map((mood) => (
-                                        <button
-                                            key={mood.id}
-                                            onClick={() => setSelectedMood(selectedMood === mood.id ? null : mood.id)}
-                                            className={cn(
-                                                "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
-                                                selectedMood === mood.id
-                                                    ? "bg-purple-500/20 border-purple-500 text-purple-400"
-                                                    : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:text-white"
-                                            )}
-                                        >
-                                            {mood.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Lyrics Toggle */}
-                            <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20">
-                                <div className="flex items-center gap-3">
-                                    <span className="text-lg">🎤</span>
-                                    <div>
-                                        <p className="text-sm font-medium text-white">Add Lyrics</p>
-                                        <p className="text-xs text-white/50">Create songs with AI-generated vocals</p>
-                                    </div>
-                                </div>
-                                <Switch
-                                    checked={withLyrics}
-                                    onCheckedChange={handleLyricsToggle}
-                                />
-                            </div>
-
-                            {/* Lyrics Input (shown when enabled) */}
-                            {withLyrics && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: "auto" }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    className="space-y-2"
-                                >
-                                    <label className="text-sm font-medium text-white/70">
-                                        📝 Lyrics (use [verse], [chorus], [bridge])
-                                    </label>
-                                    <Textarea
-                                        value={lyrics}
-                                        onChange={(e) => setLyrics(e.target.value)}
-                                        placeholder={`[verse]
-Walking down the street tonight
-City lights are shining bright
-
-[chorus]
-This is where I belong
-Singing my favorite song`}
-                                        className="min-h-[120px] bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-none font-mono text-sm"
-                                    />
-                                    <p className="text-xs text-white/40">
-                                        Tip: Leave empty for instrumental, or use control tags like [verse], [chorus], [bridge]
-                                    </p>
-                                </motion.div>
-                            )}
-
-                            {/* Music Prompt */}
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-white/70">
-                                    ✍️ Custom Details (optional)
-                                </label>
-                                <div className="relative">
-                                    <Textarea
-                                        value={musicPrompt}
-                                        onChange={(e) => setMusicPrompt(e.target.value)}
-                                        placeholder={selectedStyle ? "Add more details like instruments, tempo, or specific requests..." : "Describe your music or pick a style above..."}
-                                        className="min-h-[80px] bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-none pr-12"
-                                    />
-                                    <button
-                                        onClick={async () => {
-                                            if (!musicPrompt.trim() || isEnhancing) return
-                                            setIsEnhancing(true)
-                                            try {
-                                                const res = await fetch("/api/ai/enhance", {
-                                                    method: "POST",
-                                                    headers: { "Content-Type": "application/json" },
-                                                    body: JSON.stringify({ prompt: musicPrompt })
-                                                })
-                                                const data = await res.json()
-                                                if (data.enhancedPrompt) setMusicPrompt(data.enhancedPrompt)
-                                            } catch (err) {
-                                                console.error("Enhance failed:", err)
-                                            } finally {
-                                                setIsEnhancing(false)
-                                            }
-                                        }}
-                                        disabled={!musicPrompt.trim() || isEnhancing}
-                                        className={cn(
-                                            "absolute top-2 right-2 p-2 rounded-lg transition-all",
-                                            "bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30",
-                                            "border border-purple-500/30 hover:border-purple-500/50",
-                                            "disabled:opacity-50 disabled:cursor-not-allowed"
-                                        )}
-                                        title="Enhance Prompt with AI"
+                    {/* MODEL SELECTION with Glowing Border */}
+                    <div className="space-y-2.5">
+                        <label className="text-xs font-semibold text-white/60 uppercase tracking-wider">
+                            Model Selection
+                        </label>
+                        <Select value={musicModel} onValueChange={setMusicModel}>
+                            <SelectTrigger className="bg-[#15151A]/80 backdrop-blur-sm border-white/10 hover:border-[#8B5CF6]/40 text-white text-sm transition-colors shadow-sm">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-[#15151A] border-white/10 backdrop-blur-xl">
+                                {MUSIC_MODELS.map((model) => (
+                                    <SelectItem
+                                        key={model.id}
+                                        value={model.id}
+                                        className="text-white hover:bg-[#8B5CF6]/20 focus:bg-[#8B5CF6]/20"
                                     >
-                                        {isEnhancing ? (
-                                            <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
-                                        ) : (
-                                            <Wand2 className="w-4 h-4 text-purple-400" />
-                                        )}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Model & Duration Row */}
-                            <div className="grid grid-cols-2 gap-4">
-                                {/* Model Selection */}
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-white/70">
-                                        Model
-                                    </label>
-                                    <Select value={musicModel} onValueChange={setMusicModel}>
-                                        <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent className="bg-zinc-900 border-white/10">
-                                            {MUSIC_MODELS.map((model) => (
-                                                <SelectItem
-                                                    key={model.id}
-                                                    value={model.id}
-                                                    className="text-white hover:bg-white/10"
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <span>{model.name}</span>
-                                                        <span className="text-xs text-white/40">
-                                                            {model.cost}K/30s
-                                                        </span>
-                                                    </div>
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                {/* Duration */}
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-white/70 flex items-center gap-2">
-                                        <Clock className="w-4 h-4" />
-                                        Duration: {musicDuration}s
-                                    </label>
-                                    <Slider
-                                        value={[musicDuration]}
-                                        onValueChange={([v]) => setMusicDuration(v)}
-                                        min={15}
-                                        max={120}
-                                        step={15}
-                                        className="py-3"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Generated Audio Preview */}
-                            {generatedMusicUrl && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: "auto" }}
-                                    className="space-y-4"
-                                >
-                                    {/* Audio Player */}
-                                    <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
-                                        <div className="flex items-center gap-3">
-                                            <button
-                                                onClick={() => setIsPlaying(!isPlaying)}
-                                                className="w-10 h-10 rounded-full bg-primary flex items-center justify-center"
-                                            >
-                                                {isPlaying ? (
-                                                    <Pause className="w-5 h-5 text-white" />
-                                                ) : (
-                                                    <Play className="w-5 h-5 text-white ml-0.5" />
-                                                )}
-                                            </button>
-                                            <div className="flex-1">
-                                                <p className="text-sm font-medium text-white">Generated Music</p>
-                                                <p className="text-xs text-white/50">{musicDuration} seconds</p>
-                                            </div>
-                                            <a
-                                                href={generatedMusicUrl}
-                                                download
-                                                className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-                                            >
-                                                <Download className="w-4 h-4 text-white" />
-                                            </a>
+                                        <div className="flex items-center gap-2">
+                                            <span>{model.name}</span>
+                                            <span className="text-xs text-white/40">
+                                                {model.cost}K/30s
+                                            </span>
                                         </div>
-                                        <audio
-                                            src={generatedMusicUrl}
-                                            className="hidden"
-                                            ref={(el) => {
-                                                if (el) {
-                                                    isPlaying ? el.play() : el.pause()
-                                                }
-                                            }}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* DURATION with Red/Vermilion Slider Track (Matching Mockup) */}
+                    <div className="space-y-3">
+                        <label className="text-xs font-semibold text-white/60 uppercase tracking-wider flex items-center gap-2">
+                            <Clock className="w-3.5 h-3.5 text-primary" />
+                            Duration
+                        </label>
+                        <Slider
+                            value={[musicDuration]}
+                            onValueChange={([v]) => setMusicDuration(v)}
+                            min={30}
+                            max={180}
+                            step={30}
+                            className="py-3 [&_[role=slider]]:bg-primary [&_[role=slider]]:border-primary [&_.range]:bg-gradient-to-r [&_.range]:from-primary [&_.range]:to-orange-500"
+                        />
+                        <div className="flex justify-between text-[10px] text-white/50">
+                            <span className={cn(musicDuration >= 30 && "text-primary font-medium")}>30s</span>
+                            <span className={cn(musicDuration >= 60 && "text-primary font-medium")}>60s</span>
+                            <span className={cn(musicDuration >= 120 && "text-primary font-medium")}>120s</span>
+                            <span className={cn(musicDuration >= 180 && "text-primary font-medium")}>180s</span>
+                        </div>
+                    </div>
+
+                    {/* INSTRUMENTAL Toggle with Glowing Effect */}
+                    <div className="flex items-center justify-between p-3.5 rounded-xl bg-[#15151A]/80 backdrop-blur-sm border border-white/10 hover:border-[#8B5CF6]/30 transition-colors">
+                        <div className="flex items-center gap-2.5">
+                            <span className="text-sm font-medium text-white">Instrumental</span>
+                            <span className="text-[10px] text-[#8B5CF6] bg-[#8B5CF6]/10 px-1.5 py-0.5 rounded">🎹</span>
+                        </div>
+                        <Switch
+                            checked={!withLyrics}
+                            onCheckedChange={(checked) => setWithLyrics(!checked)}
+                            className="data-[state=checked]:bg-[#8B5CF6] shadow-[0_0_10px_rgba(139,92,246,0.3)]"
+                        />
+                    </div>
+                </aside>
+
+                {/* CENTER: Main Content Area */}
+                <main className="flex-1 flex flex-col overflow-hidden">
+                    {/* Mode Tabs: AI Music / Text-to-Speech */}
+                    <div className="flex items-center border-b border-white/10">
+                        <button
+                            onClick={() => setMode("music")}
+                            className={cn(
+                                "flex-1 flex items-center justify-center gap-2 py-3.5 px-6 transition-all duration-[var(--pho-duration-normal)]",
+                                mode === "music"
+                                    ? "bg-[#8B5CF6]/20 text-[#8B5CF6] border-b-2 border-[#8B5CF6]"
+                                    : "text-[var(--pho-text-muted)] hover:text-[var(--pho-text-primary)] hover:bg-[var(--pho-glass-light)]"
+                            )}
+                        >
+                            <Music className="w-4 h-4" />
+                            <span className="font-medium text-sm">{t("tabs.music")}</span>
+                        </button>
+                        <button
+                            onClick={() => setMode("tts")}
+                            className={cn(
+                                "flex-1 flex items-center justify-center gap-2 py-3.5 px-6 transition-all duration-[var(--pho-duration-normal)]",
+                                mode === "tts"
+                                    ? "bg-purple-500/20 text-purple-400 border-b-2 border-purple-400"
+                                    : "text-[var(--pho-text-muted)] hover:text-[var(--pho-text-primary)] hover:bg-[var(--pho-glass-light)]"
+                            )}
+                        >
+                            <Mic className="w-4 h-4" />
+                            <span className="font-medium text-sm">{t("tabs.tts")}</span>
+                        </button>
+                    </div>
+
+                    {/* Main Content Scroll Area */}
+                    <div className="flex-1 overflow-y-auto p-5 space-y-5">
+                        {/* History Panel - Now in Right Sidebar */}
+
+                        <AnimatePresence mode="wait">
+                            {mode === "music" ? (
+                                <motion.div
+                                    key="music"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="space-y-5"
+                                >
+                                    {/* Genre/Style Presets - Horizontal Scrolling Pills */}
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-semibold text-white/50 uppercase tracking-wider">
+                                            Genre
+                                        </label>
+                                        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-[#8B5CF6]/20 scrollbar-track-transparent">
+                                            {MUSIC_STYLES.map((style) => (
+                                                <button
+                                                    key={style.id}
+                                                    onClick={() => setSelectedStyle(selectedStyle === style.id ? null : style.id)}
+                                                    className={cn(
+                                                        "flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all border",
+                                                        selectedStyle === style.id
+                                                            ? "bg-[#8B5CF6] border-[#8B5CF6] text-white shadow-[0_0_20px_rgba(139,92,246,0.4)]"
+                                                            : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:border-white/20"
+                                                    )}
+                                                >
+                                                    {style.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Mood Selector - Horizontal Pills */}
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-semibold text-white/50 uppercase tracking-wider">
+                                            Mood Selector
+                                        </label>
+                                        <div className="flex gap-2 overflow-x-auto pb-1">
+                                            {MOOD_OPTIONS.map((mood) => (
+                                                <button
+                                                    key={mood.id}
+                                                    onClick={() => setSelectedMood(selectedMood === mood.id ? null : mood.id)}
+                                                    className={cn(
+                                                        "flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all border",
+                                                        selectedMood === mood.id
+                                                            ? "bg-[#8B5CF6] border-[#8B5CF6] text-white shadow-[0_0_20px_rgba(139,92,246,0.4)]"
+                                                            : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:border-white/20"
+                                                    )}
+                                                >
+                                                    {mood.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Lyrics Toggle */}
+                                    <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-lg">🎤</span>
+                                            <div>
+                                                <p className="text-sm font-medium text-white">{t("music.add_lyrics")}</p>
+                                                <p className="text-xs text-white/50">{t("music.lyrics_desc")}</p>
+                                            </div>
+                                        </div>
+                                        <Switch
+                                            checked={withLyrics}
+                                            onCheckedChange={handleLyricsToggle}
                                         />
                                     </div>
 
-                                    {/* Quick Publish to YouTube/TikTok */}
-                                    {showQuickPublish && (
+                                    {/* Lyrics Section - Purple Highlighted Tags Matching Mockup */}
+                                    {withLyrics && (
                                         <motion.div
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className="p-4 rounded-lg bg-gradient-to-r from-red-500/10 via-purple-500/10 to-pink-500/10 border border-white/10"
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: "auto" }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="space-y-3"
                                         >
-                                            <p className="text-sm font-medium text-white mb-3 flex items-center gap-2">
-                                                <Video className="w-4 h-4" />
-                                                Quick Publish Video
-                                            </p>
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <a
-                                                    href={`/studio?mode=video&audioUrl=${encodeURIComponent(generatedMusicUrl)}&aspect=16:9`}
-                                                    className="flex items-center gap-2 p-3 rounded-lg bg-red-500/20 border border-red-500/30 hover:bg-red-500/30 transition-colors"
-                                                >
-                                                    <Youtube className="w-5 h-5 text-red-400" />
-                                                    <div>
-                                                        <p className="text-sm font-medium text-white">YouTube</p>
-                                                        <p className="text-xs text-white/50">16:9 Landscape</p>
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-xs font-semibold text-white/50 uppercase tracking-wider flex items-center gap-2">
+                                                    <span className="text-[#8B5CF6]">♪</span> LYRICS SECTION
+                                                </label>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs text-white/40">Enable Vocals</span>
+                                                    <div className="w-8 h-4 bg-[#8B5CF6] rounded-full relative">
+                                                        <div className="absolute right-0.5 top-0.5 w-3 h-3 bg-white rounded-full" />
                                                     </div>
-                                                </a>
-                                                <a
-                                                    href={`/studio?mode=video&audioUrl=${encodeURIComponent(generatedMusicUrl)}&aspect=9:16`}
-                                                    className="flex items-center gap-2 p-3 rounded-lg bg-pink-500/20 border border-pink-500/30 hover:bg-pink-500/30 transition-colors"
+                                                </div>
+                                            </div>
+                                            <div className="relative">
+                                                <Textarea
+                                                    value={lyrics}
+                                                    onChange={(e) => setLyrics(e.target.value)}
+                                                    placeholder={`[verse]
+In shadows we rise, a new dawn in sight
+Through the darkest of times, we'll ignite the light.
+
+[chorus]
+Together we stand, forces combined
+A symphony of courage, for all humankind.
+
+[bridge]
+The drums of war beat, a hero's call
+We'll break every chain, and never fall.`}
+                                                    className="min-h-[180px] bg-[#0D0D10] border-[#8B5CF6]/30 text-white placeholder:text-[#8B5CF6]/40 resize-none font-mono text-sm leading-relaxed rounded-xl"
+                                                    style={{ caretColor: '#8B5CF6' }}
+                                                />
+                                                {/* Purple highlight overlay effect for structural tags */}
+                                                <div className="absolute top-3 left-3 pointer-events-none text-xs text-[#8B5CF6]/60 font-mono">
+                                                    {/* Visual hint for tag syntax */}
+                                                </div>
+                                            </div>
+                                            <p className="text-xs text-[#8B5CF6]/60">
+                                                Use structural tags like <span className="text-[#8B5CF6] font-semibold">[verse]</span>, <span className="text-[#8B5CF6] font-semibold">[chorus]</span>, <span className="text-[#8B5CF6] font-semibold">[bridge]</span> for song structure
+                                            </p>
+                                        </motion.div>
+                                    )}
+
+                                    {/* Music Prompt */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-white/70">
+                                            {t("music.custom_details")}
+                                        </label>
+                                        <div className="relative">
+                                            <Textarea
+                                                value={musicPrompt}
+                                                onChange={(e) => setMusicPrompt(e.target.value)}
+                                                placeholder={selectedStyle ? "Add more details like instruments, tempo, or specific requests..." : "Describe your music or pick a style above..."}
+                                                className="min-h-[80px] bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-none pr-12"
+                                            />
+                                            <button
+                                                onClick={async () => {
+                                                    if (!musicPrompt.trim() || isEnhancing) return
+                                                    setIsEnhancing(true)
+                                                    try {
+                                                        const res = await fetch("/api/ai/enhance", {
+                                                            method: "POST",
+                                                            headers: { "Content-Type": "application/json" },
+                                                            body: JSON.stringify({ prompt: musicPrompt })
+                                                        })
+                                                        const data = await res.json()
+                                                        if (data.enhancedPrompt) setMusicPrompt(data.enhancedPrompt)
+                                                    } catch (err) {
+                                                        console.error("Enhance failed:", err)
+                                                    } finally {
+                                                        setIsEnhancing(false)
+                                                    }
+                                                }}
+                                                disabled={!musicPrompt.trim() || isEnhancing}
+                                                className={cn(
+                                                    "absolute top-2 right-2 p-2 rounded-lg transition-all",
+                                                    "bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30",
+                                                    "border border-purple-500/30 hover:border-purple-500/50",
+                                                    "disabled:opacity-50 disabled:cursor-not-allowed"
+                                                )}
+                                                title="Enhance Prompt with AI"
+                                            >
+                                                {isEnhancing ? (
+                                                    <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
+                                                ) : (
+                                                    <Wand2 className="w-4 h-4 text-purple-400" />
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
+
+
+                                    {/* Model & Duration - Now in Left Sidebar */}
+
+                                    {/* RESULT/PLAYER Section - Always Visible (Matching Mockup) */}
+                                    <div className="space-y-4">
+                                        {/* RESULT/PLAYER Header */}
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-semibold text-white/60 uppercase tracking-wider">Result / Player</span>
+                                            {generatedMusicUrl && (
+                                                <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">Ready</span>
+                                            )}
+                                        </div>
+
+                                        {/* Audio Player Card with Gradient Waveform */}
+                                        <div className="rounded-2xl bg-gradient-to-b from-[#15151A] to-[#0D0D12] border border-[#8B5CF6]/20 overflow-hidden shadow-[0_0_40px_rgba(139,92,246,0.1)]">
+                                            {/* Large Waveform Area with Centered Play Button */}
+                                            <div className="h-36 bg-gradient-to-b from-[#0D0D12] to-black/40 relative flex items-center justify-center px-6">
+                                                {/* Gradient Waveform (Pink-Purple-Orange like mockup) */}
+                                                <div className="absolute inset-0 flex items-center justify-center px-4">
+                                                    <div className="flex items-center gap-0.5 h-full w-full py-6">
+                                                        {Array.from({ length: 80 }).map((_, i) => {
+                                                            const normalized = i / 80;
+                                                            const height = 25 + Math.sin(i * 0.3) * 20 + Math.sin(i * 0.7) * 15 + Math.random() * 10;
+                                                            // Gradient: Pink (#EC4899) -> Purple (#8B5CF6) -> Orange (#F97316)
+                                                            let color;
+                                                            if (normalized < 0.4) {
+                                                                color = `hsl(${330 - normalized * 50}, 80%, 60%)`; // Pink to magenta
+                                                            } else if (normalized < 0.7) {
+                                                                color = `hsl(${265 + (normalized - 0.4) * 100}, 75%, 55%)`; // Magenta to purple  
+                                                            } else {
+                                                                color = `hsl(${25 - (normalized - 0.7) * 40}, 90%, 55%)`; // Purple to orange
+                                                            }
+                                                            return (
+                                                                <motion.div
+                                                                    key={i}
+                                                                    className="flex-1 rounded-full"
+                                                                    style={{ background: color }}
+                                                                    initial={{ height: "30%" }}
+                                                                    animate={{
+                                                                        height: isPlaying ? [`${height}%`, `${height + 15}%`, `${height}%`] : `${height}%`
+                                                                    }}
+                                                                    transition={{
+                                                                        duration: isPlaying ? 0.5 + Math.random() * 0.3 : 0,
+                                                                        repeat: isPlaying ? Infinity : 0,
+                                                                        ease: "easeInOut"
+                                                                    }}
+                                                                />
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+
+                                                {/* Centered Play Button */}
+                                                <button
+                                                    onClick={() => generatedMusicUrl && setIsPlaying(!isPlaying)}
+                                                    disabled={!generatedMusicUrl}
+                                                    className={cn(
+                                                        "relative z-20 w-16 h-16 rounded-full flex items-center justify-center transition-all",
+                                                        generatedMusicUrl
+                                                            ? "bg-gradient-to-br from-[#8B5CF6] to-[#A855F7] shadow-[0_0_40px_rgba(139,92,246,0.6)] hover:shadow-[0_0_50px_rgba(139,92,246,0.8)] hover:scale-105 cursor-pointer"
+                                                            : "bg-white/10 cursor-not-allowed opacity-50"
+                                                    )}
                                                 >
-                                                    <svg className="w-5 h-5 text-pink-400" viewBox="0 0 24 24" fill="currentColor">
+                                                    {isPlaying ? (
+                                                        <Pause className="w-7 h-7 text-white" />
+                                                    ) : (
+                                                        <Play className="w-7 h-7 text-white ml-1" />
+                                                    )}
+                                                </button>
+
+                                                {/* Vermilion Progress Bar at Bottom */}
+                                                <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-white/10">
+                                                    <div className="absolute left-0 h-full w-1/4 bg-gradient-to-r from-primary to-orange-500 rounded-r" />
+                                                    <div
+                                                        className="absolute w-3 h-3 bg-primary rounded-full border-2 border-white shadow-lg"
+                                                        style={{ left: "25%", top: "-3px" }}
+                                                    />
+                                                    {isPlaying && (
+                                                        <motion.div
+                                                            className="h-full bg-gradient-to-r from-primary to-orange-500"
+                                                            initial={{ width: "0%" }}
+                                                            animate={{ width: "100%" }}
+                                                            transition={{ duration: musicDuration, ease: "linear" }}
+                                                        />
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Time Display */}
+                                            <div className="px-5 py-2.5 flex items-center justify-end text-xs text-white/50 bg-black/30 border-t border-white/5">
+                                                <span className="font-mono">0:00 / {Math.floor(musicDuration / 60)}:{(musicDuration % 60).toString().padStart(2, '0')}</span>
+                                            </div>
+
+                                            {generatedMusicUrl && (
+                                                <audio
+                                                    src={generatedMusicUrl}
+                                                    className="hidden"
+                                                    ref={(el) => {
+                                                        if (el) {
+                                                            isPlaying ? el.play() : el.pause()
+                                                            el.onended = () => setIsPlaying(false)
+                                                        }
+                                                    }}
+                                                />
+                                            )}
+                                        </div>
+
+                                        {/* Quick Publish Row (Matching Mockup) */}
+                                        <div className="flex items-center gap-3 flex-wrap">
+                                            {/* Download MP3 */}
+                                            <a
+                                                href={generatedMusicUrl || "#"}
+                                                download={!!generatedMusicUrl}
+                                                className={cn(
+                                                    "flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all",
+                                                    generatedMusicUrl
+                                                        ? "bg-[#15151A]/80 border-white/10 hover:bg-white/10 hover:border-white/20"
+                                                        : "bg-white/5 border-white/5 opacity-50 cursor-not-allowed"
+                                                )}
+                                            >
+                                                <Download className="w-4 h-4 text-white/70" />
+                                                <span className="text-sm font-medium text-white">Download MP3</span>
+                                            </a>
+
+                                            {/* Quick Publish Label */}
+                                            <span className="text-xs text-white/40 font-medium">Quick Publish</span>
+
+                                            {/* YouTube Button */}
+                                            <a
+                                                href={generatedMusicUrl ? `/studio?mode=video&audioUrl=${encodeURIComponent(generatedMusicUrl)}&aspect=16:9` : "#"}
+                                                className={cn(
+                                                    "flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all",
+                                                    generatedMusicUrl
+                                                        ? "bg-red-500/10 border-red-500/30 hover:bg-red-500/20"
+                                                        : "bg-white/5 border-white/5 opacity-50 cursor-not-allowed"
+                                                )}
+                                            >
+                                                <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center shadow-sm">
+                                                    <Youtube className="w-3 h-3 text-white" />
+                                                </div>
+                                                <span className="text-xs font-medium text-white">YouTube</span>
+                                                <span className="text-[10px] text-white/40">16:9</span>
+                                            </a>
+
+                                            {/* TikTok Button */}
+                                            <a
+                                                href={generatedMusicUrl ? `/studio?mode=video&audioUrl=${encodeURIComponent(generatedMusicUrl)}&aspect=9:16` : "#"}
+                                                className={cn(
+                                                    "flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all",
+                                                    generatedMusicUrl
+                                                        ? "bg-pink-500/10 border-pink-500/30 hover:bg-pink-500/20"
+                                                        : "bg-white/5 border-white/5 opacity-50 cursor-not-allowed"
+                                                )}
+                                            >
+                                                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-pink-500 to-cyan-400 flex items-center justify-center shadow-sm">
+                                                    <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="currentColor">
                                                         <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
                                                     </svg>
-                                                    <div>
-                                                        <p className="text-sm font-medium text-white">TikTok</p>
-                                                        <p className="text-xs text-white/50">9:16 Portrait</p>
-                                                    </div>
+                                                </div>
+                                                <span className="text-xs font-medium text-white">TikTok</span>
+                                                <span className="text-[10px] text-white/40">9:16</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key="tts"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="space-y-5"
+                                >
+                                    {/* TTS Text Input */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-white/70">
+                                            Enter text to speak
+                                        </label>
+                                        <Textarea
+                                            value={ttsText}
+                                            onChange={(e) => setTtsText(e.target.value)}
+                                            placeholder="Enter the text you want to convert to speech..."
+                                            className="min-h-[120px] bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-none"
+                                        />
+                                        <p className="text-xs text-white/40">
+                                            {ttsText.length} characters
+                                        </p>
+                                    </div>
+
+                                    {/* Voice Model Selection */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-white/70">
+                                            Voice Model
+                                        </label>
+                                        <Select value={ttsModel} onValueChange={setTtsModel}>
+                                            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent className="bg-zinc-900 border-white/10">
+                                                {TTS_MODELS.map((model) => (
+                                                    <SelectItem
+                                                        key={model.id}
+                                                        value={model.id}
+                                                        className="text-white hover:bg-white/10"
+                                                    >
+                                                        <div className="flex flex-col">
+                                                            <span>{model.name}</span>
+                                                            <span className="text-xs text-white/40">
+                                                                {model.description}
+                                                            </span>
+                                                        </div>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    {/* Generated TTS Preview */}
+                                    {generatedTTSUrl && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: "auto" }}
+                                            className="p-4 rounded-lg bg-purple-500/10 border border-purple-500/20"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <button
+                                                    onClick={() => setIsPlaying(!isPlaying)}
+                                                    className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center"
+                                                >
+                                                    {isPlaying ? (
+                                                        <Pause className="w-5 h-5 text-white" />
+                                                    ) : (
+                                                        <Play className="w-5 h-5 text-white ml-0.5" />
+                                                    )}
+                                                </button>
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-medium text-white">Generated Speech</p>
+                                                    <p className="text-xs text-white/50">{ttsText.length} characters</p>
+                                                </div>
+                                                <a
+                                                    href={generatedTTSUrl}
+                                                    download
+                                                    className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                                                >
+                                                    <Download className="w-4 h-4 text-white" />
                                                 </a>
                                             </div>
-                                            <p className="text-xs text-white/40 mt-2 text-center">
-                                                Create a video with visualizer and your music
-                                            </p>
                                         </motion.div>
                                     )}
                                 </motion.div>
                             )}
-                        </motion.div>
-                    ) : (
-                        <motion.div
-                            key="tts"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="space-y-5"
-                        >
-                            {/* TTS Text Input */}
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-white/70">
-                                    Enter text to speak
-                                </label>
-                                <Textarea
-                                    value={ttsText}
-                                    onChange={(e) => setTtsText(e.target.value)}
-                                    placeholder="Enter the text you want to convert to speech..."
-                                    className="min-h-[120px] bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-none"
-                                />
-                                <p className="text-xs text-white/40">
-                                    {ttsText.length} characters
-                                </p>
-                            </div>
+                        </AnimatePresence>
 
-                            {/* Voice Model Selection */}
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-white/70">
-                                    Voice Model
-                                </label>
-                                <Select value={ttsModel} onValueChange={setTtsModel}>
-                                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-zinc-900 border-white/10">
-                                        {TTS_MODELS.map((model) => (
-                                            <SelectItem
-                                                key={model.id}
-                                                value={model.id}
-                                                className="text-white hover:bg-white/10"
-                                            >
-                                                <div className="flex flex-col">
-                                                    <span>{model.name}</span>
-                                                    <span className="text-xs text-white/40">
-                                                        {model.description}
-                                                    </span>
-                                                </div>
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            {/* Generated TTS Preview */}
-                            {generatedTTSUrl && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: "auto" }}
-                                    className="p-4 rounded-lg bg-purple-500/10 border border-purple-500/20"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <button
-                                            onClick={() => setIsPlaying(!isPlaying)}
-                                            className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center"
-                                        >
-                                            {isPlaying ? (
-                                                <Pause className="w-5 h-5 text-white" />
-                                            ) : (
-                                                <Play className="w-5 h-5 text-white ml-0.5" />
-                                            )}
-                                        </button>
-                                        <div className="flex-1">
-                                            <p className="text-sm font-medium text-white">Generated Speech</p>
-                                            <p className="text-xs text-white/50">{ttsText.length} characters</p>
-                                        </div>
-                                        <a
-                                            href={generatedTTSUrl}
-                                            download
-                                            className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-                                        >
-                                            <Download className="w-4 h-4 text-white" />
-                                        </a>
-                                    </div>
-                                </motion.div>
+                        {/* Generate Button */}
+                        <Button
+                            onClick={mode === "music" ? handleGenerateMusic : handleGenerateTTS}
+                            disabled={isGenerating || (mode === "music" ? !musicPrompt.trim() : !ttsText.trim())}
+                            className={cn(
+                                "w-full h-12 font-semibold transition-all",
+                                mode === "music"
+                                    ? "bg-gradient-to-r from-primary to-orange-500 hover:from-primary/90 hover:to-orange-500/90"
+                                    : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                             )}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                        >
+                            {isGenerating ? (
+                                <>
+                                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                                    Generating...
+                                </>
+                            ) : (
+                                <>
+                                    <Sparkles className="w-5 h-5 mr-2" />
+                                    Generate {mode === "music" ? "Music" : "Speech"}
+                                    <span className="ml-2 text-sm opacity-70">
+                                        (~{(estimatedCost / 1000).toFixed(0)}K Phở)
+                                    </span>
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                </main>
 
-                {/* Generate Button */}
-                <Button
-                    onClick={mode === "music" ? handleGenerateMusic : handleGenerateTTS}
-                    disabled={isGenerating || (mode === "music" ? !musicPrompt.trim() : !ttsText.trim())}
-                    className={cn(
-                        "w-full h-12 font-semibold transition-all",
-                        mode === "music"
-                            ? "bg-gradient-to-r from-primary to-orange-500 hover:from-primary/90 hover:to-orange-500/90"
-                            : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                    )}
-                >
-                    {isGenerating ? (
-                        <>
-                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                            Generating...
-                        </>
-                    ) : (
-                        <>
-                            <Sparkles className="w-5 h-5 mr-2" />
-                            Generate {mode === "music" ? "Music" : "Speech"}
-                            <span className="ml-2 text-sm opacity-70">
-                                (~{(estimatedCost / 1000).toFixed(0)}K Phở)
-                            </span>
-                        </>
-                    )}
-                </Button>
+                {/* RIGHT SIDEBAR: History Panel (Liquid Glass Style) */}
+                <aside className="w-[240px] min-w-[240px] border-l border-[#8B5CF6]/20 bg-gradient-to-b from-[#0D0D15]/95 to-[#0A0A0F]/95 backdrop-blur-xl flex flex-col overflow-hidden shadow-[inset_0_0_30px_rgba(139,92,246,0.03)]">
+                    {/* History Header with Glow */}
+                    <div className="px-4 py-3.5 border-b border-white/10 flex items-center justify-between bg-[#0D0D15]/50">
+                        <span className="text-xs font-semibold text-white/60 uppercase tracking-wider">History Panel</span>
+                        <span className="w-6 h-6 bg-[#8B5CF6] rounded-full text-[10px] font-bold text-white flex items-center justify-center shadow-[0_0_12px_rgba(139,92,246,0.5)]">
+                            {audioHistory.length}
+                        </span>
+                    </div>
+
+                    {/* History Items with Gradient Waveform Previews */}
+                    <div className="flex-1 overflow-y-auto p-3 space-y-3">
+                        {audioHistory.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                                <div className="w-14 h-14 rounded-full bg-[#8B5CF6]/10 flex items-center justify-center mb-3">
+                                    <History className="w-7 h-7 text-[#8B5CF6]/40" />
+                                </div>
+                                <p className="text-xs text-white/50 font-medium">No audio history yet</p>
+                                <p className="text-[10px] text-white/30 mt-1">Generated audio will appear here</p>
+                            </div>
+                        ) : (
+                            audioHistory.slice(0, 5).map((item, index) => (
+                                <motion.div
+                                    key={item.id}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: index * 0.1 }}
+                                    className="p-3 rounded-xl bg-[#15151A]/80 backdrop-blur-sm border border-white/10 hover:border-[#8B5CF6]/40 hover:shadow-[0_0_15px_rgba(139,92,246,0.1)] transition-all cursor-pointer group"
+                                >
+                                    {/* Play Button + Title */}
+                                    <div className="flex items-center gap-3 mb-2.5">
+                                        <button
+                                            className="w-8 h-8 rounded-full bg-gradient-to-br from-[#8B5CF6] to-[#A855F7] flex items-center justify-center shadow-[0_0_10px_rgba(139,92,246,0.4)] group-hover:shadow-[0_0_15px_rgba(139,92,246,0.6)] transition-shadow"
+                                        >
+                                            <Play className="w-3.5 h-3.5 text-white ml-0.5" />
+                                        </button>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-white truncate">
+                                                {item.style || "Generated Audio"}
+                                            </p>
+                                            <p className="text-[10px] text-white/40">
+                                                {item.mood && `${item.mood} • `}{item.duration}s
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Gradient Waveform Preview (Pink to Purple like mockup) */}
+                                    <div className="h-10 bg-gradient-to-r from-[#0A0A0F] to-[#0D0D15] rounded-lg overflow-hidden flex items-center justify-center px-2 border border-white/5">
+                                        <div className="flex items-end gap-0.5 h-full py-1.5">
+                                            {Array.from({ length: 35 }).map((_, i) => {
+                                                const height = 20 + Math.sin(i * 0.5) * 15 + Math.random() * 10;
+                                                const hue = 280 + (i / 35) * 40; // Purple to pink gradient
+                                                return (
+                                                    <div
+                                                        key={i}
+                                                        className="w-1 rounded-full transition-all"
+                                                        style={{
+                                                            height: `${height}%`,
+                                                            background: `linear-gradient(to top, hsl(${hue}, 80%, 50%), hsl(${hue}, 90%, 70%))`,
+                                                            opacity: 0.8
+                                                        }}
+                                                    />
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    {/* Duration Label */}
+                                    <p className="text-[10px] text-white/30 mt-2 text-right">
+                                        {new Date(item.createdAt).toLocaleDateString()}
+                                    </p>
+                                </motion.div>
+                            ))
+                        )}
+                    </div>
+                </aside>
             </div>
         </div>
     )

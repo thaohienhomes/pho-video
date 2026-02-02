@@ -13,6 +13,7 @@ import {
     refundPhoPoints,
     checkSufficientPhoPoints,
 } from "@/lib/pho-points/transactions"
+import { trackGeneration, trackGenerationStart, trackRefund, trackError } from "@/lib/analytics/server"
 
 // Phở Points cost mapping for video generation (Updated with new tiers)
 const MODEL_PHO_POINTS_COSTS: Record<string, Record<string, number>> = {
@@ -195,6 +196,14 @@ export async function POST(request: NextRequest) {
             )
         }
 
+        // Track generation start for analytics
+        trackGenerationStart({
+            userId: user.id,
+            modelId: model,
+            mode: isI2VMode ? 'i2v' : 't2v',
+            cost: phoPointsCost,
+        })
+
         // Create generation record with 'pending' status
         const generation = await createGeneration({
             userId: user.id,
@@ -237,6 +246,21 @@ export async function POST(request: NextRequest) {
             )
             console.log(`💸 [API] Phở Points refunded: ${formatPhoPoints(phoPointsCost)}. Balance restored: ${formatPhoPoints(refundResult.newBalance)}`)
 
+            // Track failed generation and refund
+            trackGeneration({
+                userId: user.id,
+                modelId: model,
+                mode: isI2VMode ? 'i2v' : 't2v',
+                cost: phoPointsCost,
+                success: false,
+            })
+            trackRefund({
+                userId: user.id,
+                amount: phoPointsCost,
+                reason: 'generation_failed',
+                modelId: model,
+            })
+
             // Update generation record to failed
             await updateGeneration(generation.id, { status: 'failed' })
 
@@ -271,6 +295,15 @@ export async function POST(request: NextRequest) {
         await updateGeneration(generation.id, {
             status: 'completed',
             videoUrl: finalVideoUrl,
+        })
+
+        // Track successful generation
+        trackGeneration({
+            userId: user.id,
+            modelId: model,
+            mode: isI2VMode ? 'i2v' : 't2v',
+            cost: phoPointsCost,
+            success: true,
         })
 
         console.log(`✅ [API] Video generated successfully`)

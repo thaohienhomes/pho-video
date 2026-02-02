@@ -7,16 +7,7 @@ import Animated, { FadeInUp, FadeInDown } from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 
-const COLORS = {
-    primary: '#F0421C',
-    background: '#0A0A0A',
-    surface: '#171717',
-    surfaceSelected: 'rgba(240,66,28,0.1)',
-    text: '#FFFFFF',
-    textSecondary: '#A3A3A3',
-    textMuted: '#737373',
-    border: 'rgba(255,255,255,0.1)',
-};
+import { COLORS } from '../constants/Colors';
 
 const PACKAGES = [
     { id: 'starter', name: 'Starter', price: '$4.99', credits: 200, emoji: '⚡', popular: false },
@@ -142,7 +133,7 @@ const styles = StyleSheet.create({
         width: 80,
         height: 80,
         borderRadius: 40,
-        backgroundColor: 'rgba(240,66,28,0.1)',
+        backgroundColor: COLORS.primaryMuted,
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 16,
@@ -173,7 +164,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 8,
         width: '48%',
-        backgroundColor: 'rgba(255,255,255,0.03)',
+        backgroundColor: COLORS.glass,
         padding: 12,
         borderRadius: 12,
     },
@@ -188,7 +179,7 @@ const styles = StyleSheet.create({
         marginBottom: 24,
     },
     packageItem: {
-        backgroundColor: COLORS.surface,
+        backgroundColor: COLORS.card,
         borderRadius: 20,
         padding: 20,
         borderWidth: 1,
@@ -197,7 +188,7 @@ const styles = StyleSheet.create({
     },
     packageItemPopular: {
         borderColor: COLORS.primary,
-        backgroundColor: 'rgba(240,66,28,0.05)',
+        backgroundColor: COLORS.primaryMuted,
         borderWidth: 2,
     },
     popularBadge: {
@@ -247,7 +238,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     buyButton: {
-        backgroundColor: 'rgba(255,255,255,0.08)',
+        backgroundColor: COLORS.border,
         paddingVertical: 14,
         borderRadius: 14,
         alignItems: 'center',

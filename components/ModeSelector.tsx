@@ -1,6 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
+import { useTranslations } from "next-intl"
 import {
     Film,
     ImageIcon,
@@ -18,77 +19,89 @@ export type CreationMode = "video" | "image" | "audio" | "upscale" | "story" | "
 
 interface ModeConfig {
     id: CreationMode
-    label: string
+    labelKey: string
     icon: LucideIcon
-    description: string
+    descKey: string
+    /** Active text/icon color */
     color: string
+    /** Gradient for active state background */
     gradient: string
+    /** Glow color for active state */
+    glowColor: string
 }
 
 export const CREATION_MODES: ModeConfig[] = [
     {
         id: "video",
-        label: "Video",
+        labelKey: "video",
         icon: Film,
-        description: "Text-to-Video, Image-to-Video",
+        descKey: "video_desc",
         color: "text-primary",
         gradient: "from-primary/20 to-orange-500/10",
+        glowColor: "rgba(240, 66, 28, 0.4)",
     },
     {
         id: "image",
-        label: "Image",
+        labelKey: "image",
         icon: ImageIcon,
-        description: "AI Image Generation",
+        descKey: "image_desc",
         color: "text-blue-400",
         gradient: "from-blue-500/20 to-cyan-500/10",
+        glowColor: "rgba(59, 130, 246, 0.4)",
     },
     {
         id: "audio",
-        label: "Audio",
+        labelKey: "audio",
         icon: Music,
-        description: "Music & TTS",
+        descKey: "audio_desc",
         color: "text-purple-400",
         gradient: "from-purple-500/20 to-pink-500/10",
+        glowColor: "rgba(168, 85, 247, 0.4)",
     },
     {
         id: "lipsync",
-        label: "Lip Sync",
+        labelKey: "lipsync",
         icon: Mic,
-        description: "Talking Head Videos",
+        descKey: "lipsync_desc",
         color: "text-pink-400",
         gradient: "from-pink-500/20 to-rose-500/10",
+        glowColor: "rgba(236, 72, 153, 0.4)",
     },
     {
         id: "upscale",
-        label: "Upscale",
+        labelKey: "upscale",
         icon: Maximize2,
-        description: "Enhance Video Quality",
+        descKey: "upscale_desc",
         color: "text-amber-400",
         gradient: "from-amber-500/20 to-yellow-500/10",
+        glowColor: "rgba(245, 158, 11, 0.4)",
     },
     {
         id: "story",
-        label: "Story",
+        labelKey: "story",
         icon: BookOpen,
-        description: "Multi-scene Storyboard",
+        descKey: "story_desc",
         color: "text-violet-400",
         gradient: "from-violet-500/20 to-purple-500/10",
+        glowColor: "rgba(139, 92, 246, 0.4)",
     },
     {
         id: "magic",
-        label: "Magic",
+        labelKey: "magic",
         icon: Sparkles,
-        description: "One-click Presets",
+        descKey: "magic_desc",
         color: "text-emerald-400",
         gradient: "from-emerald-500/20 to-teal-500/10",
+        glowColor: "rgba(52, 211, 153, 0.4)",
     },
     {
         id: "tryon",
-        label: "Try-on",
+        labelKey: "tryon",
         icon: Shirt,
-        description: "Virtual Clothing Try-on",
+        descKey: "tryon_desc",
         color: "text-rose-400",
         gradient: "from-rose-500/20 to-pink-500/10",
+        glowColor: "rgba(251, 113, 133, 0.4)",
     },
 ]
 
@@ -99,15 +112,34 @@ interface ModeSelectorProps {
     compact?: boolean
 }
 
+/**
+ * ModeSelector - Pixel Perfect Implementation
+ * 
+ * Specs from component-specs.md:
+ * - Grid: 2 columns x 4 rows (for sidebar) or horizontal scroll
+ * - Gap: 8px
+ * - Button Size: 72px x 72px (grid) or flexible (horizontal)
+ * - Border Radius: 12px
+ * - Active: background rgba(240, 66, 28, 0.20), border rgba(240, 66, 28, 0.60)
+ * - Icon: 24px
+ * - Label: 12px, font-weight: 500
+ */
 export function ModeSelector({
     selectedMode,
     onModeChange,
     className,
     compact = false
 }: ModeSelectorProps) {
+    const t = useTranslations("studio.modes")
+
     return (
         <div className={cn(
-            "grid grid-cols-6 gap-1 p-1.5 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-md",
+            // Pixel-perfect: horizontal scroll with proper spacing
+            "flex gap-2 p-2",
+            "bg-[var(--pho-glass-light)] rounded-[var(--pho-radius-xl)]",
+            "border border-[var(--pho-border-default)]",
+            "backdrop-blur-[var(--pho-blur-lg)]",
+            "overflow-x-auto scrollbar-hide",
             className
         )}>
             {CREATION_MODES.map((mode) => {
@@ -121,33 +153,45 @@ export function ModeSelector({
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         className={cn(
-                            "relative flex flex-col items-center justify-center rounded-xl cursor-pointer transition-all duration-200",
-                            compact ? "py-2" : "py-2.5",
+                            // Base styles - pixel perfect dimensions
+                            "relative flex flex-col items-center justify-center",
+                            "min-w-[64px] py-2.5 px-3",
+                            "rounded-[var(--pho-radius-lg)]",
+                            "cursor-pointer",
+                            "transition-all duration-[var(--pho-duration-normal)]",
+                            // Active state
                             isActive
-                                ? `bg-gradient-to-b ${mode.gradient} border border-white/20 shadow-lg`
-                                : "bg-transparent border border-transparent hover:bg-white/5"
+                                ? `bg-gradient-to-b ${mode.gradient} border border-[var(--pho-border-active)]`
+                                : "bg-transparent border border-transparent hover:bg-[var(--pho-glass-light)]"
                         )}
+                        style={{
+                            boxShadow: isActive ? `0 0 20px ${mode.glowColor}` : 'none'
+                        }}
                     >
-                        {/* Active indicator */}
+                        {/* Active indicator overlay */}
                         {isActive && (
                             <motion.div
                                 layoutId="activeModeIndicator"
-                                className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent rounded-xl"
+                                className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent rounded-[var(--pho-radius-lg)]"
                                 transition={{ type: "spring", duration: 0.4 }}
                             />
                         )}
 
+                        {/* Icon - 20px for compact, 24px for full */}
                         <Icon className={cn(
-                            "w-4 h-4 transition-colors relative z-10",
-                            isActive ? mode.color : "text-white/50"
+                            "transition-colors relative z-10",
+                            compact ? "w-5 h-5" : "w-5 h-5",
+                            isActive ? mode.color : "text-[var(--pho-text-muted)]"
                         )} />
 
+                        {/* Label - 12px font */}
                         {!compact && (
                             <span className={cn(
-                                "text-[10px] font-medium mt-1 relative z-10 transition-colors truncate w-full text-center",
-                                isActive ? "text-white" : "text-white/50"
+                                "text-[12px] font-medium mt-1.5 relative z-10",
+                                "transition-colors truncate w-full text-center",
+                                isActive ? "text-[var(--pho-text-primary)]" : "text-[var(--pho-text-muted)]"
                             )}>
-                                {mode.label}
+                                {t(mode.labelKey)}
                             </span>
                         )}
                     </motion.button>
@@ -157,13 +201,28 @@ export function ModeSelector({
     )
 }
 
-// Two-row layout for very narrow panels
+/**
+ * ModeSelectorGrid - 2-column grid for sidebar
+ * 
+ * Pixel-perfect specs:
+ * - Grid: 2 columns
+ * - Gap: 8px
+ * - Button: 72px height
+ * - Border Radius: 12px
+ */
 export function ModeSelectorGrid({
     selectedMode,
     onModeChange
 }: Pick<ModeSelectorProps, 'selectedMode' | 'onModeChange'>) {
+    const t = useTranslations("studio.modes")
+
     return (
-        <div className="grid grid-cols-3 gap-2 p-2 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-md">
+        <div className={cn(
+            "grid grid-cols-2 gap-2 p-3",
+            "bg-[var(--pho-glass-light)] rounded-[var(--pho-radius-xl)]",
+            "border border-[var(--pho-border-default)]",
+            "backdrop-blur-[var(--pho-blur-lg)]"
+        )}>
             {CREATION_MODES.map((mode) => {
                 const Icon = mode.icon
                 const isActive = selectedMode === mode.id
@@ -175,30 +234,39 @@ export function ModeSelectorGrid({
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         className={cn(
-                            "relative flex flex-col items-center justify-center rounded-xl cursor-pointer transition-all duration-200 py-3",
+                            // Pixel-perfect: 72px height
+                            "relative flex flex-col items-center justify-center",
+                            "h-[72px] rounded-[var(--pho-radius-lg)]",
+                            "cursor-pointer",
+                            "transition-all duration-[var(--pho-duration-normal)]",
                             isActive
-                                ? `bg-gradient-to-b ${mode.gradient} border border-white/20 shadow-lg`
-                                : "bg-transparent border border-transparent hover:bg-white/5"
+                                ? `bg-gradient-to-b ${mode.gradient} border border-[var(--pho-border-active)]`
+                                : "bg-transparent border border-transparent hover:bg-[var(--pho-glass-light)]"
                         )}
+                        style={{
+                            boxShadow: isActive ? `0 0 20px ${mode.glowColor}` : 'none'
+                        }}
                     >
                         {isActive && (
                             <motion.div
                                 layoutId="activeModeGridIndicator"
-                                className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent rounded-xl"
+                                className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent rounded-[var(--pho-radius-lg)]"
                                 transition={{ type: "spring", duration: 0.4 }}
                             />
                         )}
 
+                        {/* Icon - 24px as per spec */}
                         <Icon className={cn(
-                            "w-5 h-5 transition-colors relative z-10",
-                            isActive ? mode.color : "text-white/50"
+                            "w-6 h-6 transition-colors relative z-10",
+                            isActive ? mode.color : "text-[var(--pho-text-muted)]"
                         )} />
 
+                        {/* Label - 12px, font-weight 500 */}
                         <span className={cn(
-                            "text-xs font-medium mt-1 relative z-10 transition-colors",
-                            isActive ? "text-white" : "text-white/50"
+                            "text-[12px] font-medium mt-1.5 relative z-10 transition-colors",
+                            isActive ? "text-[var(--pho-text-primary)]" : "text-[var(--pho-text-muted)]"
                         )}>
-                            {mode.label}
+                            {t(mode.labelKey)}
                         </span>
                     </motion.button>
                 )
@@ -207,7 +275,9 @@ export function ModeSelectorGrid({
     )
 }
 
-// Compact horizontal version for mobile
+/**
+ * ModeSelectorCompact - Horizontal scroll version for mobile
+ */
 export function ModeSelectorCompact({
     selectedMode,
     onModeChange

@@ -1,24 +1,25 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ImageBackground, Dimensions, Alert } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
-import { Check, X, Zap, Sparkles, Crown } from "lucide-react-native";
+import { Check, X, Zap, Sparkles, Crown, Building2 } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import * as Linking from "expo-linking";
 
+import { COLORS } from "../constants/Colors";
 const { width } = Dimensions.get("window");
 
-// SYNCED with web app: app/[locale]/(main)/account/subscription/page.tsx
+// SYNCED with web app: app/[locale]/(main)/pricing/page.tsx
+// Last sync: 2026-02-02
 const PLANS = [
     {
         id: "free",
         name: "Free",
         nameVi: "Miễn Phí",
-        price: "$0",
-        priceVi: "0đ",
+        monthlyPrice: 0,
+        annualPrice: 0,
         points: "50,000",
-        period: "/mo",
         features: ["50,000 Phở Points/month", "5s max video", "Standard models", "3 daily generations"],
         highlight: false,
         color: "#525252",
@@ -28,10 +29,9 @@ const PLANS = [
         id: "starter",
         name: "Starter",
         nameVi: "Khởi Đầu",
-        price: "$9",
-        priceVi: "199.000đ",
+        monthlyPrice: 9,
+        annualPrice: 86.40,
         points: "1,000,000",
-        period: "/mo",
         features: ["1,000,000 Phở Points/month", "10s max video", "No watermark", "50 daily generations"],
         highlight: false,
         color: "#3B82F6",
@@ -41,32 +41,43 @@ const PLANS = [
         id: "creator",
         name: "Creator",
         nameVi: "Sáng Tạo",
-        price: "$24",
-        priceVi: "499.000đ",
+        monthlyPrice: 24,
+        annualPrice: 230.40,
         points: "3,000,000",
-        period: "/mo",
         features: ["3,000,000 Phở Points/month", "20s max video", "Pro models (Kling, LTX)", "4K upscaling", "200 daily generations"],
         highlight: true,
-        color: "#F0421C",
+        color: COLORS.primary,
         icon: Sparkles,
     },
     {
         id: "pro",
         name: "Pro",
         nameVi: "Chuyên Nghiệp",
-        price: "$49",
-        priceVi: "999.000đ",
+        monthlyPrice: 49,
+        annualPrice: 470.40,
         points: "7,000,000",
-        period: "/mo",
         features: ["7,000,000 Phở Points/month", "Unlimited video duration", "All models + early access", "API access", "Priority support"],
         highlight: false,
-        color: "#A855F7",
+        color: COLORS.accent.purple,
         icon: Crown,
+    },
+    {
+        id: "enterprise",
+        name: "Enterprise",
+        nameVi: "Doanh Nghiệp",
+        monthlyPrice: 99,
+        annualPrice: 950.40,
+        points: "20,000,000",
+        features: ["20,000,000 Phở Points/month", "Priority generation queue", "Custom AI training (LoRA)", "White-label API", "Dedicated account manager"],
+        highlight: false,
+        color: "#F59E0B",
+        icon: Building2,
     }
 ];
 
 export default function PaywallScreen() {
     const router = useRouter();
+    const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
 
     const handleSubscribe = (planId: string) => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -76,11 +87,14 @@ export default function PaywallScreen() {
             return;
         }
 
+        const plan = PLANS.find(p => p.id === planId);
+        const price = billingCycle === "monthly" ? plan?.monthlyPrice : plan?.annualPrice;
+
         // Open web pricing page for checkout
         // In production: integrate with in-app purchases or deep link to checkout
         Alert.alert(
             "Subscribe",
-            `Upgrade to ${PLANS.find(p => p.id === planId)?.name} plan?\n\nThis will open the web checkout.`,
+            `Upgrade to ${plan?.name} plan for $${price?.toFixed(0)}/${billingCycle === "monthly" ? "mo" : "year"}?\n\nThis will open the web checkout.`,
             [
                 { text: "Cancel", style: "cancel" },
                 {
@@ -103,8 +117,8 @@ export default function PaywallScreen() {
                 style={styles.backgroundImage}
             >
                 <LinearGradient
-                    colors={['rgba(10,10,10,0.6)', '#0A0A0A'] as const}
-                    style={styles.gradientOverlay}
+                    colors={[COLORS.background, COLORS.background]}
+                    style={[styles.gradientOverlay, { opacity: 0.9 }]}
                 />
             </ImageBackground>
 
@@ -119,14 +133,36 @@ export default function PaywallScreen() {
                 </View>
 
                 <View style={styles.heroSection}>
-                    <Text style={styles.heroTitle}>Unlock Your <Text style={{ color: "#F0421C" }}>Studio</Text></Text>
+                    <Text style={styles.heroTitle}>Unlock Your <Text style={{ color: COLORS.primary }}>Studio</Text></Text>
                     <Text style={styles.heroSubtitle}>Create cinematic videos without limits.</Text>
+                </View>
+
+                {/* Billing Toggle */}
+                <View style={styles.billingToggle}>
+                    <TouchableOpacity
+                        style={[styles.toggleButton, billingCycle === "monthly" && styles.toggleButtonActive]}
+                        onPress={() => setBillingCycle("monthly")}
+                    >
+                        <Text style={[styles.toggleText, billingCycle === "monthly" && styles.toggleTextActive]}>Monthly</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.toggleButton, billingCycle === "annual" && styles.toggleButtonActive]}
+                        onPress={() => setBillingCycle("annual")}
+                    >
+                        <Text style={[styles.toggleText, billingCycle === "annual" && styles.toggleTextActive]}>Annual</Text>
+                        <View style={styles.saveBadge}>
+                            <Text style={styles.saveBadgeText}>-20%</Text>
+                        </View>
+                    </TouchableOpacity>
                 </View>
 
                 {/* Plans List */}
                 <View style={styles.plansContainer}>
                     {PLANS.map((plan) => {
                         const IconComponent = plan.icon;
+                        const price = billingCycle === "monthly" ? plan.monthlyPrice : plan.annualPrice / 12;
+                        const annualSavings = (plan.monthlyPrice * 12) - plan.annualPrice;
+
                         return (
                             <View
                                 key={plan.id}
@@ -148,14 +184,19 @@ export default function PaywallScreen() {
                                         <Text style={styles.planName}>{plan.name}</Text>
                                     </View>
                                     <View style={styles.priceRow}>
-                                        <Text style={styles.planPrice}>{plan.price}</Text>
-                                        <Text style={styles.planPeriod}>{plan.period}</Text>
+                                        <Text style={styles.planPrice}>${price.toFixed(0)}</Text>
+                                        <Text style={styles.planPeriod}>/mo</Text>
                                     </View>
+                                    {billingCycle === "annual" && plan.monthlyPrice > 0 && (
+                                        <View style={styles.savingsRow}>
+                                            <Text style={styles.savingsText}>Save ${annualSavings.toFixed(0)}/year</Text>
+                                        </View>
+                                    )}
                                 </View>
 
                                 <View style={styles.creditsRow}>
                                     <Text style={styles.creditsEmoji}>🍜</Text>
-                                    <Text style={[styles.creditsText, plan.highlight && { color: "#F0421C" }]}>
+                                    <Text style={[styles.creditsText, plan.highlight && { color: COLORS.primary }]}>
                                         {plan.points} Phở Points/mo
                                     </Text>
                                 </View>
@@ -165,7 +206,7 @@ export default function PaywallScreen() {
                                 <View style={styles.featuresList}>
                                     {plan.features.map((feature, i) => (
                                         <View key={i} style={styles.featureItem}>
-                                            <Check size={14} color={plan.highlight ? "#F0421C" : "#A3A3A3"} />
+                                            <Check size={14} color={plan.highlight ? COLORS.primary : COLORS.textMuted} />
                                             <Text style={styles.featureText}>{feature}</Text>
                                         </View>
                                     ))}
@@ -180,7 +221,7 @@ export default function PaywallScreen() {
                                     onPress={() => handleSubscribe(plan.id)}
                                 >
                                     <Text style={styles.actionButtonText}>
-                                        {plan.price === "$0" ? "Current Plan" : "Subscribe"}
+                                        {plan.monthlyPrice === 0 ? "Current Plan" : plan.id === "enterprise" ? "Contact Sales" : "Subscribe"}
                                     </Text>
                                 </TouchableOpacity>
                             </View>
@@ -201,7 +242,7 @@ export default function PaywallScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#0A0A0A",
+        backgroundColor: COLORS.background,
     },
     backgroundImage: {
         ...StyleSheet.absoluteFillObject,
@@ -225,7 +266,7 @@ const styles = StyleSheet.create({
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: "rgba(255,255,255,0.1)",
+        backgroundColor: COLORS.surface,
         justifyContent: "center",
         alignItems: "center",
     },
@@ -246,7 +287,7 @@ const styles = StyleSheet.create({
         textAlign: "center",
     },
     heroSubtitle: {
-        color: "#A3A3A3",
+        color: COLORS.textMuted,
         fontSize: 16,
         marginTop: 8,
         textAlign: "center",
@@ -256,7 +297,7 @@ const styles = StyleSheet.create({
         gap: 16,
     },
     planCard: {
-        backgroundColor: "rgba(20,20,20,0.8)",
+        backgroundColor: COLORS.card,
         borderRadius: 24,
         padding: 24,
         borderWidth: 1,
@@ -264,14 +305,14 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
     },
     planCardActive: {
-        backgroundColor: "rgba(30,30,30,0.9)",
+        backgroundColor: COLORS.glass,
         transform: [{ scale: 1.02 }],
     },
     popularBadge: {
         position: "absolute",
         top: 0,
         right: 0,
-        backgroundColor: "#F0421C",
+        backgroundColor: COLORS.primary,
         paddingHorizontal: 12,
         paddingVertical: 4,
         borderBottomLeftRadius: 12,
@@ -357,5 +398,52 @@ const styles = StyleSheet.create({
         fontSize: 12,
         textAlign: "center",
         marginTop: 24,
+    },
+    billingToggle: {
+        flexDirection: "row",
+        backgroundColor: "rgba(255,255,255,0.05)",
+        borderRadius: 12,
+        padding: 4,
+        marginHorizontal: 20,
+        marginBottom: 24,
+    },
+    toggleButton: {
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        paddingVertical: 12,
+        borderRadius: 8,
+        gap: 6,
+    },
+    toggleButtonActive: {
+        backgroundColor: "white",
+    },
+    toggleText: {
+        color: "rgba(255,255,255,0.6)",
+        fontWeight: "600",
+        fontSize: 14,
+    },
+    toggleTextActive: {
+        color: "#0A0A0A",
+    },
+    saveBadge: {
+        backgroundColor: "#22C55E",
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 4,
+    },
+    saveBadgeText: {
+        color: "white",
+        fontSize: 10,
+        fontWeight: "bold",
+    },
+    savingsRow: {
+        marginTop: 4,
+    },
+    savingsText: {
+        color: "#22C55E",
+        fontSize: 12,
+        fontWeight: "600",
     },
 });

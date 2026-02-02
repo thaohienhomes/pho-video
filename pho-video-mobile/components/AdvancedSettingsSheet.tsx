@@ -33,6 +33,9 @@ export interface AdvancedSettingsSheetRef {
 }
 
 const MODELS = [
+    { id: 'wan_2_1', name: 'Wan 2.1', description: 'Next-gen Photorealism', emoji: '🚀' },
+    { id: 'luma_ray_2', name: 'Luma Ray 2', description: 'Advanced Physics', emoji: '💡' },
+    { id: 'sana', name: 'Sana', description: 'Artistic Control', emoji: '🎨' },
     { id: 'kling', name: 'Kling', description: 'Fast & Cinematic', emoji: '🎬' },
     { id: 'luma', name: 'Luma', description: 'Realistic', emoji: '✨' },
     { id: 'runway', name: 'Runway', description: 'Professional', emoji: '🎥' },
@@ -61,16 +64,7 @@ const CAMERA_MOTIONS = [
 
 const INTENSITY_STEPS = [10, 30, 50, 70, 100];
 
-const COLORS = {
-    primary: '#F0421C',
-    background: '#0A0A0A',
-    sheetBg: '#171717',
-    surface: '#262626',
-    text: '#FFFFFF',
-    textSecondary: '#A3A3A3',
-    textMuted: '#737373',
-    border: 'rgba(255,255,255,0.1)',
-};
+import { COLORS } from '../constants/Colors';
 
 const ToggleSwitch = ({ value, onToggle }: { value: boolean; onToggle: () => void }) => {
     const knobPosition = useSharedValue(value ? 24 : 0);
@@ -90,7 +84,7 @@ const ToggleSwitch = ({ value, onToggle }: { value: boolean; onToggle: () => voi
         <Pressable
             style={[
                 styles.toggleTrack,
-                { backgroundColor: value ? COLORS.primary : '#525252' }
+                { backgroundColor: value ? COLORS.primary : COLORS.interactive }
             ]}
             onPress={onToggle}
         >
@@ -448,7 +442,7 @@ AdvancedSettingsSheet.displayName = 'AdvancedSettingsSheet';
 
 const styles = StyleSheet.create({
     sheetBackground: {
-        backgroundColor: COLORS.sheetBg,
+        backgroundColor: COLORS.card,
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
     },
@@ -459,7 +453,7 @@ const styles = StyleSheet.create({
     },
     sheetContainer: {
         flex: 1,
-        backgroundColor: COLORS.sheetBg,
+        backgroundColor: COLORS.card,
     },
     scrollContent: {
         paddingTop: 12,
@@ -469,7 +463,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 24,
         paddingBottom: 16,
         borderBottomWidth: 1,
-        borderBottomColor: 'rgba(255,255,255,0.08)',
+        borderBottomColor: COLORS.border,
     },
     headerTitle: {
         color: COLORS.text,
@@ -488,7 +482,7 @@ const styles = StyleSheet.create({
     },
     sectionBorder: {
         borderTopWidth: 1,
-        borderTopColor: 'rgba(255,255,255,0.08)',
+        borderTopColor: COLORS.border,
     },
     sectionLabel: {
         color: COLORS.textSecondary,
@@ -525,13 +519,13 @@ const styles = StyleSheet.create({
     modelIcon: {
         width: 48,
         height: 48,
-        backgroundColor: 'rgba(255,255,255,0.08)',
+        backgroundColor: COLORS.glass,
         borderRadius: 12,
         alignItems: 'center',
         justifyContent: 'center',
     },
     modelIconSelected: {
-        backgroundColor: 'rgba(240,66,28,0.2)',
+        backgroundColor: COLORS.primaryMuted,
     },
     modelEmoji: {
         fontSize: 24,
@@ -576,17 +570,17 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     ratioCardSelected: {
-        backgroundColor: 'rgba(240,66,28,0.15)',
+        backgroundColor: COLORS.primaryMuted,
         borderColor: COLORS.primary,
     },
     ratioRect: {
-        backgroundColor: 'rgba(255,255,255,0.1)',
+        backgroundColor: COLORS.glass,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.2)',
+        borderColor: COLORS.border,
         borderRadius: 8,
     },
     ratioRectSelected: {
-        backgroundColor: 'rgba(240,66,28,0.4)',
+        backgroundColor: COLORS.primaryGlow,
         borderColor: COLORS.primary,
     },
     ratioLabel: {
@@ -652,7 +646,7 @@ const styles = StyleSheet.create({
     toggleIcon: {
         width: 44,
         height: 44,
-        backgroundColor: 'rgba(240,66,28,0.15)',
+        backgroundColor: COLORS.primaryMuted,
         borderRadius: 12,
         alignItems: 'center',
         justifyContent: 'center',
@@ -692,9 +686,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 24,
         paddingTop: 16,
         paddingBottom: 32,
-        backgroundColor: COLORS.sheetBg,
+        backgroundColor: COLORS.card,
         borderTopWidth: 1,
-        borderTopColor: 'rgba(255,255,255,0.08)',
+        borderTopColor: COLORS.border,
     },
     applyButton: {
         backgroundColor: COLORS.primary,

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import { useTranslations } from "next-intl"
 import { motion, AnimatePresence, Reorder, useDragControls } from "framer-motion"
 import {
     BookOpen,
@@ -24,7 +25,11 @@ import {
     Copy,
     Image as ImageIcon,
     Clock,
-    Layers
+    Layers,
+    MapPin,
+    Palette,
+    Camera,
+    Search
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -54,6 +59,11 @@ interface Scene {
     videoUrl?: string
     status: "pending" | "generating" | "completed" | "failed"
     error?: string
+    // Mockup metadata fields
+    location?: string
+    time?: string
+    mood?: string
+    shotType?: string
 }
 
 const VIDEO_MODELS = [
@@ -107,7 +117,7 @@ function SceneCard({
     return (
         <motion.div
             layout
-            className="group relative p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all"
+            className="group relative p-4 rounded-[var(--pho-radius-xl)] bg-[var(--pho-glass-light)] border border-[var(--pho-border-default)] hover:border-[var(--pho-border-strong)] transition-all"
         >
             {/* Drag Handle */}
             <div
@@ -118,13 +128,25 @@ function SceneCard({
             </div>
 
             <div className="pl-6 space-y-3">
-                {/* Scene Header */}
+                {/* Scene Header - With padded numbered badge matching mockup */}
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-full bg-violet-500/20 text-violet-400 text-xs font-medium flex items-center justify-center">
-                            {scene.number}
+                        {/* Padded number badge (01, 02, 03, etc.) */}
+                        <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 text-white text-sm font-bold flex items-center justify-center shadow-[0_0_10px_rgba(139,92,246,0.3)]">
+                            {String(scene.number).padStart(2, '0')}
                         </span>
-                        <span className="text-xs text-white/40">Scene {scene.number}</span>
+                        <span className="text-xs text-white/40 uppercase tracking-wide">Scene {String(scene.number).padStart(2, '0')}</span>
+                        {/* Status indicator */}
+                        {scene.status === "completed" && (
+                            <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <Check className="w-3 h-3" /> Complete
+                            </span>
+                        )}
+                        {scene.status === "generating" && (
+                            <span className="text-[10px] bg-violet-500/20 text-violet-400 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <Loader2 className="w-3 h-3 animate-spin" /> Generating
+                            </span>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -248,6 +270,7 @@ function DraggableSceneItem({
 }
 
 export function StoryboardWizard({ onComplete }: StoryboardWizardProps) {
+    const t = useTranslations("storyboard")
     const [step, setStep] = useState<WizardStep>("story")
 
     // Story input
@@ -269,6 +292,10 @@ export function StoryboardWizard({ onComplete }: StoryboardWizardProps) {
     const [isGenerating, setIsGenerating] = useState(false)
     const [finalVideoUrl, setFinalVideoUrl] = useState<string | null>(null)
     const [error, setError] = useState<string | null>(null)
+
+    // Scene Preview selection (for 3-column layout)
+    const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null)
+    const selectedScene = scenes.find(s => s.id === selectedSceneId) || scenes[0]
 
     // Calculate estimated cost
     const selectedModel = VIDEO_MODELS.find(m => m.id === videoModel)!
@@ -406,8 +433,6 @@ export function StoryboardWizard({ onComplete }: StoryboardWizardProps) {
                 })))
             }
 
-            setFinalVideoUrl(data.finalVideoUrl)
-            setStep("complete")
             onComplete?.(data.finalVideoUrl)
 
         } catch (err) {
@@ -419,45 +444,74 @@ export function StoryboardWizard({ onComplete }: StoryboardWizardProps) {
         }
     }
 
-    const stepLabels = ["Story", "Scenes", "Settings", "Generate", "Complete"]
+    const stepLabels = [
+        t("steps.story"),
+        t("steps.scenes"),
+        t("steps.settings"),
+        t("steps.generate"),
+        t("steps.complete")
+    ]
     const stepOrder: WizardStep[] = ["story", "scenes", "settings", "generating", "complete"]
     const currentStepIndex = stepOrder.indexOf(step)
 
     return (
-        <div className="w-full rounded-xl bg-black/40 backdrop-blur-md border border-white/10 overflow-hidden">
-            {/* Header */}
-            <div className="px-6 py-4 border-b border-white/10 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-                    <BookOpen className="w-5 h-5 text-white" />
+        <div className="w-full rounded-[var(--pho-radius-xl)] bg-[var(--pho-glass-medium)] backdrop-blur-[var(--pho-blur-lg)] border border-[var(--pho-border-default)] overflow-hidden">
+            {/* Header with Step Progress - VERMILION THEME */}
+            <div className="px-6 py-4 border-b border-[var(--pho-border-default)] flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-[var(--pho-radius-lg)] bg-gradient-to-br from-[#F0421C] to-[#DC2626] flex items-center justify-center shadow-[0_0_15px_rgba(240,66,28,0.4)]">
+                        <Play className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-[var(--pho-text-primary)]">Storyboard Wizard</h3>
+                        <p className="text-sm text-[var(--pho-text-muted)]">{t("subtitle")}</p>
+                    </div>
                 </div>
-                <div>
-                    <h3 className="font-semibold text-white">Phở Storyboard</h3>
-                    <p className="text-sm text-white/50">Transform your story into a video</p>
+                {/* Step X of 4 indicator matching mockup */}
+                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#F0421C]/10 border border-[#F0421C]/20">
+                    <span className="text-sm font-semibold text-[#F0421C]">
+                        Step {currentStepIndex + 1} of 4
+                    </span>
+                    <span className="text-sm text-white/30">:</span>
+                    <span className="text-sm text-white/70">{stepLabels[currentStepIndex]}</span>
                 </div>
             </div>
 
-            {/* Progress Steps */}
-            <div className="px-6 py-3 border-b border-white/5 flex items-center justify-between">
-                {stepLabels.slice(0, -1).map((label, i) => (
-                    <div key={label} className="flex items-center">
-                        <div className="flex flex-col items-center">
+            {/* Progress Bar - SEGMENTED VERMILION */}
+            <div className="px-6 py-3 border-b border-white/5">
+                <div className="flex items-center gap-2">
+                    {stepLabels.slice(0, -1).map((label, i) => (
+                        <div key={label} className="flex-1 flex items-center gap-2">
+                            {/* Segment */}
                             <div className={cn(
-                                "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all",
-                                currentStepIndex === i ? "bg-violet-500 text-white" :
-                                    currentStepIndex > i ? "bg-green-500 text-white" : "bg-white/10 text-white/50"
-                            )}>
-                                {currentStepIndex > i ? <Check className="w-4 h-4" /> : i + 1}
-                            </div>
-                            <span className="text-[10px] text-white/40 mt-1 hidden md:block">{label}</span>
-                        </div>
-                        {i < stepLabels.length - 2 && (
-                            <div className={cn(
-                                "w-12 h-0.5 mx-2",
-                                currentStepIndex > i ? "bg-green-500" : "bg-white/10"
+                                "flex-1 h-1.5 rounded-full transition-all",
+                                currentStepIndex > i
+                                    ? "bg-gradient-to-r from-[#F0421C] to-[#FF5C3A]"
+                                    : currentStepIndex === i
+                                        ? "bg-gradient-to-r from-[#F0421C] to-[#F0421C]/50"
+                                        : "bg-white/10"
                             )} />
-                        )}
+                            {/* Dot indicator at end of segment */}
+                            {i < stepLabels.length - 2 && (
+                                <div className={cn(
+                                    "w-2 h-2 rounded-full transition-all",
+                                    currentStepIndex > i
+                                        ? "bg-[#F0421C] shadow-[0_0_6px_rgba(240,66,28,0.6)]"
+                                        : "bg-white/20"
+                                )} />
+                            )}
+                        </div>
+                    ))}
+                    {/* Final step number */}
+                    <div className={cn(
+                        "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold",
+                        currentStepIndex >= 3
+                            ? "bg-[#F0421C] text-white"
+                            : "bg-white/10 text-white/50"
+                    )}>
+                        4
                     </div>
-                ))}
+                </div>
             </div>
 
             <div className="p-6">
@@ -474,13 +528,13 @@ export function StoryboardWizard({ onComplete }: StoryboardWizardProps) {
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-white/70 flex items-center gap-2">
                                     <FileText className="w-4 h-4" />
-                                    Your Story
+                                    {t("step1.label")}
                                 </label>
                                 <div className="relative">
                                     <Textarea
                                         value={story}
                                         onChange={(e) => setStory(e.target.value)}
-                                        placeholder="Once upon a time in a futuristic city, a young inventor discovered a secret that would change the world..."
+                                        placeholder={t("step1.placeholder")}
                                         className="min-h-[160px] bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-none pr-12"
                                     />
                                     <button
@@ -508,7 +562,7 @@ export function StoryboardWizard({ onComplete }: StoryboardWizardProps) {
                                             "border border-purple-500/30 hover:border-purple-500/50",
                                             "disabled:opacity-50 disabled:cursor-not-allowed"
                                         )}
-                                        title="Enhance Story with AI"
+                                        title={t("step1.enhance_button")}
                                     >
                                         {isEnhancing ? (
                                             <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
@@ -518,13 +572,13 @@ export function StoryboardWizard({ onComplete }: StoryboardWizardProps) {
                                     </button>
                                 </div>
                                 <p className="text-xs text-white/40">
-                                    {story.length} characters • Tip: Write 2-3 sentences per scene for best results
+                                    {t("step1.char_count", { count: story.length })} • {t("step1.tip")}
                                 </p>
                             </div>
 
                             <div className="space-y-3">
                                 <label className="text-sm font-medium text-white/70">
-                                    Target Scenes: {sceneCount}
+                                    {t("step1.target_scenes", { count: sceneCount })}
                                 </label>
                                 <Slider
                                     value={[sceneCount]}
@@ -535,8 +589,8 @@ export function StoryboardWizard({ onComplete }: StoryboardWizardProps) {
                                     className="py-2"
                                 />
                                 <div className="flex justify-between text-xs text-white/40">
-                                    <span>2 scenes</span>
-                                    <span>8 scenes</span>
+                                    <span>{t("step1.min_scenes")}</span>
+                                    <span>{t("step1.max_scenes")}</span>
                                 </div>
                             </div>
 
@@ -548,12 +602,12 @@ export function StoryboardWizard({ onComplete }: StoryboardWizardProps) {
                                 {isParsingScenes ? (
                                     <>
                                         <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                                        Parsing Story...
+                                        {t("step1.parsing")}
                                     </>
                                 ) : (
                                     <>
                                         <Wand2 className="w-5 h-5 mr-2" />
-                                        Parse into Scenes
+                                        {t("step1.parse_button")}
                                         <ChevronRight className="w-5 h-5 ml-2" />
                                     </>
                                 )}
@@ -561,90 +615,242 @@ export function StoryboardWizard({ onComplete }: StoryboardWizardProps) {
                         </motion.div>
                     )}
 
-                    {/* Step 2: Scene Editor */}
+                    {/* Step 2: Scene Editor - 3-COLUMN LAYOUT MATCHING MOCKUP */}
                     {step === "scenes" && (
                         <motion.div
                             key="scenes"
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
-                            className="space-y-5"
+                            className="space-y-4"
                         >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h4 className="text-sm font-medium text-white flex items-center gap-2">
-                                        <Layers className="w-4 h-4 text-violet-400" />
-                                        Edit Your Scenes
+                            {/* 3-Column Grid */}
+                            <div className="grid grid-cols-12 gap-4 min-h-[400px]">
+                                {/* LEFT: Script Input (3 cols) - NEON GLOW */}
+                                <div className="col-span-3 rounded-xl bg-gradient-to-br from-[#1A1A1F] to-[#0F0F15] border border-[#F0421C]/30 p-4 flex flex-col gap-3 shadow-[0_0_25px_rgba(240,66,28,0.1),inset_0_1px_0_rgba(255,255,255,0.05)] hover:shadow-[0_0_35px_rgba(240,66,28,0.15)] transition-shadow duration-500">
+                                    <h4 className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#F0421C] to-[#FF5C3A] flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-[#F0421C] animate-pulse shadow-[0_0_8px_rgba(240,66,28,0.8)]" />
+                                        Script Input
                                     </h4>
-                                    <p className="text-xs text-white/50 mt-0.5">
-                                        Drag to reorder, click to edit. {scenes.length} scenes total.
-                                    </p>
-                                </div>
-                                <div className="flex gap-2">
+                                    <div className="flex-1 rounded-xl bg-gradient-to-br from-[#0F0F12] to-[#080810] border border-[#F0421C]/10 p-3 overflow-y-auto text-xs text-white/70 leading-relaxed max-h-[300px] shadow-[inset_0_0_20px_rgba(0,0,0,0.3)]">
+                                        {story.split('\n').map((line, i) => (
+                                            <p key={i} className="mb-2">{line || '\u00A0'}</p>
+                                        ))}
+                                    </div>
                                     <Button
-                                        size="sm"
-                                        variant="outline"
                                         onClick={handleParseScenes}
-                                        className="h-8 text-xs border-white/20 text-white/70 hover:bg-white/10"
+                                        disabled={isParsingScenes}
+                                        className={cn(
+                                            "w-full h-11 rounded-xl text-sm font-bold",
+                                            "bg-gradient-to-r from-[#F0421C] via-[#DC2626] to-[#B91C1C]",
+                                            "hover:from-[#FF5C3A] hover:via-[#F0421C] hover:to-[#DC2626]",
+                                            "shadow-[0_0_20px_rgba(240,66,28,0.4),0_4px_15px_rgba(0,0,0,0.3)]",
+                                            "hover:shadow-[0_0_30px_rgba(240,66,28,0.5)]",
+                                            "transition-all duration-300 hover:scale-[1.02]"
+                                        )}
                                     >
-                                        <RefreshCw className="w-3 h-3 mr-1" />
-                                        Re-parse
+                                        {isParsingScenes ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Wand2 className="w-4 h-4 mr-2" />}
+                                        Parse into Scenes
+                                        <ChevronRight className="w-4 h-4 ml-1" />
                                     </Button>
+                                </div>
+
+                                {/* CENTER: Scene Editor (5 cols) - CREATOR VIBES */}
+                                <div className="col-span-5 rounded-xl bg-gradient-to-br from-[#1A1A1F] to-[#12121A] border border-white/15 p-4 flex flex-col gap-3 shadow-[0_0_20px_rgba(255,255,255,0.02),inset_0_1px_0_rgba(255,255,255,0.05)] hover:border-[#F0421C]/30 hover:shadow-[0_0_30px_rgba(240,66,28,0.1)] transition-all duration-500">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                                            <Layers className="w-4 h-4 text-[#F0421C]" />
+                                            Scene List
+                                        </h4>
+                                        <button className="p-1.5 rounded-lg bg-white/5 hover:bg-[#F0421C]/10 border border-transparent hover:border-[#F0421C]/30 transition-all">
+                                            <Search className="w-4 h-4 text-white/40 hover:text-[#F0421C]" />
+                                        </button>
+                                    </div>
+
+                                    {/* Scene Cards - Horizontal Layout */}
+                                    <div className="flex-1 space-y-2 overflow-y-auto max-h-[320px] pr-1">
+                                        {scenes.map((scene) => (
+                                            <div
+                                                key={scene.id}
+                                                onClick={() => setSelectedSceneId(scene.id)}
+                                                className={cn(
+                                                    "flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-all",
+                                                    "bg-white/5 hover:bg-white/10 border",
+                                                    selectedSceneId === scene.id || (!selectedSceneId && scene.id === scenes[0]?.id)
+                                                        ? "border-[#F0421C]/50 shadow-[0_0_10px_rgba(240,66,28,0.15)]"
+                                                        : "border-transparent"
+                                                )}
+                                            >
+                                                {/* Drag Handle */}
+                                                <GripVertical className="w-4 h-4 text-white/20 cursor-grab flex-shrink-0" />
+
+                                                {/* Number Badge */}
+                                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#F0421C] to-[#DC2626] flex items-center justify-center flex-shrink-0 shadow-[0_0_8px_rgba(240,66,28,0.4)]">
+                                                    <span className="text-white text-xs font-bold">{String(scene.number).padStart(2, '0')}</span>
+                                                </div>
+
+                                                {/* Thumbnail */}
+                                                <div className="w-16 h-12 rounded-lg bg-[#0F0F12] border border-white/10 overflow-hidden flex-shrink-0">
+                                                    {scene.thumbnailUrl ? (
+                                                        <img src={scene.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center">
+                                                            <ImageIcon className="w-4 h-4 text-white/20" />
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Description */}
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-xs text-white/70 line-clamp-2">{scene.description || 'No description'}</p>
+                                                </div>
+
+                                                {/* Status Button */}
+                                                <div className="flex items-center gap-2 flex-shrink-0">
+                                                    {scene.status === "completed" && (
+                                                        <span className="px-3 py-1.5 rounded-lg bg-green-500/20 text-green-400 text-xs font-medium flex items-center gap-1.5">
+                                                            <Check className="w-3 h-3" /> Complete
+                                                        </span>
+                                                    )}
+                                                    {scene.status === "generating" && (
+                                                        <span className="px-3 py-1.5 rounded-lg bg-[#F0421C]/20 text-[#F0421C] text-xs font-medium flex items-center gap-1.5">
+                                                            <Loader2 className="w-3 h-3 animate-spin" /> Generating
+                                                        </span>
+                                                    )}
+                                                    {scene.status === "pending" && (
+                                                        <button className="px-3 py-1.5 rounded-lg bg-[#F0421C]/80 hover:bg-[#F0421C] text-white text-xs font-medium transition-colors">
+                                                            Generate
+                                                        </button>
+                                                    )}
+
+                                                    {/* Checkbox */}
+                                                    <div className={cn(
+                                                        "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
+                                                        scene.status === "completed"
+                                                            ? "border-green-500 bg-green-500"
+                                                            : "border-white/20"
+                                                    )}>
+                                                        {scene.status === "completed" && <Check className="w-3 h-3 text-white" />}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+
+                                        {/* Add New Scene */}
+                                        <button
+                                            onClick={addNewScene}
+                                            className="flex items-center gap-3 p-2 rounded-xl border-2 border-dashed border-white/10 hover:border-white/20 text-white/40 hover:text-white/60 transition-colors w-full"
+                                        >
+                                            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
+                                                <Plus className="w-4 h-4" />
+                                            </div>
+                                            <span className="text-xs">Add new scene</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* RIGHT: Scene Preview (4 cols) - PREMIUM PREVIEW */}
+                                <div className="col-span-4 rounded-xl bg-gradient-to-br from-[#1A1A1F] to-[#0F0F15] border border-[#F0421C]/20 p-4 flex flex-col gap-3 shadow-[0_0_25px_rgba(240,66,28,0.08),inset_0_1px_0_rgba(255,255,255,0.05)] hover:shadow-[0_0_35px_rgba(240,66,28,0.12)] transition-shadow duration-500">
+                                    <h4 className="text-sm font-bold text-white/50 flex items-center gap-2">
+                                        <Film className="w-4 h-4 text-[#F0421C]/60" />
+                                        Scene Preview
+                                    </h4>
+
+                                    {/* Large Preview Image - CINEMA FRAME */}
+                                    <div className="relative aspect-video rounded-xl bg-gradient-to-br from-[#0F0F12] to-[#080810] border border-white/10 overflow-hidden group shadow-[inset_0_0_30px_rgba(0,0,0,0.5)]">
+                                        {selectedScene?.thumbnailUrl ? (
+                                            <img src={selectedScene.thumbnailUrl} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                                        ) : (
+                                            <div className="w-full h-full flex flex-col items-center justify-center gap-3">
+                                                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#F0421C]/10 to-transparent flex items-center justify-center">
+                                                    <ImageIcon className="w-8 h-8 text-[#F0421C]/30" />
+                                                </div>
+                                                <p className="text-xs text-white/30">No preview available</p>
+                                            </div>
+                                        )}
+                                        {/* Vermilion border on hover */}
+                                        <div className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-[#F0421C]/40 transition-colors duration-300 pointer-events-none" />
+                                    </div>
+
+                                    {/* Edit Prompt Button - ENHANCED */}
                                     <Button
-                                        size="sm"
-                                        onClick={addNewScene}
-                                        className="h-8 text-xs bg-violet-500/20 text-violet-400 hover:bg-violet-500/30"
+                                        variant="outline"
+                                        className={cn(
+                                            "w-full h-11 rounded-xl font-semibold",
+                                            "border-[#F0421C]/40 text-[#F0421C]",
+                                            "bg-gradient-to-r from-[#F0421C]/5 to-transparent",
+                                            "hover:from-[#F0421C]/15 hover:to-[#F0421C]/5",
+                                            "hover:border-[#F0421C]/60 hover:shadow-[0_0_15px_rgba(240,66,28,0.2)]",
+                                            "transition-all duration-300"
+                                        )}
                                     >
-                                        <Plus className="w-3 h-3 mr-1" />
-                                        Add Scene
+                                        <Edit3 className="w-4 h-4 mr-2" />
+                                        Edit Prompt
                                     </Button>
+
+                                    {/* Scene Details - GLASSMORPHISM */}
+                                    {selectedScene && (
+                                        <div className="rounded-xl bg-gradient-to-br from-[#0F0F12] to-[#080810] border border-[#F0421C]/15 p-3 space-y-2 shadow-[inset_0_0_15px_rgba(0,0,0,0.3)]">
+                                            <div className="flex items-center justify-between">
+                                                <h5 className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70">
+                                                    Scene {String(selectedScene.number).padStart(2, '0')} - Details
+                                                </h5>
+                                                <button className="p-1 rounded-lg hover:bg-[#F0421C]/10 transition-colors">
+                                                    <AlertCircle className="w-3 h-3 text-[#F0421C]/40" />
+                                                </button>
+                                            </div>
+                                            <div className="space-y-2 text-xs">
+                                                <div className="flex items-center gap-2 text-white/60 hover:text-white/80 transition-colors">
+                                                    <MapPin className="w-3.5 h-3.5 text-[#F0421C]" />
+                                                    <span>Location:</span>
+                                                    <span className="text-white font-medium">{selectedScene.location || 'Unknown'}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-white/60 hover:text-white/80 transition-colors">
+                                                    <Clock className="w-3.5 h-3.5 text-[#F0421C]" />
+                                                    <span>Time:</span>
+                                                    <span className="text-white font-medium">{selectedScene.time || 'Day'}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-white/60 hover:text-white/80 transition-colors">
+                                                    <Palette className="w-3.5 h-3.5 text-[#F0421C]" />
+                                                    <span>Mood:</span>
+                                                    <span className="text-white font-medium">{selectedScene.mood || 'Neutral'}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-white/60 hover:text-white/80 transition-colors">
+                                                    <Camera className="w-3.5 h-3.5 text-[#F0421C]" />
+                                                    <span>Shot Type:</span>
+                                                    <span className="text-white font-medium">{selectedScene.shotType || 'Medium'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
-                            {/* Reorderable Scene List */}
-                            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10">
-                                <Reorder.Group
-                                    axis="y"
-                                    values={scenes}
-                                    onReorder={reorderScenes}
-                                    className="space-y-3"
-                                >
-                                    {scenes.map((scene) => (
-                                        <DraggableSceneItem
-                                            key={scene.id}
-                                            scene={scene}
-                                            scenes={scenes}
-                                            updateScene={updateScene}
-                                            deleteScene={deleteScene}
-                                            duplicateScene={duplicateScene}
-                                        />
-                                    ))}
-                                </Reorder.Group>
-                            </div>
-
-                            {error && (
-                                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-2">
-                                    <AlertCircle className="w-4 h-4 text-red-400" />
-                                    <p className="text-sm text-red-400">{error}</p>
+                            {/* Bottom Bar - Total Cost + Generate All */}
+                            <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-[#1A1A1F] via-[#1E1A1A] to-[#1A1A1F] border border-[#F0421C]/20 shadow-[0_-5px_30px_rgba(240,66,28,0.08)]">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-[#F0421C]/20 flex items-center justify-center">
+                                        <Sparkles className="w-4 h-4 text-[#F0421C]" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-white/40">Total cost:</p>
+                                        <p className="text-lg font-bold text-white">~{Math.round(totalCost / 1000)}K <span className="text-xs font-normal text-white/40">for {scenes.length} scenes</span></p>
+                                    </div>
                                 </div>
-                            )}
-
-                            <div className="flex gap-3">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setStep("story")}
-                                    className="flex-1 border-white/20 text-white hover:bg-white/10"
-                                >
-                                    <ChevronLeft className="w-4 h-4 mr-2" />
-                                    Back
-                                </Button>
                                 <Button
                                     onClick={() => setStep("settings")}
                                     disabled={scenes.length === 0 || scenes.some(s => !s.description.trim())}
-                                    className="flex-[2] h-12 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700"
+                                    className={cn(
+                                        "h-11 px-8 rounded-xl text-sm font-bold",
+                                        "bg-gradient-to-r from-[#F0421C] via-[#DC2626] to-[#B91C1C]",
+                                        "hover:from-[#FF5C3A] hover:via-[#F0421C] hover:to-[#DC2626]",
+                                        "shadow-[0_0_25px_rgba(240,66,28,0.4),0_4px_15px_rgba(0,0,0,0.3)]",
+                                        "hover:shadow-[0_0_35px_rgba(240,66,28,0.5)]",
+                                        "transition-all duration-300 hover:scale-105"
+                                    )}
                                 >
-                                    Continue to Settings
-                                    <ChevronRight className="w-5 h-5 ml-2" />
+                                    Generate All Scenes
+                                    <ChevronRight className="w-4 h-4 ml-2" />
                                 </Button>
                             </div>
                         </motion.div>
@@ -663,7 +869,7 @@ export function StoryboardWizard({ onComplete }: StoryboardWizardProps) {
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-white/70 flex items-center gap-2">
                                     <Video className="w-4 h-4" />
-                                    Video Model
+                                    {t("step3.video_model")}
                                 </label>
                                 <Select value={videoModel} onValueChange={setVideoModel}>
                                     <SelectTrigger className="bg-white/5 border-white/10 text-white">
@@ -677,9 +883,9 @@ export function StoryboardWizard({ onComplete }: StoryboardWizardProps) {
                                                 className="text-white hover:bg-white/10"
                                             >
                                                 <div className="flex items-center justify-between w-full">
-                                                    <span>{model.name}</span>
+                                                    <span>{t(`models.${model.id.replace(/-/g, '_')}`)}</span>
                                                     <span className="text-xs text-white/40 ml-4">
-                                                        {model.costPer5s}K/5s
+                                                        {t("step3.cost_per_5s", { cost: model.costPer5s })}
                                                     </span>
                                                 </div>
                                             </SelectItem>
@@ -691,7 +897,7 @@ export function StoryboardWizard({ onComplete }: StoryboardWizardProps) {
                             {/* Duration per scene */}
                             <div className="space-y-3">
                                 <label className="text-sm font-medium text-white/70">
-                                    Duration per Scene: {duration}s
+                                    {t("step3.duration_per_scene", { duration: duration })}
                                 </label>
                                 <Slider
                                     value={[duration]}
@@ -711,8 +917,8 @@ export function StoryboardWizard({ onComplete }: StoryboardWizardProps) {
                                 <div className="flex items-center gap-3">
                                     <Music className="w-5 h-5 text-purple-400" />
                                     <div>
-                                        <p className="text-sm font-medium text-white">Add Background Music</p>
-                                        <p className="text-xs text-white/50">AI-generated soundtrack (+30K Phở)</p>
+                                        <p className="text-sm font-medium text-white">{t("step3.add_music_title")}</p>
+                                        <p className="text-xs text-white/50">{t("step3.add_music_desc")}</p>
                                     </div>
                                 </div>
                                 <Switch
@@ -728,12 +934,12 @@ export function StoryboardWizard({ onComplete }: StoryboardWizardProps) {
                                     className="space-y-2"
                                 >
                                     <label className="text-sm font-medium text-white/70">
-                                        Music Style (optional)
+                                        {t("step3.music_style")}
                                     </label>
                                     <Textarea
                                         value={musicPrompt}
                                         onChange={(e) => setMusicPrompt(e.target.value)}
-                                        placeholder="Epic orchestral, emotional piano, upbeat electronic..."
+                                        placeholder={t("step3.music_placeholder")}
                                         className="min-h-[60px] bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-none"
                                     />
                                 </motion.div>
@@ -741,24 +947,24 @@ export function StoryboardWizard({ onComplete }: StoryboardWizardProps) {
 
                             {/* Cost Summary */}
                             <div className="p-4 rounded-lg bg-violet-500/10 border border-violet-500/30">
-                                <h4 className="text-sm font-medium text-white mb-2">Cost Estimate</h4>
+                                <h4 className="text-sm font-medium text-white mb-2">{t("step3.cost_estimate")}</h4>
                                 <div className="space-y-1 text-sm">
                                     <div className="flex justify-between text-white/60">
-                                        <span>Base cost</span>
+                                        <span>{t("step3.base_cost")}</span>
                                         <span>500K</span>
                                     </div>
                                     <div className="flex justify-between text-white/60">
-                                        <span>{scenes.length} scenes × {duration}s</span>
+                                        <span>{t("step3.video_cost", { count: scenes.length, duration })}</span>
                                         <span>{(videoCost / 1000).toFixed(0)}K</span>
                                     </div>
                                     {addMusic && (
                                         <div className="flex justify-between text-white/60">
-                                            <span>Background music</span>
+                                            <span>{t("step3.music_cost")}</span>
                                             <span>30K</span>
                                         </div>
                                     )}
                                     <div className="flex justify-between text-white font-semibold pt-2 border-t border-white/10">
-                                        <span>Total</span>
+                                        <span>{t("step3.total")}</span>
                                         <span>{(totalCost / 1000).toFixed(0)}K Phở</span>
                                     </div>
                                 </div>
@@ -771,14 +977,14 @@ export function StoryboardWizard({ onComplete }: StoryboardWizardProps) {
                                     className="flex-1 border-white/20 text-white hover:bg-white/10"
                                 >
                                     <ChevronLeft className="w-4 h-4 mr-2" />
-                                    Back
+                                    {t("step2.back")}
                                 </Button>
                                 <Button
                                     onClick={handleGenerate}
                                     className="flex-[2] h-12 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700"
                                 >
                                     <Sparkles className="w-5 h-5 mr-2" />
-                                    Generate Storyboard
+                                    {t("step3.generate_button")}
                                 </Button>
                             </div>
                         </motion.div>
@@ -795,11 +1001,8 @@ export function StoryboardWizard({ onComplete }: StoryboardWizardProps) {
                             <div className="text-center">
                                 <Loader2 className="w-12 h-12 text-violet-500 animate-spin mx-auto mb-4" />
                                 <h3 className="text-lg font-semibold text-white mb-1">
-                                    Creating Your Storyboard
+                                    {t("step4.generating_title")}
                                 </h3>
-                                <p className="text-sm text-white/50">
-                                    Generating {scenes.length} scenes...
-                                </p>
                             </div>
 
                             {/* Scene Progress */}

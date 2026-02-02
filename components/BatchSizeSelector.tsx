@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { Grid2x2, LayoutGrid, Coins } from "lucide-react"
 
@@ -22,13 +23,14 @@ export function BatchSizeSelector({
     baseCost,
     className,
 }: BatchSizeSelectorProps) {
+    const t = useTranslations("studio_meta.batch")
     const totalCost = value * baseCost
 
     return (
         <div className={cn("space-y-2", className)}>
             <div className="flex items-center justify-between">
                 <label className="text-xs text-white/60 font-medium">
-                    Batch Size
+                    {t("label")}
                 </label>
                 <span className="flex items-center gap-1 text-xs text-primary">
                     <Coins className="w-3 h-3" />
@@ -50,14 +52,14 @@ export function BatchSizeSelector({
                         )}
                     >
                         <span className="text-lg leading-none">{option.icon}</span>
-                        <span className="text-xs font-medium">{option.description}</span>
+                        <span className="text-xs font-medium">{t(option.description.toLowerCase())}</span>
                     </button>
                 ))}
             </div>
 
             {value > 1 && (
                 <p className="text-xs text-white/40 text-center">
-                    Generate {value} variations with different seeds
+                    {t("variations_hint", { count: value })}
                 </p>
             )}
         </div>
