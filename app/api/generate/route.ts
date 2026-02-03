@@ -14,6 +14,7 @@ import {
     checkSufficientPhoPoints,
 } from "@/lib/pho-points/transactions"
 import { trackGeneration, trackGenerationStart, trackRefund, trackError } from "@/lib/analytics/server"
+import { checkStudioAccess } from "@/lib/pho-chat-wallet"
 
 // Phở Points cost mapping for video generation (Updated with new tiers)
 const MODEL_PHO_POINTS_COSTS: Record<string, Record<string, number>> = {
@@ -116,6 +117,25 @@ export async function POST(request: NextRequest) {
         // Get or create user in database
         const user = await getOrCreateUser(clerkId, email)
         console.log(`👤 [API] User: ${user.id} (${email || 'no email'}) - Phở Points: ${formatPhoPoints(user.phoPointsBalance)}`)
+
+        // 🚨 TIER CHECK: Verify user has access to Studio based on subscription tier
+        // Free and Basic (69k) users are BLOCKED from video generation
+        const walletStatus = await checkStudioAccess(clerkId)
+        console.log(`💳 [API] Wallet status: tier=${walletStatus.tier}, can_use_studio=${walletStatus.can_use_studio}`)
+
+        if (!walletStatus.can_use_studio) {
+            console.log(`⛔ [API] User blocked from Studio: tier=${walletStatus.tier}`)
+            return NextResponse.json(
+                {
+                    error: "Upgrade to Creator Plan",
+                    message: "Video generation requires Creator plan (199k/month) or higher. Please upgrade your subscription to access Phở Studio.",
+                    code: "TIER_BLOCKED",
+                    tier: walletStatus.tier,
+                    upgradeUrl: "https://pho.chat/pricing",
+                },
+                { status: 403 }
+            )
+        }
 
         // Parse request body
         const body = await request.json()
