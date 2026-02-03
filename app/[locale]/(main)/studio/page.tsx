@@ -38,6 +38,7 @@ import { StoryboardWizard } from "@/components/StoryboardWizard"
 import { LipSyncStudio } from "@/components/LipSyncStudio"
 import { TryOnStudio } from "@/components/TryOnStudio"
 import { BatchSizeSelector } from "@/components/BatchSizeSelector"
+import { UpgradeRequiredModal } from "@/components/UpgradeRequiredModal"
 import { useStudioStore } from "@/stores/useStudioStore"
 // Pixel-perfect studio components
 import {
@@ -155,6 +156,8 @@ export default function StudioPage() {
     const [isGenerating, setIsGenerating] = useState(false)
     const [isEnhancing, setIsEnhancing] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+    const [currentTier, setCurrentTier] = useState<string>("free")
 
     // Video settings
     const [videoModel, setVideoModel] = useState("pho-instant")
@@ -211,6 +214,15 @@ export default function StudioPage() {
                 })
 
                 const data = await response.json()
+
+                // Handle tier-blocked (403) response
+                if (response.status === 403 && data.code === "TIER_BLOCKED") {
+                    setCurrentTier(data.tier || "free")
+                    setShowUpgradeModal(true)
+                    failGeneration(tempId)
+                    return
+                }
+
                 if (!response.ok) throw new Error(data.error || t("video_failed"))
 
                 completeGeneration(tempId, data.videoUrl, data.creditsUsed, "video")
@@ -230,6 +242,15 @@ export default function StudioPage() {
                 })
 
                 const data = await response.json()
+
+                // Handle tier-blocked (403) response for images too
+                if (response.status === 403 && data.code === "TIER_BLOCKED") {
+                    setCurrentTier(data.tier || "free")
+                    setShowUpgradeModal(true)
+                    failGeneration(tempId)
+                    return
+                }
+
                 if (!response.ok) throw new Error(data.error || t("image_failed"))
 
                 completeGeneration(tempId, data.imageUrl || data.imageUrls, data.creditsUsed, "image")
@@ -552,6 +573,14 @@ export default function StudioPage() {
                     />
                 )}
             </div>
-        </div >
+
+            {/* Upgrade Required Modal - shows when free/basic users try to generate */}
+            <UpgradeRequiredModal
+                open={showUpgradeModal}
+                onCloseAction={() => setShowUpgradeModal(false)}
+                currentTier={currentTier}
+                featureName={selectedMode === "image" ? "Image Generation" : "Video Generation"}
+            />
+        </div>
     )
 }
