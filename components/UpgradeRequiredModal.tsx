@@ -14,26 +14,40 @@ interface UpgradeRequiredModalProps {
 
 const VN_UPGRADE_OPTIONS = [
     {
-        tier: 'creator',
-        name: 'Creator',
+        tier: 'starter',
+        name: 'Phở Tái (Starter)',
+        priceVND: '69,000đ/tháng',
+        priceUSD: '~$2.8/mo',
+        features: ['50K Phở Points/tháng', 'Unlimited Tier 1 models', '30 Tier 2 messages/day'],
+        color: 'from-blue-500/20 to-cyan-500/20',
+        borderColor: 'border-blue-500/50',
+        iconColor: 'text-blue-400',
+        recommended: false,
+        hasStudio: false,
+    },
+    {
+        tier: 'premium',
+        name: 'Phở Đặc Biệt (Premium)',
         priceVND: '199,000đ/tháng',
-        priceUSD: '$8/mo',
-        features: ['Video Generation', 'Standard Quality', '500K Phở Points'],
+        priceUSD: '~$8/mo',
+        features: ['300K Phở Points/tháng', 'Unlimited Tier 1 & 2', '50 Tier 3 msgs/day'],
         color: 'from-vermilion/20 to-orange-500/20',
         borderColor: 'border-vermilion/50',
         iconColor: 'text-vermilion',
         recommended: true,
+        hasStudio: true,
     },
     {
         tier: 'pro',
-        name: 'Pro',
+        name: 'Phở Pro (Ultimate)',
         priceVND: '499,000đ/tháng',
-        priceUSD: '$20/mo',
-        features: ['Priority Video', 'Ultra Quality', '2M Phở Points'],
+        priceUSD: '~$20/mo',
+        features: ['2M Phở Points/tháng', 'Priority support', 'Team collaboration', 'Export & backup'],
         color: 'from-purple-500/20 to-pink-500/20',
-        borderColor: 'border-purple-500/30',
+        borderColor: 'border-purple-500/50',
         iconColor: 'text-purple-400',
         recommended: false,
+        hasStudio: true,
     },
 ];
 
@@ -90,10 +104,10 @@ export function UpgradeRequiredModal({
 
                         <div>
                             <h2 className="text-2xl font-bold text-white">
-                                Upgrade to Unlock
+                                Nâng Cấp Để Mở Khóa
                             </h2>
                             <p className="text-sm text-gray-400 mt-1">
-                                <span className="text-vermilion font-medium">{featureName}</span> requires Creator plan or higher
+                                <span className="text-vermilion font-medium">{featureName}</span> yêu cầu gói <span className="text-vermilion font-bold">Premium</span> trở lên
                             </p>
                         </div>
                     </div>
