@@ -30,6 +30,7 @@ export type ModelProvider =
     | "pho-engine-realistic"
     | "pho-engine-instant"
     // Fal.AI Standard Tier
+    | "Kling 3.0 via Fal.AI"
     | "Kling 2.5 Pro via Fal.AI"
     | "Minimax Hailuo via Fal.AI"
     | "LTX-2 19B via Fal.AI"

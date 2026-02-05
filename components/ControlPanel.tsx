@@ -66,7 +66,8 @@ const PHO_POINTS_COSTS = {
         "pho-instant": { 5: COST_PHO_POINTS.VIDEO_5S_1080P_FAST, 10: COST_PHO_POINTS.VIDEO_10S_1080P_FAST },
         "pho-fast": { 5: 40000, 10: 80000 }, // Seedance - cheapest
         // === STANDARD TIER ===
-        "pho-cinematic": { 5: COST_PHO_POINTS.VIDEO_5S_1080P_PRO, 10: COST_PHO_POINTS.VIDEO_10S_1080P_PRO },
+        "pho-cinematic": { 5: COST_PHO_POINTS.VIDEO_5S_1080P_PRO, 10: COST_PHO_POINTS.VIDEO_10S_1080P_PRO }, // Kling 3.0
+        "pho-cinematic-v25": { 5: 60000, 10: 120000 }, // Kling 2.5 Legacy (cheaper)
         "pho-motion": { 5: COST_PHO_POINTS.I2V_5S_1080P, 10: COST_PHO_POINTS.I2V_10S_1080P },
         "pho-motion-pro": { 5: 70000, 10: 140000 }, // Hailuo Pro
         // === PREMIUM TIER ===
@@ -85,8 +86,8 @@ const PHO_POINTS_COSTS = {
 
 // All Fal.AI models support I2V
 const I2V_SUPPORTED_MODELS = [
-    "pho-instant", "pho-fast", "pho-cinematic", "pho-motion", "pho-motion-pro",
-    "pho-ultra", "pho-sora", "kling-2.6-pro", "wan-2.6", "ltx-video"
+    "pho-instant", "pho-fast", "pho-cinematic", "pho-cinematic-v25", "pho-motion", "pho-motion-pro",
+    "pho-ultra", "pho-sora", "kling-2.6-pro", "kling-3.0", "wan-2.6", "ltx-video"
 ]
 
 export function ControlPanel({
@@ -131,7 +132,7 @@ export function ControlPanel({
         // === PREMIUM TIER (Enterprise) ===
         {
             id: "pho-ultra",
-            name: "Phở Ultra (Veo 3.1)",
+            name: "Google Veo 3.1",
             description: "Google's flagship - Ultra-cinematic, best quality",
             isAvailable: true,
             provider: "Google Veo 3.1 via Fal.AI",
@@ -142,11 +143,11 @@ export function ControlPanel({
         },
         {
             id: "pho-sora",
-            name: "Phở Sora (OpenAI)",
+            name: "OpenAI Sora 2",
             description: "OpenAI Sora 2 Pro - Best motion physics",
             isAvailable: true,
             provider: "OpenAI Sora 2 via Fal.AI",
-            tag: "SORA",
+            tag: "PRO",
             tagKey: "Sora",
             costTier: "high",
             creditCostPerSecond: 50,
@@ -154,18 +155,29 @@ export function ControlPanel({
         // === STANDARD TIER (Quality balance) ===
         {
             id: "pho-cinematic",
-            name: "Phở Cinematic (Pro)",
+            name: "Kling 3.0",
+            description: "Latest Kling 3.0 - Native audio, best quality",
+            isAvailable: true,
+            provider: "Kling 3.0 via Fal.AI",
+            tag: "NEW",
+            tagKey: "New",
+            costTier: "high",
+            creditCostPerSecond: 15,
+        },
+        {
+            id: "pho-cinematic-v25",
+            name: "Kling 2.5 Pro",
             description: tSidebar("kling_desc"),
             isAvailable: true,
             provider: "Kling 2.5 Pro via Fal.AI",
             tag: tSidebar("tag_cinematic"),
             tagKey: "Cinematic",
-            costTier: "high",
-            creditCostPerSecond: 15,
+            costTier: "medium",
+            creditCostPerSecond: 12,
         },
         {
             id: "pho-motion",
-            name: "Phở Motion (Smooth)",
+            name: "Minimax Hailuo",
             description: tSidebar("wan_desc"),
             isAvailable: true,
             provider: "Minimax Hailuo via Fal.AI",
@@ -177,7 +189,7 @@ export function ControlPanel({
         // === FAST TIER (Budget-friendly) ===
         {
             id: "pho-instant",
-            name: "Phở Instant (Fast)",
+            name: "LTX-2 19B",
             description: tSidebar("ltx_desc"),
             isAvailable: true,
             provider: "LTX-2 19B via Fal.AI",
@@ -188,7 +200,7 @@ export function ControlPanel({
         },
         {
             id: "pho-fast",
-            name: "Phở Fast (Budget)",
+            name: "Seedance 1.5",
             description: "ByteDance Seedance - Cheapest option, good for drafts",
             isAvailable: true,
             provider: "ByteDance Seedance via Fal.AI",
@@ -206,6 +218,7 @@ export function ControlPanel({
         Motion: { bg: "bg-purple-500/20", text: "text-purple-400", icon: <Star className="w-3 h-3" /> },
         Fast: { bg: "bg-green-500/20", text: "text-green-400", icon: <Zap className="w-3 h-3" /> },
         Budget: { bg: "bg-yellow-500/20", text: "text-yellow-400", icon: <Zap className="w-3 h-3" /> },
+        New: { bg: "bg-gradient-to-r from-emerald-500/30 to-teal-500/30", text: "text-emerald-400", icon: <Sparkles className="w-3 h-3" /> },
     }
 
     // Check if current model supports I2V

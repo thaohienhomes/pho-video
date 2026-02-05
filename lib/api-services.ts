@@ -314,11 +314,15 @@ const FAL_VIDEO_MODELS = {
     "pho-fast-i2v": "fal-ai/bytedance/seedance/v1.5/pro/image-to-video",
 
     // === STANDARD TIER (Quality balance) ===
-    // Kling 2.5 Turbo Pro - Cinematic
-    "pho-cinematic": "fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
-    "pho-cinematic-i2v": "fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
+    // Kling 3.0 Standard - NEW! Native audio generation support
+    "pho-cinematic": "fal-ai/kling-video/v3/standard/text-to-video",
+    "pho-cinematic-i2v": "fal-ai/kling-video/v3/standard/image-to-video",
 
-    // Kling v2.6 Pro - Latest I2V upgrade (NEW!)
+    // Legacy: Kling 2.5 Turbo Pro (backward compatibility)
+    "pho-cinematic-v25": "fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
+    "pho-cinematic-v25-i2v": "fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
+
+    // Kling v2.6 Pro - Latest I2V upgrade
     "pho-cinematic-v26-i2v": "fal-ai/kling-video/v2.6/pro/image-to-video",
 
     // Minimax Hailuo 02 Standard - Smooth Motion
@@ -343,6 +347,8 @@ const FAL_VIDEO_MODELS = {
 
     // Legacy mappings for backward compatibility
     "ltx-video": "fal-ai/ltx-2-19b/text-to-video",
+    "kling-3.0": "fal-ai/kling-video/v3/standard/text-to-video",
+    "kling-3.0-i2v": "fal-ai/kling-video/v3/standard/image-to-video",
     "kling-2.6-pro": "fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
     "wan-2.6": "fal-ai/minimax/hailuo-02/standard/text-to-video",
 }
@@ -401,6 +407,10 @@ async function submitFalVideoJob(
     if (modelId.includes("kling") || modelId.includes("pho-cinematic")) {
         requestBody.cfg_scale = 0.5
         requestBody.camera_control = { type: "none" }
+        // Kling 3.0 supports native audio generation
+        if (modelId.includes("v3") || (modelId === "pho-cinematic" || modelId === "pho-cinematic-i2v")) {
+            requestBody.enable_audio = true // Native audio generation for Kling 3.0
+        }
     }
 
     // Minimax-specific parameters
@@ -554,6 +564,10 @@ export async function generateFalVideoUnified(
         // Model-specific parameters
         if (effectiveModelId.includes("kling") || effectiveModelId.includes("pho-cinematic")) {
             input.cfg_scale = 0.5
+            // Kling 3.0 supports native audio generation
+            if (effectiveModelId.includes("v3") || effectiveModelId === "pho-cinematic" || effectiveModelId === "pho-cinematic-i2v") {
+                input.enable_audio = true
+            }
         }
         if (effectiveModelId.includes("minimax") || effectiveModelId.includes("pho-motion")) {
             input.resolution = `${dimensions.width}x${dimensions.height}`
